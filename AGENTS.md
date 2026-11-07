@@ -19,4 +19,18 @@ Frontend ligero para Wii U (homebrew) que organiza y ejecuta ROMs de consolas re
 
 ## Estado del repo
 
-- Repo actualmente vacío (solo este `AGENTS.md`). Cuando se creen Makefile/CMake y directorios, actualizar esta sección con los comandos reales verificados (build, flags del Makefile de WUT, cómo correr un solo target) en lugar de confiar en este texto.
+- Estructura inicial creada: `CMakeLists.txt`, `src/main.cpp`, `src/gfx/renderer.{hpp,cpp}`, `src/ui/menu.{hpp,cpp}`, `src/core/launcher.{hpp,cpp}`.
+- **Build (verificado contra toolchain devkitPro CMake moderno, wut.toolchain.cmake está deprecado)**:
+
+  ```bash
+  # requiere devkitPPC, wut, wut-tools, wiiu-cmake en $DEVKITPRO
+  $DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-cmake -B build -DCMAKE_BUILD_TYPE=Release
+  cmake --build build -j
+  # salida: build/retroU.rpx (via wut_create_rpx -> elf2rpl POST_BUILD)
+  ```
+
+- `powerpc-eabi-cmake` define `CMAKE_SYSTEM_NAME=CafeOS` automáticamente; **NO** usar `find_package(wut)` ni toolchain files viejos. Los targets importados `wut::gx2` NO se verificaron; se enlaza por nombre directo (`gx2`, `vpad`, `coreinit`, `sysapp`, `sndcore2` — import-stubs de `$DEVKITPRO/wut/lib` generados de los `cafe/*.def`).
+- Fase 1 del renderer usa **OSScreen** (`coreinit/screen.h`), no GX2 directo: el render GX2 nativo exige shaders compilados offline (cafeglsl/deflect) y aún no hay pipeline de shaders. Datos verificados: formato de pixel `0xRRGGBBAA` (bytes R,G,B,A en memoria, big-endian), TV 1280x720 (stride 1280), DRC 854x480 (stride 896 visibles 854), buffers primario+secundario por pantalla, alineación 0x100 en `OSScreenSetBufferEx`, `DCFlushRange` antes de `OSScreenFlipBuffersEx`.
+- `VPADInit`/`VPADShutdown` están `WUT_DEPRECATED`: leer `VPADRead` directo.
+- Salida limpia: `SYSLaunchMenu()` (sysapp/launch.h) después de `renderer.shutdown()`.
+- Pendiente instalar devkitPro localmente (no existe `C:/devkitPro` en esta máquina; hasta entonces el build solo es posible en CI/docker con la imagen devkitPro).

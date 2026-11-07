@@ -1,0 +1,84 @@
+cmake_minimum_required(VERSION 3.14)
+project(RetroU C CXX)
+
+# =============================================================================
+# RetroU - Frontend Wii U para ROMs retro via cores Libretro
+# =============================================================================
+#
+# TOOLCHAIN (devkitPro CMake moderno):
+#   El toolchain wut.toolchain.cmake esta DEPRECADO. La forma oficial es
+#   invocar CMake a traves del wrapper de devkitPro (instalado con el paquete
+#   wiiu-cmake), que configura -DCMAKE_SYSTEM_NAME=CafeOS y el toolchain
+#   devkitPPC por nosotros:
+#
+#     Linux/macOS:   DEVKITPRO=/opt/devkitpro \
+#                    $DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-cmake -B build -DCMAKE_BUILD_TYPE=Release
+#
+#     Windows (MSYS2/devkitPro): C:/devkitPro/portlibs/wiiu/bin/powerpc-eabi-cmake -B build -DCMAKE_BUILD_TYPE=Release
+#
+#   Build:  cmake --build build -j[ncpu]
+#   Salida: build/retroU.rpx  (via `wut_create_rpx` -> elf2rpl POST_BUILD)
+#
+# PAQUETES devkitPro requeridos (devkitProUpdater / pacman):
+#   devkitPPC, wut (WUT_ROOT=$DEVKITPRO/wut), wut-tools (elf2rpl, wuhbtool),
+#   wiiu-cmake, wiiu-pkg-config
+# =============================================================================
+
+# --- Estándar del lenguaje: C++17 (obligatorio, definido en AGENTS.md) -------
+set(CMAKE_C_STANDARD            11)
+set(CMAKE_CXX_STANDARD          17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS        OFF)  # Evitar extensiones GNU accidentales
+
+# --- Ejecutable nativo -------------------------------------------------------
+# add_executable en CafeOS produce un .elf; wut_create_rpx() lo convierte a
+# .rpx con elf2rpl mediante un POST_BUILD (funciones del paquete wiiu-cmake).
+add_executable(retroU
+    src/main.cpp
+    src/gfx/renderer.cpp
+    src/ui/menu.cpp
+    src/core/launcher.cpp
+)
+
+target_include_directories(retroU PRIVATE src)
+
+# --- Librerias Cafe OS --------------------------------------------------------
+# Entre $DEVKITPRO/wut/lib existen las librerias de importacion estaticas
+# (libgx2.a, libvpad.a, ...) generadas a partir de los cafe/*.def del WUT.
+# Se enlazan por nombre directo:
+#
+#   gx2      - Render 2D/3D, texturas VRAM (OSScreen la usa internamente)
+#   vpad     - Entrada del GamePad (VPADRead)
+#   coreinit - Hilos, filesystem, OSScreen, DCFlushRange...
+#   sysapp   - SYSLaunchMenu (salida limpia a Horizon)
+#   sndcore2 - Audio (reservado: se usara cuando tengamos streams de audio)
+target_link_libraries(retroU PRIVATE
+    gx2
+    vpad
+    coreinit
+    sysapp
+    sndcore2
+)
+
+# --- Convertir a formato RPX de Wii U ---------------------------------------
+wut_create_rpx(retroU)
+
+# --- (Opcional) Bundle WUHB para el menu de Aroma ----------------------------
+# Descomentar cuando exista un icono en assets (requiere wuhbtool):
+#
+# wut_create_wuhb(retroU
+#     NAME       "RetroU"
+#     SHORTNAME  "RetroU"
+#     AUTHOR     "joguel96"
+#     ICON       "${CMAKE_CURRENT_SOURCE_DIR}/assets/icon.png"
+#     TVSPLASH   "${CMAKE_CURRENT_SOURCE_DIR}/assets/tv-splash.png"
+#     DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/assets/drc-splash.png"
+# )
+
+# --- Warnings -----------------------------------------------------------------
+# Lenientes por defecto pero visibles para ir endureciendo con el tiempo.
+target_compile_options(retroU PRIVATE
+    -Wall
+    -Wextra
+    -pedantic
+)

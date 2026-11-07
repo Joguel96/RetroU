@@ -27,8 +27,11 @@ Frontend ligero para Wii U (homebrew) que organiza y ejecuta ROMs de consolas re
   $DEVKITPRO/portlibs/wiiu/bin/powerpc-eabi-cmake -B build -DCMAKE_BUILD_TYPE=Release
   cmake --build build -j
   # salida: build/retroU.rpx (via wut_create_rpx -> elf2rpl POST_BUILD)
+  # salida: build/retroU.wuhb (via wut_create_wuhb -> wuhbtool, para Aroma)
   ```
 
+- **Formato ejecutable vs paquete**: `.rpx` sigue siendo el binario nativo que el OS carga; `.wuhb` es el formato de homebrew del **menu de Aroma** (icono + splashes TV/DRC TGA + binario dentro). Aroma NO lista `.rpx` sueltos en su menu de homebrew: distribuir como `.wuhb` (o `.rpx` bajo estructura de directorios con icono/meta para SD clásica). `wut_create_wuhb` exige haber llamado antes a `wut_create_rpx` (fade: lee la propiedad `WUT_RPL`/`WUT_IS_RPX` del target).
+- Assets WUHB en `assets/` (`icon.png` 128x128, `tv-splash.png` 1280x720, `drc-splash.png` 854x480).
 - `powerpc-eabi-cmake` define `CMAKE_SYSTEM_NAME=CafeOS` automáticamente; **NO** usar `find_package(wut)` ni toolchain files viejos. `libwut.a` (WUT ≥1.9) ya contiene los import stubs de TODA la API Cafe (OSScreen*, GX2*, VPAD*, SYSLaunchMenu... verificado con `powerpc-eabi-nm`) — no existen `libgx2.a`, etc., ni hace falta enlazarlas: el toolchain enlaza `-lwut -lm` solo. Fuentes reales en Windows: `C:/devkitPro/{wut,cmake,tools,msys2}`; dentro de msys2 bash, `/opt/devkitpro` mapea a `C:/devkitPro`.
 - Fase 1 del renderer usa **OSScreen** (`coreinit/screen.h`), no GX2 directo: el render GX2 nativo exige shaders compilados offline (cafeglsl/deflect) y aún no hay pipeline de shaders. Datos verificados: formato de pixel `0xRRGGBBAA` (bytes R,G,B,A en memoria, big-endian), TV 1280x720 (stride 1280), DRC 854x480 (stride 896 visibles 854), buffers primario+secundario por pantalla, alineación 0x100 en `OSScreenSetBufferEx`, `DCFlushRange` antes de `OSScreenFlipBuffersEx`.
 - `VPADInit`/`VPADShutdown` están `WUT_DEPRECATED`: leer `VPADRead` directo.

@@ -52,17 +52,19 @@ target_include_directories(retroU PRIVATE src)
 # --- Convertir a formato RPX de Wii U ---------------------------------------
 wut_create_rpx(retroU)
 
-# --- (Opcional) Bundle WUHB para el menu de Aroma ----------------------------
-# Descomentar cuando exista un icono en assets (requiere wuhbtool):
-#
-# wut_create_wuhb(retroU
-#     NAME       "RetroU"
-#     SHORTNAME  "RetroU"
-#     AUTHOR     "joguel96"
-#     ICON       "${CMAKE_CURRENT_SOURCE_DIR}/assets/icon.png"
-#     TVSPLASH   "${CMAKE_CURRENT_SOURCE_DIR}/assets/tv-splash.png"
-#     DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/assets/drc-splash.png"
-# )
+# --- Dash de Aroma (WUHB) tras generar el .rpx --------------------------------
+# Aroma NO muestra .rpx en su menu de homebrew: usa el formato .wuhb
+# (Wii U Homebrew Bundle: icono + splash TV/DRC + el binario .rpx dentro).
+# El flujo correcto es: wut_create_rpx -> wut_create_wuhb (usa wuhbtool de
+# wut-tools). El .wuhb va a /wiiu/apps/... en la SD junto a su icono.
+wut_create_wuhb(retroU
+    NAME       "RetroU"
+    SHORTNAME  "RetroU"
+    AUTHOR     "joguel96"
+    ICON       "${CMAKE_CURRENT_SOURCE_DIR}/assets/icon.png"
+    TVSPLASH   "${CMAKE_CURRENT_SOURCE_DIR}/assets/tv-splash.png"
+    DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/assets/drc-splash.png"
+)
 
 # --- Warnings -----------------------------------------------------------------
 # Lenientes por defecto pero visibles para ir endureciendo con el tiempo.

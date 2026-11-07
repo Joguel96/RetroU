@@ -43,22 +43,11 @@ add_executable(retroU
 target_include_directories(retroU PRIVATE src)
 
 # --- Librerias Cafe OS --------------------------------------------------------
-# Entre $DEVKITPRO/wut/lib existen las librerias de importacion estaticas
-# (libgx2.a, libvpad.a, ...) generadas a partir de los cafe/*.def del WUT.
-# Se enlazan por nombre directo:
-#
-#   gx2      - Render 2D/3D, texturas VRAM (OSScreen la usa internamente)
-#   vpad     - Entrada del GamePad (VPADRead)
-#   coreinit - Hilos, filesystem, OSScreen, DCFlushRange...
-#   sysapp   - SYSLaunchMenu (salida limpia a Horizon)
-#   sndcore2 - Audio (reservado: se usara cuando tengamos streams de audio)
-target_link_libraries(retroU PRIVATE
-    gx2
-    vpad
-    coreinit
-    sysapp
-    sndcore2
-)
+# NO hace falta enlazar gx2/vpad/coreinit/sndcore2/sysapp de forma explicita:
+# libwut.a (generada desde los cafe/*.def del repo WUT, verificado con
+# powerpc-eabi-nm: contiene OSScreenInit, GX2Init, VPADRead, SYSLaunchMenu...)
+# ya incluye los import stubs de toda la API de Cafe OS.
+# El toolchain CafeOS enlaza automaticamente -lwut -lm (WUT_STANDARD_LIBRARIES).
 
 # --- Convertir a formato RPX de Wii U ---------------------------------------
 wut_create_rpx(retroU)

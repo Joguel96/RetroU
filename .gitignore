@@ -1,0 +1,22 @@
+# devkitPro / Wii U build artifacts
+build/
+wut-libs/
+*.elf
+*.rpx
+*.rpl
+*.a
+*.o
+*.d
+
+# IDE / editor
+.vs/
+.vscode/
+.idea/
+
+# extracted WUT / libretro sources
+external/
+third_party/
+
+# OS
+Thumbs.db
+Desktop.ini

@@ -113,6 +113,13 @@ html, body, #root {
   }
 }
 
+/* Gamepad mode: no mouse targeting at all. `.click()` still works
+ * programmatically from useGamepadNavigation. */
+html.gamepad-mode #root,
+html.gamepad-mode #root * {
+  pointer-events: none !important;
+}
+
 /* Subtle scrollbars */
 ::-webkit-scrollbar {
   width: 6px;

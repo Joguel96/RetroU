@@ -2,35 +2,38 @@
 // main.cpp - Punto de entrada de RetroU (RPX nativo, entorno Aroma)
 // =============================================================================
 //
-// CICLO DE VIDA CRITICO (verificado contra libwhb/proc.c + console.c de WUT):
+// CICLO DE VIDA CRITICO (verificado contra libwhb/proc.c + console.c, y
+// contra el header INSTALADO de proc_ui/procui.h):
 //
 //   1. ProcUIInitEx(saveCb) -> el OS gestiona el foreground de la app.
-//      SIN ESTO la app NUNCA adquiere foreground en hardware real: el OS no
-//      muestra sus framebuffers ni enruta el input -> pantalla negra en TV y
-//      GamePad y control sin respuesta (ni HOME). Fue el bug reportado.
-//   2. renderer.init(): OSScreen + buffers del MEM1 frame-heap + registro de
-//      callbacks ACQUIRE/RELEASE de ProcUI (patron libwhb/console.c).
-//   3. Loop con ProcUIProcessMessages(FALSE) - cada estado:
-//        IN_FOREGROUND       -> VPADRead -> update -> draw (si dirty) -> sleep
+//      SIN ESTO la app NUNCA adquiere foreground: pantalla negra + input
+//      muerto (bug original).
+//   2. renderer.init(): OSScreen + buffers MEM1 frame-heap + callbacks
+//      ACQUIRE/RELEASE de ProcUI (patron libwhb/console.c).
+//   3. Loop con ProcUIProcessMessages(TRUE) - cada estado:
+//        IN_FOREGROUND       -> escaneo (1a vez) -> VPAD -> draw -> sleep
 //        RELEASE_FOREGROUND  -> liberar buffers + ProcUIDrawDoneRelease()
 //        IN_BACKGROUND       -> sin dibujo ni input; dormir (poco CPU en BG)
 //        EXITING             -> el usuario cerro la app (menu HOME): salir
-//   4. renderer.shutdown() + ProcUIShutdown() y fin del proceso. El OS
-//      decide a donde volver; NO se fuerza SYSLaunchMenu en el cierre.
+//   4. renderer.shutdown() + ProcUIShutdown() y fin del proceso.
 //
-// NOTAS DE API (verificadas en los headers INSTALADOS de WUT 1.9.2):
+// LECTURA CRITICA DEL HEADER (procui.h, lineas 207-218, verificado en
+// C:/devkitPro/wut): con block=FALSE el valor de RETORNO ES UNDEFINED y el
+// modo no bloqueante "is not widely used and may have undocumented
+// behaviour". Usar FALSE + leer el retorno (bug de esta version) provocaba
+// estados basura en el switch: la app entraba en RELEASE_FOREGROUND en
+// bucle (sin sleep) martillando ProcUIDrawDoneRelease y nunca llegaba a
+// IN_FOREGROUND -> sistema aparentemente congelado. POR ESO: solo TRUE
+// (mismo patron que libwhb WHBProcIsRunning, probado en hardware).
+//
+// NOTAS DE API (headers instalados de WUT 1.9.2):
 //   * ProcUIInitEx(ProcUISaveCallbackEx, void*) - proc_ui/procui.h:185.
-//     Save callback canonico (igual que libwhb/proc.c): llama
-//     OSSavesDone_ReadyToRelease() (coreinit/foreground.h:21).
-//   * ProcUIRegisterCallback lo hace renderer.init() (patron libwhb).
-//   * VPADInit() esta WUT_DEPRECATED en vpad/input.h, pero el enum
-//     VPAD_READ_UNINITIALIZED del MISMO header indica "need to call
-//     VPADInit()": por eso existe el fallback que lo llama UNA vez si la
-//     primera lectura lo reporta (pragma silencia el aviso de deprecacion).
-//   * HOME: ahora lo gestiona el OS (overlay del menu HOME, comportamiento
-//     estandar de app). El cierre real llega como PROCUI_STATUS_EXITING.
-//   * OSSleepTicks (coreinit/thread.h:663) + OSMillisecondsToTicks
-//     (coreinit/time.h:59) para pacing de frames.
+//     Save callback canonico (libwhb/proc.c): OSSavesDone_ReadyToRelease().
+//   * VPADInit() esta WUT_DEPRECATED, pero VPAD_READ_UNINITIALIZED del
+//     MISMO header indica "need to call VPADInit()": fallback UNA vez si
+//     la primera lectura lo reporta (pragma silencia el aviso).
+//   * FS solo dentro de IN_FOREGROUND confirmado (regla de acceso del OS).
+//   * OSSleepTicks (coreinit/thread.h:663) + OSMillisecondsToTicks.
 
 #include <coreinit/foreground.h> // OSSavesDone_ReadyToRelease
 #include <coreinit/thread.h>     // OSSleepTicks
@@ -42,6 +45,8 @@
 #include "ui/menu.hpp"
 #include "core/launcher.hpp"
 #include "fs/scanner.hpp"
+
+#include <cstdio>
 
 namespace {
 
@@ -67,19 +72,35 @@ bool readGamepad(VPADStatus *outStatus)
     VPADRead(VPAD_CHAN_0, outStatus, 1, &error);
 
     if (error == VPAD_READ_UNINITIALIZED) {
-        // Fallback unico: el header oficial dice que en este caso hace falta
-        // VPADInit() (aunque WUT lo marque deprecated para uso normal).
+        // VPADInit() esta WUT_DEPRECATED, pero el enum VPAD_READ_UNINITIALIZED
+        // del mismo header indica que en este caso hace falta llamarlo:
+        // se intenta UNA sola vez (no cada frame).
+        static bool vpadInitTried = false;
+        if (!vpadInitTried) {
+            vpadInitTried = true;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-        VPADInit();
+            VPADInit();
 #pragma GCC diagnostic pop
 
-        VPADRead(VPAD_CHAN_0, outStatus, 1, &error);
+            VPADRead(VPAD_CHAN_0, outStatus, 1, &error);
+        }
     }
 
     // VPAD_READ_NO_SAMPLES / VPAD_READ_BUSY no son errores fatales:
     // simplemente no hay input nuevo este frame.
     return error == VPAD_READ_SUCCESS;
+}
+
+// Banner de diagnostico de arranque: se dibuja y hace flip INMEDIATAMENTE
+// para que, si la app se congela en el paso siguiente, el usuario vea el
+// ultimo texto alcanzado. Se borra solo con el primer frame de menu.
+void showStage(Renderer &r, const char *msg)
+{
+    r.clear(retroU::kColorBackground);
+    r.drawText(2, 2, "RetroU - arranque");
+    r.drawText(2, 4, msg);
+    r.present();
 }
 
 } // namespace
@@ -89,38 +110,40 @@ int main(int argc, char **argv)
     (void)argc;
     (void)argv;
 
-    // 1) Ciclo de vida ProcUI: prerequisito de renderer.init() (registra
-    //    callbacks) y condicion para que el OS nos muestre en pantalla.
+    // 1) Ciclo de vida ProcUI: prerequisito de renderer.init() y condicion
+    //    para que el OS nos muestre en pantalla.
     ProcUIInitEx(&procSaveCallback, nullptr);
 
     // 2) Video: OSScreen + buffers MEM1 + callbacks ACQUIRE/RELEASE.
     Renderer renderer;
     if (!renderer.init()) {
-        // Sin video no hay frontend: se libera ProcUI y se termina; el OS
-        // vuelve al contexto anterior (menu de Aroma).
         ProcUIShutdown();
         return 1;
     }
+    showStage(renderer, "1/4 ProcUI + pantalla OK");
 
-    // Escaneo de ROMs (sd:/retroU/roms/[sistema]/) una vez al arrancar:
-    // estamos en foreground, momento valido para FS. Un fallo (SD ausente)
-    // no es fatal: el menu mostrara "(0)" en cada sistema.
+    // 3) GamePad: sonda previa (si se congela aqui, el culpable es VPAD).
+    {
+        VPADStatus probe{};
+        showStage(renderer,
+                  readGamepad(&probe) ? "2/4 GamePad OK"
+                                      : "2/4 GamePad sin datos (normal)");
+    }
+
     Scanner scanner;
-    scanner.scan();
-
-    Menu menu(scanner);
     Launcher launcher;
+    Menu menu(scanner);
 
     bool running          = true;
     bool frameDirty       = true;  // Repintar solo cuando cambie algo
     bool wasForeground    = false; // Detectar (re)entrada a foreground
+    bool scanned          = false; // Escaneo FS en el 1er FOREGROUND
 
-    // 3) Loop principal -------------------------------------------------------
+    // 4) Loop principal -------------------------------------------------------
+    // TRUE = modo bloqueante SOPORTADO (el header advierte que con FALSE el
+    // retorno es undefined y el modo no esta probado). Patron libwhb.
     while (running) {
-        // FALSE = no bloquear: el pacing lo controlamos con OSSleepTicks
-        // (en background dormimos mas; con TRUE dormiria por dentro el OS
-        // y no tendriamos ese control).
-        const ProcUIStatus status = ProcUIProcessMessages(FALSE);
+        const ProcUIStatus status = ProcUIProcessMessages(TRUE);
 
         switch (status) {
         case PROCUI_STATUS_IN_FOREGROUND: {
@@ -129,6 +152,26 @@ int main(int argc, char **argv)
             if (!wasForeground) {
                 frameDirty    = true;
                 wasForeground = true;
+            }
+
+            // Escaneo de ROMs solo con foreground confirmado por el OS
+            // (regla de acceso: FS restringido en background). Banner
+            // previo: si el scan se congela, queda visible en pantalla.
+            if (!scanned) {
+                showStage(renderer, "3/4 Escaneando ROMs...");
+                char msg[64];
+                if (scanner.scan()) {
+                    std::snprintf(msg, sizeof(msg),
+                                  "4/4 Scan OK: %u ROM(s)",
+                                  static_cast<unsigned>(
+                                      scanner.roms().size()));
+                } else {
+                    std::snprintf(msg, sizeof(msg),
+                                  "4/4 Scan sin SD (menu con 0)");
+                }
+                showStage(renderer, msg);
+                scanned = true;
+                frameDirty = true; // el banner se reemplaza por el menu
             }
 
             VPADStatus vpad{};
@@ -146,8 +189,6 @@ int main(int argc, char **argv)
                 renderer.present();
                 frameDirty = false;
             }
-            // Si no hay cambios NO se flippea: el display conserva el ultimo
-            // frame visible.
 
             // Pacing ~70 fps max: cede el hilo al scheduler y evita
             // bombardear VPADRead.
@@ -179,7 +220,7 @@ int main(int argc, char **argv)
         }
     }
 
-    // 4) Cierre ordenado: buffers -> OSScreen -> ProcUI. Sin SYSLaunchMenu:
+    // 5) Cierre ordenado: buffers -> OSScreen -> ProcUI. Sin SYSLaunchMenu:
     //    en EXITING el SO ya gestiona la salida (patron libwhb).
     renderer.shutdown();
     ProcUIShutdown();

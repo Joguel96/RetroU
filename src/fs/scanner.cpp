@@ -208,9 +208,27 @@ void Scanner::scanDir(const std::string &dirPath, EmuConsole folderSystem,
         return; // no existe (o permisos): simplemente no hay nada aqui
     }
 
+    // Guard: limite de entradas por directorio. Protege contra un directorio
+    // corrupto/sin terminacion que haga bucle infinito de FSReadDir (eso
+    // bloquearia el main loop y "congelaria" la app en el escaneo).
+    constexpr size_t kMaxEntriesPerDir = 4096;
+    size_t entries = 0;
+
     FSDirectoryEntry entry;
-    while (FSReadDir(client, block, handle, &entry,
-                     FS_ERROR_FLAG_NONE) == FS_STATUS_OK) {
+    while (entries < kMaxEntriesPerDir) {
+        // Zeroing por seguridad: FSReadDir rellena la estructura, pero
+        // garantizamos 'name' terminado en '\0' y el resto a cero aunque el
+        // OS deje bytes sin tocar (evita strlen/std::string sobre basura).
+        std::memset(&entry, 0, sizeof(entry));
+
+        if (FSReadDir(client, block, handle, &entry,
+                      FS_ERROR_FLAG_NONE) != FS_STATUS_OK) {
+            break; // FS_STATUS_END (o error): fin del directorio
+        }
+        ++entries;
+
+        entry.name[sizeof(entry.name) - 1] = '\0';
+
         if (std::strcmp(entry.name, ".") == 0 ||
             std::strcmp(entry.name, "..") == 0) {
             continue;

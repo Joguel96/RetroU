@@ -41,12 +41,14 @@
 #include "gfx/renderer.hpp"
 #include "ui/menu.hpp"
 #include "core/launcher.hpp"
+#include "fs/scanner.hpp"
 
 namespace {
 
 using retroU::Renderer;
 using retroU::Menu;
 using retroU::Launcher;
+using retroU::Scanner;
 
 // Save callback canonico (mismo que libwhb/proc.c procSaveCallback): avisa
 // al OS de que el estado de guardado esta listo para liberarse.
@@ -100,7 +102,13 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    Menu menu;
+    // Escaneo de ROMs (sd:/retroU/roms/[sistema]/) una vez al arrancar:
+    // estamos en foreground, momento valido para FS. Un fallo (SD ausente)
+    // no es fatal: el menu mostrara "(0)" en cada sistema.
+    Scanner scanner;
+    scanner.scan();
+
+    Menu menu(scanner);
     Launcher launcher;
 
     bool running          = true;

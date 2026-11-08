@@ -180,10 +180,16 @@ void Renderer::drawRect(int x, int y, int w, int h, uint32_t color)
 void Renderer::drawText(uint32_t column, uint32_t row, const char *text)
 {
     if (!m_foreground || !text) return;
-    OSScreenPutFontEx(SCREEN_TV,  column, row, text);
-    // En el gamepad usamos la misma cuadricula: la fuente interna escala
-    // igual (posiciones en celdas de caracter) en ambos displays.
-    OSScreenPutFontEx(SCREEN_DRC, column, row, text);
+
+    // TV: celdas de fuente tal cual (el layout se diseña en espacio TV).
+    OSScreenPutFontEx(SCREEN_TV, column, row, text);
+
+    // DRC: escalar la celda al espacio del GamePad para que el texto
+    // acompanne a los rects (drawRect ya escala con DRC/TV). Sin esto el
+    // texto del GamePad quedaria desalineado respecto a su panel.
+    const uint32_t drcCol = column * DRC_WIDTH  / TV_WIDTH;
+    const uint32_t drcRow = row    * DRC_HEIGHT / TV_HEIGHT;
+    OSScreenPutFontEx(SCREEN_DRC, drcCol, drcRow, text);
 }
 
 void Renderer::present()

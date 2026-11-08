@@ -20,7 +20,12 @@ Frontend ligero para Wii U (homebrew) que organiza y ejecuta ROMs de consolas re
 
 ## Estado del repo
 
-- Estructura inicial creada: `CMakeLists.txt`, `src/main.cpp`, `src/gfx/renderer.{hpp,cpp}`, `src/ui/menu.{hpp,cpp}`, `src/core/launcher.{hpp,cpp}`.
+- Estructura: `CMakeLists.txt`, `src/main.cpp`, `src/gfx/renderer.{hpp,cpp}`, `src/gfx/texture_loader.{hpp,cpp}`, `src/ui/menu.{hpp,cpp}`, `src/ui/grid.{hpp,cpp}`, `src/core/launcher.{hpp,cpp}`, `src/core/systems.hpp` (enum `EmuConsole` compartido), `src/fs/fs.{hpp,cpp}` (singleton FS), `src/fs/scanner.{hpp,cpp}`, `third_party/stb/` (stb_image, `stb_image_impl.cpp` con la implementación única).
+- **Módulos de datos/UI**:
+  - `fs/scanner`: escaneo recursivo de `fs:/vol/external01/retroU/roms/[sistema]/` vía API real de coreinit (`FSInit/FSAddClient/FSOpenDir/FSReadDir/FSCloseDir`, `FS_STAT_DIRECTORY`). `RomInfo {title, path, system, size}`; sistema detectado **por extensión** (tabla `kExtMap` de extensiones inequívocas) con fallback a la carpeta contenedora para las ambiguas (`.bin`, `.chd`...); blacklist de no-ROMs (covers, `.srm`...). `FSClient`(0x1700)+`FSCmdBlock`(0xA80) estáticos en `fs.cpp`, nunca en stack.
+  - `gfx/texture_loader`: PNG/JPG → `stb_image` (`stbi_load_from_memory` sobre bytes leídos con FS, no stdio) → `DecodedImage` RGBA8 → `createTexture()` crea `GX2Texture` vía **GX2R** (`GX2CalcSurfaceSizeAndAlignment` + `GX2RCreateSurface/BIND_TEXTURE|CPU_WRITE|GPU_READ` + `GX2RLockSurfaceEx` + `GX2InitTextureRegs`, tile `GX2_TILE_MODE_LINEAR_ALIGNED`, compMap `0x00112233`). **`createTexture` requiere GX2 inicializado** (backend GX2 fase 2): el renderer actual es OSScreen y no llama `GX2Init` para dibujo — no llamarla hasta que exista ese backend.
+  - `ui/grid` (`GameGrid`): cuadrícula 6×4 (24 celdas de 112×144, gap 24/16, x=244 y=64 en espacio TV 1280×720) navegable con D-Pad (wrap en 4 direcciones + scroll por filas), A/B vía `GridAction`. Mientras no haya backend GX2, las celdas son placeholders con el título truncado. `Renderer::drawText` ahora escala las celdas de fuente al DRC (`col*854/1280`) para que el texto acompañe a los rects.
+  - `menu`: dos vistas (`Consoles` con conteo de ROMs por sistema, `Games` = grid). HOME lo gestiona el OS (ProcUI).
 - **Build (verificado contra toolchain devkitPro CMake moderno, wut.toolchain.cmake está deprecado)**:
 
   ```bash

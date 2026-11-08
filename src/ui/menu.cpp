@@ -1,20 +1,26 @@
 // =============================================================================
-// menu.cpp - Menu principal (dibujo y navegacion)
+// menu.cpp - UI de RetroU: lista de consolas y vista grid de juegos
 // =============================================================================
 //
 // Layout UI (coordenadas virtuales del renderer: la TV es 1280x720 y el
-// DRC 854x480; el texto de OSScreen usa CELDAS de caracter (~12x24 px):
+// DRC recibe rects/texto escalados; el texto usa celdas de fuente ~12x24):
 //
-//   [0,0]      RETROU - titulo
-//   lista de consolas empezando en fila 4, columna 4
-//   barra de seleccion = drawRect detras de la fila resaltada
-//   [pie]      A: cargar   B: limpiar   HOME: salir
+//   Vista Consoles:
+//     [0,0]   RETROU - titulo
+//     lista de consolas (fila 4+) con conteo de ROMs: "SNES (12)"
+//     barra de seleccion = drawRect detras de la fila resaltada
+//     [pie]   A: juegos   HOME: menu del sistema
+//
+//   Vista Games: la dibuja GameGrid (header + 6x4 celdas + scroll).
 
 #include "ui/menu.hpp"
+#include "fs/scanner.hpp"
 #include "gfx/renderer.hpp"
 #include "core/launcher.hpp"
 
 #include <vpad/input.h> // VPAD_BUTTON_*
+
+#include <cstdio>
 
 namespace retroU {
 
@@ -52,12 +58,46 @@ const char *Menu::consoleName(uint32_t index)
         : "???";
 }
 
+Menu::Menu(const Scanner &scanner)
+    : m_scanner(scanner)
+{
+}
+
 bool Menu::onInput(uint32_t pressed, uint32_t held, Launcher &launcher)
 {
     // 'held' sin uso todavia: la auto-repeticion por hold se agregara
     // con conteo de frames estable en una fase posterior.
     (void)held;
 
+    // --- Vista grid de juegos ---------------------------------------------
+    if (m_view == View::Games) {
+        switch (m_grid.onInput(pressed)) {
+        case GridAction::Back:
+            m_view            = View::Consoles;
+            m_launchFeedback  = false;
+            return true;
+
+        case GridAction::Activate: {
+            const RomInfo *rom = m_grid.selectedItem();
+            if (rom != nullptr) {
+                // Fase Libretro pendiente: el launcher resuelve el core
+                // por sistema; el feedback se limpia con B o al volver.
+                launcher.launch(rom->system);
+                m_launchFeedback = true;
+            }
+            return true;
+        }
+
+        case GridAction::Moved:
+            return true;
+
+        case GridAction::None:
+            break;
+        }
+        return false;
+    }
+
+    // --- Vista lista de consolas -------------------------------------------
     const uint32_t entries = static_cast<uint32_t>(EmuConsole::Count);
     bool changed = false;
 
@@ -71,16 +111,27 @@ bool Menu::onInput(uint32_t pressed, uint32_t held, Launcher &launcher)
     }
 
     if (pressed & VPAD_BUTTON_A) {
-        // Confirmacion: el launcher resolvera el core Libretro asociado.
-        // El feedbackCaption se limpia con B o con la proxima navegacion.
-        launcher.launch(static_cast<EmuConsole>(m_selected));
-        m_launchFeedback = true;
+        m_currentSystem     = static_cast<EmuConsole>(m_selected);
+        m_launchFeedback    = false;
+        m_emptyRomFeedback  = false;
+
+        std::vector<const RomInfo *> items =
+            m_scanner.romsFor(m_currentSystem);
+
+        if (items.empty()) {
+            // Aviso en la propia lista: no se cambia de vista.
+            m_emptyRomFeedback = true;
+        } else {
+            m_grid.setItems(std::move(items));
+            m_view = View::Games;
+        }
         changed = true;
     }
 
     if (pressed & VPAD_BUTTON_B) {
-        if (m_launchFeedback) {
-            m_launchFeedback = false;
+        if (m_launchFeedback || m_emptyRomFeedback) {
+            m_launchFeedback   = false;
+            m_emptyRomFeedback = false;
             changed = true;
         }
     }
@@ -90,34 +141,55 @@ bool Menu::onInput(uint32_t pressed, uint32_t held, Launcher &launcher)
 
 void Menu::draw(Renderer &r)
 {
-    // --- Titulo ------------------------------------------------------------
+    // --- Vista grid de juegos ---------------------------------------------
+    if (m_view == View::Games) {
+        // La franja de feedback queda entre el header (filas 0-1) y el
+        // grid (y=64): fila 2.
+        if (m_launchFeedback) {
+            r.drawText(2, 2,
+                       "Core no disponible todavia (fase Libretro pendiente)");
+        }
+        m_grid.draw(r);
+        return;
+    }
+
+    // --- Vista lista de consolas -------------------------------------------
     r.drawText(1, 0, "RETROU - frontend retro de Wii U");
 
-    // --- Barra de seleccion -------------------------------------------------
-    const uint32_t barX = kBarColumn * kFontCellWidth;
-    const uint32_t barY = (kListTopRow + m_selected) * kFontCellHeight;
-    r.drawRect(
-        static_cast<int>(barX),
-        static_cast<int>(barY),
-        static_cast<int>(kBarCellWidth * kFontCellWidth),
-        static_cast<int>(kBarCellHeight * kFontCellHeight),
-        kColorHighlight);
-
-    // --- Lista de consolas ---------------------------------------------------
     const uint32_t entries = static_cast<uint32_t>(EmuConsole::Count);
     for (uint32_t i = 0; i < entries; ++i) {
-        r.drawText(kListColumn, kListTopRow + i, consoleName(i));
+        // Barra de seleccion detras de la fila resaltada.
+        if (i == m_selected) {
+            const uint32_t barX = kBarColumn * kFontCellWidth;
+            const uint32_t barY = (kListTopRow + i) * kFontCellHeight;
+            r.drawRect(static_cast<int>(barX), static_cast<int>(barY),
+                       static_cast<int>(kBarCellWidth * kFontCellWidth),
+                       static_cast<int>(kBarCellHeight * kFontCellHeight),
+                       kColorHighlight);
+        }
+
+        // Nombre + conteo de ROMs escaneadas para ese sistema.
+        char line[64];
+        std::snprintf(line, sizeof(line), "%s (%u)", consoleName(i),
+                      static_cast<unsigned>(m_scanner.countFor(
+                          static_cast<EmuConsole>(i))));
+        r.drawText(kListColumn, kListTopRow + i, line);
     }
 
     // --- Pie / estado --------------------------------------------------------
-    if (m_launchFeedback) {
-        r.drawText(kListColumn,
-                   kListTopRow + entries + 2,
+    if (m_emptyRomFeedback) {
+        char msg[96];
+        std::snprintf(msg, sizeof(msg),
+                      "Sin juegos en %s - anade ROMs en retroU/roms/",
+                      consoleName(m_selected));
+        r.drawText(kListColumn, kListTopRow + entries + 2, msg);
+    } else if (m_launchFeedback) {
+        r.drawText(kListColumn, kListTopRow + entries + 2,
                    "Core no disponible todavia (fase Libretro pendiente)");
     }
-    r.drawText(kListColumn,
-               kListTopRow + entries + 3,
-               "A: cargar   B: limpiar   HOME: menu del sistema");
+
+    r.drawText(kListColumn, kListTopRow + entries + 3,
+               "A: juegos   HOME: menu del sistema");
 }
 
 } // namespace retroU

@@ -36,11 +36,23 @@ set(CMAKE_CXX_EXTENSIONS        OFF)  # Evitar extensiones GNU accidentales
 add_executable(retroU
     src/main.cpp
     src/gfx/renderer.cpp
+    src/gfx/texture_loader.cpp
     src/ui/menu.cpp
+    src/ui/grid.cpp
     src/core/launcher.cpp
+    src/fs/fs.cpp
+    src/fs/scanner.cpp
+    third_party/stb/stb_image_impl.cpp
 )
 
-target_include_directories(retroU PRIVATE src)
+# src/ para los modulos propios; third_party/stb para "stb_image.h"
+# (decodificador PNG/JPG de dominio publico, usado por texture_loader).
+target_include_directories(retroU PRIVATE src third_party/stb)
+
+# stb_image es codigo de terceros: se compila sin nuestros warnings
+# estrictos (no lo controlamos; -w solo en este archivo).
+set_source_files_properties(third_party/stb/stb_image_impl.cpp
+    PROPERTIES COMPILE_OPTIONS "-w")
 
 # --- Librerias Cafe OS --------------------------------------------------------
 # NO hace falta enlazar gx2/vpad/coreinit/sndcore2/sysapp de forma explicita:

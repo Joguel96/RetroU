@@ -1,0 +1,130 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+@layer utilities {
+  /* Dynamic Frosted Glass Effect matching GamePad splash tile */
+  .glass-panel {
+    background: var(--glass-bg, rgba(18, 24, 38, 0.55));
+    backdrop-filter: blur(var(--glass-blur, 18px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 18px));
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.16));
+    box-shadow: 
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.24),
+      inset 0 -1px 1px 0 rgba(0, 0, 0, 0.3),
+      0 20px 45px -12px rgba(0, 0, 0, 0.65);
+  }
+
+  .glass-card {
+    background: var(--glass-card-bg, rgba(22, 30, 46, 0.45));
+    backdrop-filter: blur(var(--glass-blur, 14px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 14px));
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.14));
+    box-shadow: 
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.18),
+      inset 0 -1px 1px 0 rgba(0, 0, 0, 0.2),
+      0 12px 28px -8px rgba(0, 0, 0, 0.45);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .glass-card:hover {
+    background: var(--glass-card-hover, rgba(30, 42, 64, 0.62));
+    border-color: rgba(255, 255, 255, 0.36);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 
+      inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.35),
+      inset 0 -1px 1px 0 rgba(0, 0, 0, 0.3),
+      0 22px 42px -10px rgba(0, 0, 0, 0.65);
+  }
+
+  .glass-card.is-focused {
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 
+      inset 0 1px 2px 0 rgba(255, 255, 255, 0.45),
+      0 0 0 2px var(--accent-color, #ffffff),
+      0 24px 44px -8px rgba(0, 0, 0, 0.7);
+    transform: translateY(-4px) scale(1.025);
+  }
+
+  .glass-tile {
+    background: rgba(26, 34, 52, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 
+      inset 0 1.5px 1.5px 0 rgba(255, 255, 255, 0.32),
+      inset 0 -1px 1px 0 rgba(0, 0, 0, 0.35),
+      0 25px 50px -12px rgba(0, 0, 0, 0.75);
+  }
+
+  .glass-button {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .glass-button:hover {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.32);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.35);
+  }
+  .glass-button:active {
+    transform: scale(0.97);
+  }
+
+  .glass-pill {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.18);
+  }
+
+  /* Scanline effect for retro emulator viewport */
+  .crt-scanlines {
+    background: linear-gradient(
+      rgba(18, 16, 16, 0) 50%, 
+      rgba(0, 0, 0, 0.35) 50%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+  }
+
+  /* Gamepad focus: no keyboard focus ring, no mouse hover */
+  .gamepad-focused {
+    outline: 3px solid var(--accent-color, #ffffff);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.16), 0 18px 38px -12px rgba(0, 0, 0, 0.85);
+    transform: translateY(-2px) scale(1.015);
+    z-index: 20;
+  }
+
+  .gamepad-focused.glass-card {
+    background: var(--glass-card-hover, rgba(30, 42, 64, 0.62));
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* Subtle scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}

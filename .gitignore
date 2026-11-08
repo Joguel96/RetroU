@@ -1,0 +1,9 @@
+# Dependencies and build output
+web/node_modules/
+web/dist/
+web/.vite/
+
+# Logs and OS files
+*.log
+.DS_Store
+Thumbs.db

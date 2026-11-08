@@ -2,6 +2,8 @@
 web/node_modules/
 web/dist/
 web/.vite/
+native/build/
+dist/
 
 # Logs and OS files
 *.log

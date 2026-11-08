@@ -6,12 +6,14 @@ es “glass caramel”: paneles de cristal, carátulas y navegación con GamePad
 
 ## Estado
 
+- **App nativa Wii U**: `native/` — esqueleto C++17 + WUT + SDL2/SDL2_ttf.
+  Escanea `retrou/roms` y `retrou/cores`, pinta TV/GamePad y lanza el core con
+  `_SYSLaunchTitleByPathFromLauncher`.
 - **Interfaz React**: `web/` (Vite + React + Tailwind), extraída de
-  `Joguel96/retroui`, sin backend ni Gemini, navegable solo con mando.
+  `Joguel96/retroui`, sin backend ni Gemini, navegable solo con mando. Es la
+  especificación visual y el banco de pruebas de la UI.
 - **Referencia RetroArch**: `docs/retroarch-reference.md` (lanzamiento de
   `.rpx`, argv/HBL, sysapp, carátulas, ProcUI, WUHB).
-- **App nativa Wii U**: pendiente de portar la interfaz a C++/WUT/SDL2 usando
-  `docs/retroarch-reference.md` y los ejemplos de devkitPro.
 - **Branding**: `assets/icon.png`, `assets/tv-splash.png`, `assets/drc-splash.png`.
 
 ## Estructura
@@ -22,11 +24,32 @@ RetroU/
 ├── docs/
 │   ├── retroarch-reference.md
 │   └── ui.md
+├── native/                  app Wii U: WUT + SDL2
+│   ├── content/             Lato OFL (ui.ttf, ui-bold.ttf, OFL.txt)
+│   └── src/main.cpp
 ├── web/                     interfaz React navegable con mando
 └── README.md
 ```
 
-## Ejecutar la interfaz
+## Compilar la app nativa
+
+En MSYS2/devkitPro:
+
+```sh
+cd native
+/opt/devkitpro/portlibs/wiiu/bin/powerpc-eabi-cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j"$(nproc)"
+```
+
+Salidas:
+
+```text
+native/build/RetroU.elf
+native/build/RetroU.rpx
+native/build/RetroU.wuhb
+```
+
+## Ejecutar la interfaz React
 
 ```sh
 cd web
@@ -44,22 +67,22 @@ sd:/wiiu/apps/RetroU/RetroU.wuhb
 sd:/retrou/roms/<Consola>/*.rom
 sd:/retrou/cores/*.rpx
 sd:/retrou/thumbnails/<Sistema>/Named_Boxarts/*.png
-sd:/retrou/retrou.cfg
+sd:/retrou/launch/last.txt
 ```
 
 ## Hoja de ruta
 
-1. Portar las vistas de `web/` a la app nativa Wii U (SDL2 + GX2).
-2. Implementar el lanzador de `.rpx` (sysapp/HBL + argv) descrito en la
-   referencia.
-3. Escanear `sd:/retrou/roms` y persistir el catálogo.
-4. Descargar carátulas a `sd:/retrou/thumbnails`.
-5. Empaquetar `RetroU.wuhb` con `wuhbtool`.
+1. ~~Esqueleto nativo + escaneo + lanzamiento de `.rpx`~~.
+2. Lanzar core + ROM (HBL/argv o core parcheado).
+3. Carátulas reales desde `thumbnails.libretro.com`.
+4. Portar las vistas de `web/` a la UI nativa.
+5. Empaquetar y probar en hardware.
 
 ## Documentación
 
 - [Referencia RetroArch](docs/retroarch-reference.md)
 - [Interfaz y mando](docs/ui.md)
+- [App nativa](native/README.md)
 
 ## Guías externas
 

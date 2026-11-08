@@ -117,7 +117,7 @@ void Menu::draw(Renderer &r)
     }
     r.drawText(kListColumn,
                kListTopRow + entries + 3,
-               "A: cargar   B: limpiar   HOME: salir");
+               "A: cargar   B: limpiar   HOME: menu del sistema");
 }
 
 } // namespace retroU

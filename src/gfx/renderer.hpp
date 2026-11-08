@@ -17,6 +17,20 @@
 //   OSScreen de todos modos usa los framebuffers reales que GX2 presenta
 //   por TV (1280x720) y GamePad (854x480).
 //
+// CICLO DE VIDA (critico en hardware real, verificado contra libwhb/console.c):
+//
+//   La consola Wii U controla el foreground de la app via ProcUI. Sin
+//   ProcUIInit + ProcUIProcessMessages la app NUNCA adquiere el foreground:
+//   el OS no muestra sus buffers ni enruta el input (pantallas negras y
+//   control sin respuesta). Por eso el renderer expone onAcquire/onRelease:
+//
+//     onAcquire():   MEM1 frame-heap (como libwhb) -> buffers -> SetBufferEx
+//                    -> EnableEx(true)
+//     onRelease():   MEMFreeByStateToFrmHeap (el OS puede usar MEM1 en
+//                    background) -> buffers liberados
+//
+//   TODOS los dibujos son no-ops si !isForeground().
+//
 // FORMATO DE COLOR (verificado contra WiiUBrew/Coreinit.rpl, decaf y
 // libwiiu/draw.c):
 //   Pixel = uint32 big-endian dispuesto en memoria como bytes R,G,B,A:
@@ -40,7 +54,6 @@ inline constexpr uint32_t kColorTextHighlight = 0xFFFFFFFF;
 
 // ---------------------------------------------------------------------------
 // Renderer: ciclo de vida de OSScreen + primitivas de dibujado.
-// Todos los metodos operan sobre el TV y el GamePad simultaneamente.
 // ---------------------------------------------------------------------------
 class Renderer {
 public:
@@ -50,21 +63,40 @@ public:
     static constexpr uint32_t DRC_WIDTH  = 854;
     static constexpr uint32_t DRC_HEIGHT = 480;
 
-    // Inicializa OSScreen y reserva los framebuffers de TV y DRC
-    // (con OSAllocFromSystem; OSScreenSetBufferEx exige alineacion 0x100,
-    // ver WiiUBrew/Coreinit.rpl).
-    // Devuelve false si el sistema de video no estuvo disponible.
+    // Inicializa OSScreen (una sola vez), cachea los tamanos de los
+    // framebuffers, hace la adquisicion inicial de buffers (la app arranca
+    // en foreground) y registra los callbacks ACQUIRE/RELEASE de ProcUI.
+    // REQUISITO: ProcUIInitEx() debe haberse llamado antes (main.cpp).
+    // Devuelve false si el subsistema de video no estuvo disponible.
     bool init();
 
-    // Libera framebuffers y apaga OSScreen. Idempotente.
+    // Libera buffers (si los tiene) y apaga OSScreen. Idempotente.
     void shutdown();
 
+    // --- Transiciones de foreground (llamar desde el loop de ProcUI) ---
+
+    // Adquiere el foreground: reserva los framebuffers en el MEM1 frame-heap
+    // (patron verificado de libwhb/console.c; OSAllocFromSystem no sirve
+    // porque el TV necesita ~7.4MB y el system heap es mas pequeno),
+    // registra los buffers en OSScreen y habilita ambos displays.
+    void onAcquire();
+
+    // Libera el foreground: devuelve los buffers al frame-heap (el OS
+    // puede reusar ese MEM1 mientras la app esta en background) y
+    // deshabilita el display.
+    void onRelease();
+
+    // true solo mientras el OS nos tiene en foreground (se puede dibujar).
+    bool isForeground() const { return m_foreground; }
+
+    // --- Primitivas (todas no-op si no hay foreground) ---
+
     // Limpia los work buffers de ambas pantallas en un color solido
-    // (OSScreenClearBufferEx del SDK real: copia u32-a-u32 del color
-    // en todo el framebuffer, sin necesitar shaders).
+    // (OSScreenClearBufferEx: copia u32-a-u32 del color en todo el
+    // framebuffer, sin necesitar shaders).
     void clear(uint32_t color = kColorBackground);
 
-    // Relleno de rectangulo solido (barra de seleccion del menu, paneles).
+    // Relleno de rectangulo solido (barra de seleccion, paneles).
     // NOTA DE RENDIMIENTO: va pixel a pixel via OSScreenPutPixelEx.
     // Patron correcto con OSScreen: marcar frame "dirty" solo cuando algo
     // cambia (ver main.cpp) y repintar solo entonces.
@@ -72,12 +104,13 @@ public:
 
     // Texto con la fuente monospace integrada de OSScreen.
     // OSScreenPutFontEx recibe la posicion en CELDAS de caracter, NO en
-    // pixeles (columnas ~ como x/12, filas ~ y/24; ver docs del header).
-    // Texto blanco anti-aliased incorporado; no hace falta bitmap font.
+    // pixeles (ver docs del header de WUT). Texto blanco anti-aliased
+    // incorporado; no hace falta bitmap font.
     void drawText(uint32_t column, uint32_t row, const char *text);
 
-    // Presenta los buffers dibujados: swap de ambos displays (TV + DRC).
-    // Llamar UNA vez por frame, DESPUES de todo el dibujo.
+    // Presenta los buffers dibujados: flush del cache + swap de ambos
+    // displays (TV + DRC). Llamar UNA vez por frame, DESPUES de todo el
+    // dibujo.
     void present();
 
     // Asistente estatico de color: empaqueta el formato 0xRRGGBBAA.
@@ -92,6 +125,7 @@ private:
     void    *m_drcFramebuffer = nullptr;
     uint32_t m_tvSize         = 0;
     uint32_t m_drcSize        = 0;
+    bool     m_foreground     = false;
 };
 
 } // namespace retroU

@@ -6,7 +6,8 @@
 //
 // Lista de sistemas objetivo (AGENTS.md): Atari, MSX, NES, SNES, Genesis,
 // GBA, PS1, Arcade. Navegacion con D-Pad (UP/DOWN), confirmacion con A,
-// cancelacion con B. Boton HOME lo procesa main.cpp (no aqui).
+// cancelacion con B. Boton HOME: lo gestiona el OS (overlay del menu HOME
+// via ProcUI); el cierre de la app llega como PROCUI_STATUS_EXITING.
 
 #include <cstdint>
 

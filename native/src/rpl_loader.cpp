@@ -98,9 +98,15 @@ RplLoader::~RplLoader()
 
 bool RplLoader::read_file(const std::string &path, std::vector<uint8_t> &out, std::string &error)
 {
-    std::ifstream file(path, std::ios::binary);
+    /* stdio on Wii U uses the mounted path, not the sd: devoptab alias. */
+    std::string actual_path = path;
+    if (actual_path.rfind("sd:/", 0) == 0) {
+        actual_path = "/vol/external01/" + actual_path.substr(4);
+    }
+
+    std::ifstream file(actual_path, std::ios::binary);
     if (!file) {
-        error = "No se pudo abrir " + path;
+        error = "No se pudo abrir " + actual_path;
         return false;
     }
     file.seekg(0, std::ios::end);

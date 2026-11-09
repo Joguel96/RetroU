@@ -9,8 +9,8 @@ RplCore *RplCore::instance_ = nullptr;
 
 namespace {
 
-const char *kSystemDirectory = "sd:/retrou/cores/system";
-const char *kSaveDirectory = "sd:/retrou/cores/savefiles";
+const char *kSystemDirectory = "/vol/external01/retrou/cores/system";
+const char *kSaveDirectory = "/vol/external01/retrou/cores/savefiles";
 
 Uint32 sdlFormatFor(uint32_t format)
 {
@@ -211,9 +211,6 @@ bool RplCore::loadGame(const std::string &rom_path, std::string &error)
 
     retro_game_info game{};
     rom_path_ = rom_path;
-    if (rom_path_.rfind("/vol/external01/", 0) == 0) {
-        rom_path_ = "sd:/" + rom_path_.substr(16);
-    }
     game.path = rom_path_.c_str();
     game.data = nullptr;
     game.size = 0;

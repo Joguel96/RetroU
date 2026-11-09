@@ -836,9 +836,6 @@ void run_rpl_core(AppState &app, const std::string &core_path, const std::string
     std::string error;
 
     std::string dyn_path = core_path;
-    if (dyn_path.rfind("/vol/external01/", 0) == 0) {
-        dyn_path = "sd:/" + dyn_path.substr(16);
-    }
 
     if (!core.load(dyn_path, tv, drc, error)) {
         app.message = "RPL: " + error;
@@ -943,7 +940,9 @@ void run_rpl_core(AppState &app, const std::string &core_path, const std::string
 void run_test_core(AppState &app, SDL_Renderer *tv, SDL_Renderer *drc,
                    TTF_Font *heading_font, TTF_Font *body_font, TTF_Font *small_font)
 {
-    run_rpl_core(app, "sd:/retrou/cores/test.rpl", "", tv, drc,
+    std::string test_path = join_path(join_path(app.library.sd_root, "retrou"),
+                                      "cores/test.rpl");
+    run_rpl_core(app, test_path, "", tv, drc,
                  heading_font, body_font, small_font);
 }
 

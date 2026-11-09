@@ -35,6 +35,7 @@ constexpr uint32_t kShfAlloc = 0x2;
 constexpr uint32_t kShfExec = 0x4;
 constexpr uint32_t kShfDeflated = 0x08000000;
 constexpr uint32_t kShtNobits = 8;
+constexpr uint32_t kShtProgbits = 1;
 constexpr uint32_t kShtRela = 4;
 constexpr uint32_t kShtSymtab = 2;
 constexpr uint32_t kShtRplExports = 0x80000001;
@@ -270,7 +271,9 @@ bool RplLoader::load_sections(const std::vector<uint8_t> &file, std::string &err
             section.name == ".eh_frame") {
             continue;
         }
-        if ((section.flags & kShfExec) != 0 || section.name == ".text") {
+        if (section.name == ".text" ||
+            ((section.flags & kShfExec) != 0 && section.type == kShtProgbits &&
+             section.name != ".fexports")) {
             if (text_index >= 0) {
                 error = "RPL con mas de una seccion ejecutable";
                 return false;

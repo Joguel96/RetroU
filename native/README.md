@@ -14,8 +14,16 @@ ejecutar cores dentro del proceso de RetroU.
   - si hay un core `.rpl` para el sistema, lo carga **dentro de RetroU** y
     ejecuta la ROM (RetroU no se cierra);
   - si solo hay `.rpx`, mantiene el fallback de lanzar la app del core.
-- **Start** ejecuta `test.rpl`, un core sintético para validar el loader.
+- **Start** ejecuta `test.rpl` en `RetroU`, o el core de prueba estático en
+  `retrou_test`.
 - **Minus** abre el menú de RetroU durante el core.
+
+## Tests RPL vs RPX
+
+- `RetroU.wuhb`: Plus ejecuta `test.rpl` con el loader RPL. Log:
+  `sd:/retrou/retrou_rpl.log`.
+- `retrou_test.wuhb` / `retrou_test.rpx`: Plus ejecuta el core de prueba
+  enlazado estáticamente, como RetroArch. Log: `sd:/retrou/retrou_rpx.log`.
 
 ## Loader RPL
 
@@ -59,6 +67,9 @@ Salidas:
 build/RetroU.elf
 build/RetroU.rpx
 build/RetroU.wuhb
+build/retrou_test.elf
+build/retrou_test.rpx
+build/retrou_test.wuhb
 ```
 
 El WUHB incluye las fuentes Lato OFL y el icono/splashes de `../assets/`.

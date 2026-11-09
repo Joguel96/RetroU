@@ -434,7 +434,9 @@ bool RplLoader::apply_relocations(std::string &error)
                      * load (for example .eh_frame). */
                     continue;
                 }
-                symbol_address = symbol_section.new_addr + (symbol.value - symbol_section.addr);
+                symbol_address = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(allocation_)) +
+                                 symbol_section.new_addr +
+                                 (symbol.value - symbol_section.addr);
             } else {
                 error = "Simbolo con seccion invalida";
                 return false;

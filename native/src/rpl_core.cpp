@@ -199,7 +199,11 @@ bool RplCore::load(const std::string &path, SDL_Renderer *tv, SDL_Renderer *drc,
     core_log("RplCore exports ok");
 
     if (api_version_) {
-        api_version_();
+        core_log("retro_api_version ptr=" +
+                 std::to_string(reinterpret_cast<uintptr_t>(api_version_)));
+        core_log("before retro_api_version");
+        unsigned version = api_version_();
+        core_log("after retro_api_version " + std::to_string(version));
     }
 
     set_environment_(environmentCallback);

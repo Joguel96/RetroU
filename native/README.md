@@ -1,61 +1,44 @@
-# App nativa Wii U
+# App nativa Wii U — modo RPX estático
 
-Frontend RetroU con **WUT + SDL2 + SDL2_ttf** y un **loader RPL propio** para
-ejecutar cores dentro del proceso de RetroU.
+Frontend RetroU con **WUT + SDL2 + SDL2_ttf**. Cada build lleva **un core
+Libretro enlazado estáticamente**, igual que RetroArch Wii U.
+
+## Apps generadas
+
+| App | Core | Sistema |
+|---|---|---|
+| `RetroU-NES.wuhb` | fceumm | NES |
+| `RetroU-SNES.wuhb` | snes9x | SNES |
+| `RetroU-GBA.wuhb` | mgba | GBA |
+| `RetroU-Test.wuhb` | test_core | prueba de vídeo |
+
+También se generan los `.rpx` equivalentes.
 
 ## Qué hace
 
-- Abre dos ventanas SDL2: TV (1280x720) y GamePad (854x480).
-- Monta la SD y escanea `sd:/retrou/roms/<Consola>/`.
-- Escanea `sd:/retrou/cores/*.rpl` y `*.rpx`.
+- Escanea `sd:/retrou/roms/<Consola>/`.
 - Muestra la UI de cristal con consolas, contadores y tarjetas.
-- Navega con D-Pad/stick, A, B, X, Y, L/R.
-- **A**:
-  - si hay un core `.rpl` para el sistema, lo carga **dentro de RetroU** y
-    ejecuta la ROM (RetroU no se cierra);
-  - si solo hay `.rpx`, mantiene el fallback de lanzar la app del core.
-- **Start** ejecuta `test.rpl` en `RetroU`, o el core de prueba estático en
-  `retrou_test`.
-- **Minus** abre el menú de RetroU durante el core.
+- **A** carga la ROM con el core integrado en esa app.
+- **Minus** abre el menú de RetroU.
+- El render de la UI es bajo demanda: solo repinta cuando hay entrada o cambia
+  el estado, no a 60 FPS constante.
 
-## Tests RPL vs RPX
+No hay selector de cores: cada app es un sistema. Si abres una ROM de otro
+sistema, avisa de que esa build no la soporta.
 
-- `RetroU.wuhb`: Plus ejecuta `test.rpl` con el loader RPL. Log:
-  `sd:/retrou/retrou_rpl.log`.
-- `retrou_test.wuhb` / `retrou_test.rpx`: Plus ejecuta el core de prueba
-  enlazado estáticamente, como RetroArch. Log: `sd:/retrou/retrou_rpx.log`.
+## Lo que falta
 
-## Loader RPL
-
-`RplLoader` lee el `.rpl` de `sd:/retrou/cores/`, descomprime sus secciones
-(zlib), las mapea en un bloque de memoria, aplica las relocaciones
-`ADDR32/ADDR16/REL24/GHS_REL16` y resuelve los imports débiles de newlib
-(`__syscall_*`, `__register_frame_info`). Después busca los exports `retro_*`
-en `.fexports`.
-
-No usa `OSDynLoad_Acquire` para el core: Aroma solo resuelve módulos ya cargados
-o RPLs del sistema, no un `.rpl` suelto de la SD.
-
-## Cores RPL
-
-- `sd:/retrou/cores/fceumm.rpl` (NES, generado con
-  `native/cores/build-fceumm-rpl.sh`).
-- `sd:/retrou/cores/test.rpl` (core de prueba que dibuja un frame de color).
-- Los cores del buildbot son `.rpx` completos; no se pueden cargar en proceso.
-  Hay que compilar cada core como `.rpl` con exports `retro_*`.
-
-Ver [cores/README.md](cores/README.md).
-
-## Qué falta
-
-- Audio e input dentro del frontend Libretro (fase 2).
-- Selector de ROM y guardado de SRAM/savestates.
+- Audio e input del core (fase 2).
+- SRAM/savestates.
 - Carátulas reales.
-- Portar todas las vistas de `web/`.
+- Descarga/instalación de builds de cores.
 
 ## Build
 
+Los cores se compilan fuera del árbol y se enlazan como `.a`:
+
 ```sh
+native/cores/build-static-cores.sh
 cd native
 /opt/devkitpro/portlibs/wiiu/bin/powerpc-eabi-cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j"$(nproc)"
@@ -64,25 +47,26 @@ cmake --build build -j"$(nproc)"
 Salidas:
 
 ```text
-build/RetroU.elf
-build/RetroU.rpx
-build/RetroU.wuhb
-build/retrou_test.elf
-build/retrou_test.rpx
-build/retrou_test.wuhb
+build/retrou_nes.rpx / .wuhb
+build/retrou_snes.rpx / .wuhb
+build/retrou_gba.rpx / .wuhb
+build/retrou_test.rpx / .wuhb
 ```
-
-El WUHB incluye las fuentes Lato OFL y el icono/splashes de `../assets/`.
 
 ## SD
 
 ```text
 sd:/retrou/roms/NES/...
-sd:/retrou/cores/fceumm.rpl
-sd:/retrou/cores/test.rpl
+sd:/retrou/roms/SNES/...
+sd:/retrou/roms/GBA/...
 sd:/retrou/cores/system/
 sd:/retrou/cores/savefiles/
 ```
+
+## Logs
+
+- `sd:/retrou/retrou_rpx.log`: carga/init/run del core estático.
+- El RPL queda en la rama `experiment/rpl-loader`; no se compila en `main`.
 
 ## Input
 
@@ -90,16 +74,9 @@ sd:/retrou/cores/savefiles/
 |---|---|
 | D-Pad / stick | mover selección |
 | L / R | consola anterior / siguiente |
-| A | cargar core RPL + ROM, o lanzar `.rpx` |
-| B | volver a "Todas" (catálogo) / cerrar menú en juego |
+| A | cargar ROM con el core integrado |
+| B | volver a "Todas" |
 | X | detalle (placeholder) |
 | Y | favorito (placeholder) |
-| Start | ejecutar `test.rpl` |
-| Minus (-) | abrir/cerrar el menú de RetroU durante un core |
-
-En el menú de juego (Minus) el core queda pausado. Por ahora las opciones son
-`Continuar` y `Cerrar juego y volver a RetroU`; savestates y remapeo quedan para
-la siguiente fase.
-
-`SDL_PollEvent` es quien bombea ProcUI en el port SDL2; no se llama a
-`WHBProc` ni a `ProcUI` directamente.
+| Start | test (solo build Test) |
+| Minus | menú de RetroU en juego |

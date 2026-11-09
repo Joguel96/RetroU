@@ -670,7 +670,7 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
     fill_rect(renderer, 0, footer_y, width, footer_h, rgba(8, 13, 24, 210));
     outline_rect(renderer, 0, footer_y, width, 1, rgba(255, 255, 255, 30));
     draw_text(renderer, cache, small_font,
-              "L/R  CONSOLA     D-PAD  NAVEGAR     A  JUGAR     B  VOLVER     X  DETALLE     START  TEST RPL",
+              "L/R  CONSOLA     D-PAD  NAVEGAR     A  JUGAR     B  VOLVER     X  DETALLE",
               margin, footer_y + (footer_h - 18) / 2, rgba(203, 213, 225));
 
     if (!app.message.empty()) {
@@ -754,6 +754,17 @@ void handle_action(AppState &app, int action)
             }
             {
                 const RomEntry &rom = *games[app.game];
+#if defined(RETROU_STATIC_CORE) && defined(RETROU_CORE_SYSTEM)
+                if (rom.system != RETROU_CORE_SYSTEM) {
+                    app.message = std::string("Esta build es ") + RETROU_CORE_LABEL;
+                    break;
+                }
+                app.rpl_rom = rom.path;
+                app.pending_rpl = true;
+                app.message = "Cargando " RETROU_CORE_LABEL "...";
+#elif defined(RETROU_STATIC_CORE)
+                app.message = "Este build es solo de prueba";
+#else
                 const CoreEntry *core = find_core(app.library, rom.system);
                 if (!core) {
                     app.message = "No hay core .rpl/.rpx para " + rom.system;
@@ -770,6 +781,7 @@ void handle_action(AppState &app, int action)
                 app.launch_rom = rom.path;
                 app.pending_launch = true;
                 app.running = false;
+#endif
             }
             break;
         case 7: /* detail */
@@ -961,15 +973,16 @@ void run_rpl_core(AppState &app, const std::string &core_path, const std::string
     core.unload();
 }
 
-#ifdef RETROU_STATIC_TEST
-void run_static_test_core(AppState &app, SDL_Renderer *tv, SDL_Renderer *drc,
-                          TTF_Font *heading_font, TTF_Font *body_font,
-                          TTF_Font *small_font)
+#ifdef RETROU_STATIC_CORE
+void run_static_core(AppState &app, const std::string &rom_path,
+                     SDL_Renderer *tv, SDL_Renderer *drc,
+                     TTF_Font *heading_font, TTF_Font *body_font,
+                     TTF_Font *small_font)
 {
     {
         std::ofstream log("/vol/external01/retrou/retrou_rpx.log", std::ios::trunc);
         if (log) {
-            log << "=== run_static_test_core ===\n";
+            log << "=== run_static_core rom=" << rom_path << " ===\n";
         }
     }
 
@@ -981,23 +994,23 @@ void run_static_test_core(AppState &app, SDL_Renderer *tv, SDL_Renderer *drc,
     if (tv) {
         SDL_SetRenderDrawColor(tv, 0, 0, 0, 255);
         SDL_RenderClear(tv);
-        draw_text_center(tv, loading_tv, heading_font, "Cargando test RPX...", 640, 344,
+        draw_text_center(tv, loading_tv, heading_font, "Cargando core...", 640, 344,
                          rgba(255, 255, 255));
         SDL_RenderPresent(tv);
     }
     if (drc) {
         SDL_SetRenderDrawColor(drc, 0, 0, 0, 255);
         SDL_RenderClear(drc);
-        draw_text_center(drc, loading_drc, heading_font, "Cargando test RPX...", 427, 224,
+        draw_text_center(drc, loading_drc, heading_font, "Cargando core...", 427, 224,
                          rgba(255, 255, 255));
         SDL_RenderPresent(drc);
     }
 
-    if (!core.loadStaticTest(tv, drc, error)) {
+    if (!core.loadStaticCore(tv, drc, error)) {
         app.message = "RPX: " + error;
         return;
     }
-    if (!core.loadGame("", error)) {
+    if (!core.loadGame(rom_path, error)) {
         app.message = "RPX juego: " + error;
         core.unload();
         return;
@@ -1084,8 +1097,15 @@ void run_static_test_core(AppState &app, SDL_Renderer *tv, SDL_Renderer *drc,
 void run_test_core(AppState &app, SDL_Renderer *tv, SDL_Renderer *drc,
                    TTF_Font *heading_font, TTF_Font *body_font, TTF_Font *small_font)
 {
-#ifdef RETROU_STATIC_TEST
-    run_static_test_core(app, tv, drc, heading_font, body_font, small_font);
+#if defined(RETROU_STATIC_CORE) && defined(RETROU_TEST_CORE)
+    run_static_core(app, "", tv, drc, heading_font, body_font, small_font);
+#elif defined(RETROU_STATIC_CORE)
+    (void)tv;
+    (void)drc;
+    (void)heading_font;
+    (void)body_font;
+    (void)small_font;
+    app.message = "Usa A sobre una ROM";
 #else
     std::string test_path = join_path(join_path(app.library.sd_root, "retrou"),
                                       "cores/test.rpl");
@@ -1157,15 +1177,21 @@ int main(int argc, char **argv)
 
     TextCache tv_text;
     TextCache drc_text;
+    bool ui_dirty = true;
 
     while (app.running) {
         if (!controller) {
+            bool was_connected = connected;
             controller = open_first_controller();
             connected = controller != nullptr;
+            if (was_connected != connected) {
+                ui_dirty = true;
+            }
         }
 
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
+            ui_dirty = true;
             if (event.type == SDL_QUIT) {
                 app.running = false;
                 break;
@@ -1214,8 +1240,19 @@ int main(int argc, char **argv)
             std::string rom_path = app.rpl_rom;
             app.rpl_core.clear();
             app.rpl_rom.clear();
+#ifdef RETROU_STATIC_CORE
+            run_static_core(app, rom_path, tv_renderer, drc_renderer,
+                            heading_font, body_font, small_font);
+#else
             run_rpl_core(app, core_path, rom_path, tv_renderer, drc_renderer,
                          heading_font, body_font, small_font);
+#endif
+            ui_dirty = true;
+            continue;
+        }
+
+        if (!ui_dirty) {
+            SDL_Delay(16);
             continue;
         }
 
@@ -1233,6 +1270,7 @@ int main(int argc, char **argv)
                           app, 854, 480, false, connected);
             SDL_RenderPresent(drc_renderer);
         }
+        ui_dirty = false;
     }
 
     tv_text.clear();

@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <sys/stat.h>
 
 namespace retrou {
 
@@ -224,8 +225,8 @@ bool RplCore::load(const std::string &path, SDL_Renderer *tv, SDL_Renderer *drc,
     return true;
 }
 
-#ifdef RETROU_STATIC_TEST
-bool RplCore::loadStaticTest(SDL_Renderer *tv, SDL_Renderer *drc, std::string &error)
+#ifdef RETROU_STATIC_CORE
+bool RplCore::loadStaticCore(SDL_Renderer *tv, SDL_Renderer *drc, std::string &error)
 {
     (void)error;
     unload();
@@ -234,7 +235,9 @@ bool RplCore::loadStaticTest(SDL_Renderer *tv, SDL_Renderer *drc, std::string &e
     drc_ = drc;
     static_test_ = true;
     log_path_ = "/vol/external01/retrou/retrou_rpx.log";
-    log("RplCore::loadStaticTest");
+    mkdir("/vol/external01/retrou/cores/system", 0777);
+    mkdir("/vol/external01/retrou/cores/savefiles", 0777);
+    log("RplCore::loadStaticCore");
 
     api_version_ = retro_api_version;
     init_ = retro_init;

@@ -9,6 +9,7 @@ dist/
 
 # Local core sources / references
 .spike_fceumm/
+.cores/
 .ref_*/
 
 # Logs and OS files

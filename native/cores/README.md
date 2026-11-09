@@ -1,39 +1,35 @@
-# Cores RPL para RetroU
+# Cores para las apps RPX
 
-Esta carpeta contiene el frontend Libretro mínimo y dos cores de prueba:
+`main` usa cores **estáticos**: cada app enlaza un `.a` y no hay loader RPL.
 
-- `test_core.cpp` / `test_core.def`: core sintético que genera un frame de color.
-  Sirve para validar el loader RPL propio, los exports `retro_*` y el pipeline
-  de vídeo sin depender de una ROM.
-- `fceumm_rpl/`: empaqueta `fceumm_libretro_wiiu.a` como `.rpl`.
+## Cores
 
-## Generar el core de prueba
+| App | Core | Archive |
+|---|---|---|
+| NES | fceumm | `.cores/fceumm/fceumm_libretro_wiiu.a` |
+| SNES | snes9x | `.cores/snes9x/libretro/snes9x_libretro_wiiu.a` |
+| GBA | mgba | `.cores/mgba/build/mgba_libretro.a` |
 
-```sh
-cd native/cores
-/opt/devkitpro/portlibs/wiiu/bin/powerpc-eabi-cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j"$(nproc)"
-cp build/test_core.rpl ../../dist/retrou/cores/test.rpl
-```
-
-## Generar fceumm.rpl
+## Generarlos
 
 ```sh
-./build-fceumm-rpl.sh
+./build-static-cores.sh
 ```
 
-El script clona `libretro-fceumm` en `.spike_fceumm` (ignorado por git), compila
-la librería estática para Wii U y la enlaza como `.rpl` con exports `retro_*`.
-El resultado se copia a `dist/retrou/cores/fceumm.rpl`.
+El script clona en `.cores/` (ignorado por git), compila cada core para Wii U y
+deja los `.a` que usa `native/CMakeLists.txt`.
 
-## Cómo lo carga RetroU
+## Test core
 
-- `RplLoader` lee el `.rpl` de la SD.
-- Descomprime `.text`, `.rodata`, `.data`, `.bss` y `.fexports`.
-- Aplica las relocaciones y resuelve imports débiles de newlib.
-- Busca `retro_init`, `retro_run`, etc. en `.fexports`.
-- `retro_run()` corre en el bucle de RetroU; `video_refresh` actualiza una
-  textura SDL que se pinta en TV y GamePad.
+`test_core.cpp` / `test_core.def` es el core sintético de `RetroU-Test`; se
+compila directamente en el RPX de prueba.
 
-No usa `OSDynLoad_Acquire`: Aroma no carga un `.rpl` suelto de la SD; solo
-resuelve módulos ya cargados o RPLs del sistema.
+## RPL
+
+El loader RPL y sus pruebas están en la rama:
+
+```text
+experiment/rpl-loader
+```
+
+No forma parte de las apps de `main`.

@@ -26,8 +26,8 @@ public:
     bool loaded() const { return loaded_; }
     const std::string &name() const { return name_; }
 
-#ifdef RETROU_STATIC_TEST
-    bool loadStaticTest(SDL_Renderer *tv, SDL_Renderer *drc, std::string &error);
+#ifdef RETROU_STATIC_CORE
+    bool loadStaticCore(SDL_Renderer *tv, SDL_Renderer *drc, std::string &error);
 #endif
 
 private:

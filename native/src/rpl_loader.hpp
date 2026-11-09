@@ -29,6 +29,7 @@ private:
         std::string name;
         std::vector<uint8_t> data;
         uint32_t new_addr = 0;
+        uint8_t *runtime = nullptr;
         bool loaded = false;
     };
 
@@ -43,9 +44,12 @@ private:
 
     std::vector<Section> sections_;
     std::map<std::string, void *> exports_;
+    std::vector<uint8_t> text_buffer_;
     void *allocation_ = nullptr;
     uint32_t allocation_size_ = 0;
     bool system_allocation_ = false;
+    uint32_t codegen_base_ = 0;
+    uint32_t codegen_size_ = 0;
 
     bool read_file(const std::string &path, std::vector<uint8_t> &out, std::string &error);
     bool decode_section(Section &section, const std::vector<uint8_t> &file, std::string &error);

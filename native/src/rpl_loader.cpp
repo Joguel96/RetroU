@@ -2,8 +2,10 @@
 
 #include <coreinit/cache.h>
 #include <coreinit/codegen.h>
+#include <coreinit/core.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
+#include <coreinit/thread.h>
 
 #include <reent.h>
 #include <unistd.h>
@@ -30,6 +32,7 @@ void rpl_log(const std::string &message)
 }
 
 constexpr uint32_t kShfAlloc = 0x2;
+constexpr uint32_t kShfExec = 0x4;
 constexpr uint32_t kShfDeflated = 0x08000000;
 constexpr uint32_t kShtNobits = 8;
 constexpr uint32_t kShtRela = 4;
@@ -255,15 +258,24 @@ bool RplLoader::load_sections(const std::vector<uint8_t> &file, std::string &err
         }
     }
 
-    /* Lay out every allocatable section in one block. .fexports is needed
-     * even though it is not SHF_ALLOC. */
+    int text_index = -1;
     uint32_t total = 0;
-    for (Section &section : sections_) {
+    for (size_t i = 0; i < sections_.size(); ++i) {
+        Section &section = sections_[i];
         bool keep = (section.flags & kShfAlloc) != 0 ||
                     section.type == kShtRplExports ||
                     section.name == ".bss";
         if (!keep || section.type == kShtRela || section.type == kShtSymtab ||
-            section.name == ".shstrtab" || section.name == ".strtab") {
+            section.name == ".shstrtab" || section.name == ".strtab" ||
+            section.name == ".eh_frame") {
+            continue;
+        }
+        if ((section.flags & kShfExec) != 0 || section.name == ".text") {
+            if (text_index >= 0) {
+                error = "RPL con mas de una seccion ejecutable";
+                return false;
+            }
+            text_index = static_cast<int>(i);
             continue;
         }
         total = align_up(total, section.addralign);
@@ -272,13 +284,15 @@ bool RplLoader::load_sections(const std::vector<uint8_t> &file, std::string &err
         total += static_cast<uint32_t>(section.data.size());
     }
 
-    if (total == 0) {
-        error = "RPL sin secciones cargables";
+    if (text_index < 0) {
+        error = "RPL sin seccion .text";
         return false;
     }
-
-    rpl_log("load_sections: shnum=" + std::to_string(shnum) +
-            " total=" + std::to_string(total));
+    Section &text = sections_[text_index];
+    if (text.data.empty()) {
+        error = "RPL con .text vacio";
+        return false;
+    }
 
     void *codegen_address = nullptr;
     uint32_t codegen_size = 0;
@@ -286,38 +300,50 @@ bool RplLoader::load_sections(const std::vector<uint8_t> &file, std::string &err
     rpl_log("codegen=" + std::to_string(reinterpret_cast<uintptr_t>(codegen_address)) +
             " size=" + std::to_string(codegen_size));
 
-    allocation_ = MEMAllocFromDefaultHeapEx(total, 0x1000);
+    if (!codegen_address || codegen_size < text.data.size()) {
+        error = "Codegen insuficiente para el .text del RPL";
+        return false;
+    }
+    codegen_base_ = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(codegen_address));
+    codegen_size_ = codegen_size;
+
+    uint32_t data_size = total == 0 ? 1 : total;
+    allocation_ = MEMAllocFromDefaultHeapEx(data_size, 0x1000);
     if (allocation_) {
         system_allocation_ = false;
     } else {
-        allocation_ = OSAllocFromSystem(total, 0x1000);
+        allocation_ = OSAllocFromSystem(data_size, 0x1000);
         system_allocation_ = allocation_ != nullptr;
     }
     if (!allocation_) {
-        error = "Sin memoria para el RPL";
+        error = "Sin memoria para los datos del RPL";
         return false;
     }
-    allocation_size_ = total;
-    memset(allocation_, 0, total);
-    rpl_log("allocation=" + std::to_string(reinterpret_cast<uintptr_t>(allocation_)) +
-            " size=" + std::to_string(total));
+    allocation_size_ = data_size;
+    memset(allocation_, 0, data_size);
 
+    uint32_t data_base = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(allocation_));
     for (Section &section : sections_) {
-        if (!section.loaded) {
+        if (!section.loaded || section.name == ".text") {
             continue;
         }
-        if (section.new_addr >= total) {
-            continue;
-        }
-        uint8_t *destination = static_cast<uint8_t *>(allocation_) + section.new_addr;
+        section.new_addr += data_base;
+        section.runtime = reinterpret_cast<uint8_t *>(section.new_addr);
         if (!section.data.empty()) {
-            size_t copy_size = std::min<size_t>(section.data.size(), total - section.new_addr);
-            memcpy(destination, section.data.data(), copy_size);
+            memcpy(section.runtime, section.data.data(), section.data.size());
         }
     }
 
-    DCFlushRange(allocation_, total);
-    ICInvalidateRange(allocation_, total);
+    text_buffer_ = text.data;
+    text.loaded = true;
+    text.runtime = text_buffer_.data();
+    text.new_addr = codegen_base_;
+
+    rpl_log("load_sections: text=" + std::to_string(text.data.size()) +
+            " data=" + std::to_string(total) +
+            " base=0x" + std::to_string(data_base));
+
+    DCFlushRange(allocation_, data_size);
     return true;
 }
 
@@ -441,8 +467,7 @@ bool RplLoader::apply_relocations(std::string &error)
                      * load (for example .eh_frame). */
                     continue;
                 }
-                symbol_address = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(allocation_)) +
-                                 symbol_section.new_addr +
+                symbol_address = symbol_section.new_addr +
                                  (symbol.value - symbol_section.addr);
             } else {
                 error = "Simbolo con seccion invalida";
@@ -459,9 +484,9 @@ bool RplLoader::apply_relocations(std::string &error)
                 return false;
             }
 
-            uint8_t *destination = static_cast<uint8_t *>(allocation_) + target->new_addr + target_offset;
+            uint8_t *destination = target->runtime + target_offset;
             uint32_t value = symbol_address + static_cast<uint32_t>(r_addend);
-            uint32_t target_address = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(destination));
+            uint32_t target_address = target->new_addr + target_offset;
             int32_t relative = static_cast<int32_t>(value - target_address);
 
             switch (type) {
@@ -500,7 +525,29 @@ bool RplLoader::apply_relocations(std::string &error)
     }
 
     DCFlushRange(allocation_, allocation_size_);
-    ICInvalidateRange(allocation_, allocation_size_);
+    if (!text_buffer_.empty()) {
+        DCFlushRange(text_buffer_.data(), text_buffer_.size());
+    }
+
+    uint32_t codegen_core = OSGetCodegenCore();
+    uint32_t current_core = OSGetCoreId();
+    rpl_log("codegen core=" + std::to_string(codegen_core) +
+            " current=" + std::to_string(current_core));
+
+    if (current_core != codegen_core) {
+        OSThread *thread = OSGetCurrentThread();
+        if (!OSSetThreadAffinity(thread, 1u << codegen_core)) {
+            rpl_log("OSSetThreadAffinity failed");
+        }
+    }
+
+    if (!OSCodegenCopy(reinterpret_cast<void *>(codegen_base_),
+                       text_buffer_.data(), text_buffer_.size())) {
+        error = "OSCodegenCopy fallo";
+        return false;
+    }
+
+    rpl_log("OSCodegenCopy ok");
     rpl_log("apply_relocations: done");
     return true;
 }
@@ -574,6 +621,7 @@ void *RplLoader::findExport(const std::string &name) const
 
 void RplLoader::unload()
 {
+    OSSetThreadAffinity(OSGetCurrentThread(), 0x7);
     if (allocation_) {
         if (system_allocation_) {
             OSFreeToSystem(allocation_);
@@ -584,6 +632,9 @@ void RplLoader::unload()
     allocation_ = nullptr;
     allocation_size_ = 0;
     system_allocation_ = false;
+    codegen_base_ = 0;
+    codegen_size_ = 0;
+    text_buffer_.clear();
     sections_.clear();
     exports_.clear();
 }

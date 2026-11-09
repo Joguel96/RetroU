@@ -24,6 +24,17 @@ namespace retrou {
 
 namespace {
 
+const char *kLauncherLog = "/vol/external01/retrou/launcher.log";
+
+void hbl_log(const std::string &message)
+{
+    std::ofstream out(kLauncherLog, std::ios::app);
+    out << std::unitbuf;
+    if (out) {
+        out << "[hbl] " << message << std::endl;
+    }
+}
+
 constexpr uint32_t kMemBase = 0x00800000;
 constexpr uint32_t kArgvPtrAddress = kMemBase + 0x1380;
 constexpr uint32_t kAppBaseMem = kMemBase + 0x2000;
@@ -101,6 +112,8 @@ void init_memory_table(uint32_t args_size)
 {
     uint32_t app_end = static_cast<uint32_t>(
         reinterpret_cast<uintptr_t>(application_end())) + args_size;
+    hbl_log("memory table app_end=0x" + std::to_string(app_end) +
+            " args=" + std::to_string(args_size));
     add_memory_area(app_end + 0x30000000, 0x30000000 + 0x01E20000, 0);
 
     const MemoryValue *values = kMemoryValues;
@@ -131,6 +144,8 @@ int copy_memory(uint8_t *address, uint32_t bytes, uint32_t args_size)
     } else {
         ELF_DATA_ADDR = MEM_AREA_TABLE->address;
     }
+    hbl_log("copy_memory bytes=" + std::to_string(bytes) +
+            " elf_addr=0x" + std::to_string(ELF_DATA_ADDR));
 
     if (ELF_DATA_ADDR < 0x01000000) {
         if (ELF_DATA_ADDR + bytes > 0x01000000) {
@@ -159,8 +174,12 @@ int copy_memory(uint8_t *address, uint32_t bytes, uint32_t args_size)
             if (map_position + block > area->size) {
                 block = area->size - map_position;
             }
+            hbl_log("kernel copy dst=0x" + std::to_string(area->address + map_position) +
+                    " src=0x" + std::to_string(physical + done) +
+                    " len=" + std::to_string(block));
             kernel_copy_data(area->address + map_position,
                              physical + done, block);
+            hbl_log("kernel copy done");
             map_position += block;
             done += block;
         }
@@ -196,19 +215,24 @@ bool read_file(const std::string &path, std::vector<uint8_t> &data, std::string 
 
 bool hbl_load_to_memory(const std::string &rpx_path, std::string &error)
 {
+    hbl_log("load start " + rpx_path);
     std::vector<uint8_t> data;
     if (!read_file(rpx_path, data, error)) {
+        hbl_log("load failed: " + error);
         return false;
     }
+    hbl_log("read ok size=" + std::to_string(data.size()));
 
     size_t aligned_size = (data.size() + 0x3f) & ~static_cast<size_t>(0x3f);
     uint8_t *buffer = static_cast<uint8_t *>(memalign(0x40, aligned_size));
     if (!buffer) {
         error = "Sin memoria para leer el RPX";
+        hbl_log("memalign failed");
         return false;
     }
     memset(buffer, 0, aligned_size);
     memcpy(buffer, data.data(), data.size());
+    hbl_log("buffer=0x" + std::to_string(reinterpret_cast<uintptr_t>(buffer)));
 
     HblArgs *args = static_cast<HblArgs *>(application_end());
     memset(args, 0, sizeof(*args));
@@ -217,9 +241,11 @@ bool hbl_load_to_memory(const std::string &rpx_path, std::string &error)
     args->argv[0] = args->path;
     args->argv[1] = nullptr;
     std::snprintf(args->path, sizeof(args->path), "%s", rpx_path.c_str());
+    hbl_log("args=0x" + std::to_string(reinterpret_cast<uintptr_t>(args)));
 
     int result = copy_memory(buffer, static_cast<uint32_t>(data.size()),
                              sizeof(*args));
+    hbl_log("copy result=" + std::to_string(result));
     free(buffer);
     if (result < 0) {
         error = "HBL no pudo copiar el RPX";
@@ -227,6 +253,7 @@ bool hbl_load_to_memory(const std::string &rpx_path, std::string &error)
     }
 
     ARGV_PTR = args;
+    hbl_log("argv set");
     return true;
 }
 

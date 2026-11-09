@@ -380,17 +380,18 @@ bool launch_core(const std::string &sd_root, const std::string &core_path,
     }
 
     std::ofstream log("/vol/external01/retrou/launcher.log", std::ios::app);
+    log << std::unitbuf;
     if (log) {
-        log << "HBL load " << path << "\n";
+        log << "HBL load " << path << std::endl;
     }
     if (!retrou::hbl_load_to_memory(path, error)) {
         if (log) {
-            log << "HBL failed: " << error << "\n";
+            log << "HBL failed: " << error << std::endl;
         }
         return false;
     }
     if (log) {
-        log << "HBL ok\n";
+        log << "HBL ok" << std::endl;
     }
     return true;
 }

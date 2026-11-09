@@ -12,7 +12,10 @@ Libretro enlazado estáticamente**, igual que RetroArch Wii U.
 | `RetroU-GBA.wuhb` | mgba | GBA |
 | `RetroU-Test.wuhb` | test_core | prueba de vídeo |
 
-También se generan los `.rpx` equivalentes.
+También se generan los `.rpx` equivalentes. Los RPX llevan las fuentes Lato
+embebidas y no necesitan `/vol/content` ni una WUHB para arrancar. El icono y
+los splashes solo existen en el WUHB; un RPX suelto se lanza desde HBL/Aroma
+como el `RetroU-Test.rpx`.
 
 ## Qué hace
 

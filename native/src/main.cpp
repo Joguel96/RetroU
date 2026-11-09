@@ -67,6 +67,8 @@ struct AppState {
     int system = 0; /* 0 = all */
     int game = 0;
     int scroll_row = 0;
+    int counts[kConsoleCount + 1] = {};
+    std::vector<const RomEntry *> visible;
     bool running = true;
     bool pending_launch = false;
     std::string launch_core;
@@ -293,23 +295,48 @@ const CoreEntry *find_core(const Library &library, const std::string &system)
     return library.cores.empty() ? nullptr : &library.cores.front();
 }
 
-std::vector<const RomEntry *> filtered_roms(const AppState &app)
+int console_index_by_id(const std::string &id)
 {
-    std::vector<const RomEntry *> result;
-    for (const RomEntry &rom : app.library.roms) {
-        if (app.system == 0 || rom.system == kConsoles[app.system - 1].id) {
-            result.push_back(&rom);
+    for (int i = 0; i < kConsoleCount; ++i) {
+        if (id == kConsoles[i].id) {
+            return i + 1;
         }
     }
-    return result;
+    return 0;
 }
 
-std::string launch_path(const std::string &path)
+void refresh_visible(AppState &app)
 {
-    if (path.rfind("/vol/", 0) == 0) {
-        return "fs:" + path;
+    app.visible.clear();
+    for (const RomEntry &rom : app.library.roms) {
+        if (app.system == 0 || rom.system == kConsoles[app.system - 1].id) {
+            app.visible.push_back(&rom);
+        }
     }
-    return path;
+
+    if (app.visible.empty()) {
+        app.game = 0;
+        app.scroll_row = 0;
+        return;
+    }
+    app.game = std::max(0, std::min(app.game, static_cast<int>(app.visible.size()) - 1));
+}
+
+void rebuild_indexes(AppState &app)
+{
+    for (int &count : app.counts) {
+        count = 0;
+    }
+
+    for (const RomEntry &rom : app.library.roms) {
+        app.counts[0]++;
+        int index = console_index_by_id(rom.system);
+        if (index > 0) {
+            app.counts[index]++;
+        }
+    }
+
+    refresh_visible(app);
 }
 
 bool launch_core(const std::string &sd_root, const std::string &core_path,
@@ -327,8 +354,21 @@ bool launch_core(const std::string &sd_root, const std::string &core_path,
     out << rom_path << "\n" << core_path << "\n";
     out.close();
 
-    std::string path = launch_path(core_path);
-    _SYSLaunchTitleByPathFromLauncher(path.c_str(), 0);
+    /* sysapp wants the IOSU path, not the stdio devoptab prefix. */
+    std::string path = core_path;
+    if (path.rfind("sd:/", 0) == 0) {
+        path = "/vol/external01/" + path.substr(4);
+    }
+
+    /* The public WUT header declares two arguments, but sysapp's real
+     * entry point takes (path, length, zero). Keep the length explicit. */
+    using LaunchByPathFn = void (*)(const char *, uint32_t, uint32_t);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+    LaunchByPathFn launch = reinterpret_cast<LaunchByPathFn>(
+        &_SYSLaunchTitleByPathFromLauncher);
+#pragma GCC diagnostic pop
+    launch(path.c_str(), static_cast<uint32_t>(path.size()), 0);
     return true;
 }
 
@@ -440,13 +480,17 @@ void outline_rect(SDL_Renderer *renderer, int x, int y, int w, int h, SDL_Color 
 
 void draw_background(SDL_Renderer *renderer, int width, int height, uint32_t accent)
 {
-    for (int y = 0; y < height; ++y) {
-        float t = static_cast<float>(y) / static_cast<float>(height);
+    /* A handful of bands instead of one draw call per scanline. The old
+     * 720+ lines per screen per frame were the main cost on Wii U. */
+    const int bands = 8;
+    for (int band = 0; band < bands; ++band) {
+        int y0 = band * height / bands;
+        int y1 = (band + 1) * height / bands;
+        float t = static_cast<float>(band) / static_cast<float>(bands - 1);
         uint8_t r = static_cast<uint8_t>(8 + 8 * t);
         uint8_t g = static_cast<uint8_t>(13 + 8 * t);
         uint8_t b = static_cast<uint8_t>(24 + 14 * t);
-        SDL_SetRenderDrawColor(renderer, r, g, b, 255);
-        SDL_RenderDrawLine(renderer, 0, y, width, y);
+        fill_rect(renderer, 0, y0, width, y1 - y0, rgba(r, g, b));
     }
 
     fill_rect(renderer, 0, 0, width, 2,
@@ -473,17 +517,10 @@ void draw_header(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_font,
 
 int console_count(const AppState &app, int system_index)
 {
-    if (system_index == 0) {
-        return static_cast<int>(app.library.roms.size());
+    if (system_index < 0 || system_index > kConsoleCount) {
+        return 0;
     }
-    int count = 0;
-    const char *id = kConsoles[system_index - 1].id;
-    for (const RomEntry &rom : app.library.roms) {
-        if (rom.system == id) {
-            ++count;
-        }
-    }
-    return count;
+    return app.counts[system_index];
 }
 
 void set_system(AppState &app, int system)
@@ -493,6 +530,7 @@ void set_system(AppState &app, int system)
     app.game = 0;
     app.scroll_row = 0;
     app.message.clear();
+    refresh_visible(app);
 }
 
 void move_selection(AppState &app, int dx, int dy, int columns, int count)
@@ -556,7 +594,7 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
     int content_y = header_h + 8;
     int content_h = height - content_y - footer_h - margin;
 
-    std::vector<const RomEntry *> games = filtered_roms(app);
+    const std::vector<const RomEntry *> &games = app.visible;
     if (games.empty()) {
         fill_rect(renderer, content_x, content_y, content_w, content_h, rgba(15, 23, 42, 150));
         outline_rect(renderer, content_x, content_y, content_w, content_h, rgba(255, 255, 255, 30));
@@ -674,7 +712,7 @@ TTF_Font *open_font(bool bold, int size)
 
 void handle_action(AppState &app, int action)
 {
-    std::vector<const RomEntry *> games = filtered_roms(app);
+    const std::vector<const RomEntry *> &games = app.visible;
 
     switch (action) {
         case 0: /* up */
@@ -781,6 +819,7 @@ int main(int argc, char **argv)
 
     AppState app;
     app.library = load_library();
+    rebuild_indexes(app);
     if (app.library.roms.empty()) {
         app.message = "Copia ROMs a sd:/retrou/roms/<Consola>/";
     } else if (app.library.cores.empty()) {
@@ -873,14 +912,17 @@ int main(int argc, char **argv)
     if (drc_renderer) SDL_DestroyRenderer(drc_renderer);
     if (tv_window) SDL_DestroyWindow(tv_window);
     if (drc_window) SDL_DestroyWindow(drc_window);
-    SDL_Quit();
 
+    /* Ask sysapp to switch titles while ProcUI is still alive. SDL_Quit
+     * then releases the SDL port; the OS loads the core after we return. */
     if (app.pending_launch) {
         std::string error;
         if (!launch_core(app.library.sd_root, app.launch_core, app.launch_rom, error)) {
+            SDL_Quit();
             return 1;
         }
     }
 
+    SDL_Quit();
     return 0;
 }

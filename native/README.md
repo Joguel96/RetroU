@@ -10,7 +10,8 @@ Esqueleto funcional de RetroU usando **WUT + SDL2 + SDL2_ttf**.
 - Muestra una UI de cristal con las 9 consolas, contadores y tarjetas.
 - Navega con D-Pad / stick, A, B, X, Y, L/R.
 - Al pulsar A escribe `sd:/retrou/launch/last.txt` y lanza el core `.rpx`
-  correspondiente con `_SYSLaunchTitleByPathFromLauncher`.
+  correspondiente con `_SYSLaunchTitleByPathFromLauncher` usando la firma real
+  `(path, len, 0)` y la ruta IOSU sin prefijo `fs:`.
 
 ## Qué falta
 

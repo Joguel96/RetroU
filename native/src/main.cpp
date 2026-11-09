@@ -358,6 +358,15 @@ void rebuild_indexes(AppState &app)
     refresh_visible(app);
 }
 
+void launcher_log(const std::string &message)
+{
+    std::ofstream out("/vol/external01/retrou/launcher.log", std::ios::app);
+    out << std::unitbuf;
+    if (out) {
+        out << message << std::endl;
+    }
+}
+
 bool launch_core(const std::string &sd_root, const std::string &core_path,
                  const std::string &rom_path, std::string &error)
 {
@@ -379,20 +388,12 @@ bool launch_core(const std::string &sd_root, const std::string &core_path,
         path = "/vol/external01/" + path.substr(4);
     }
 
-    std::ofstream log("/vol/external01/retrou/launcher.log", std::ios::app);
-    log << std::unitbuf;
-    if (log) {
-        log << "HBL load " << path << std::endl;
-    }
+    launcher_log("HBL load " + path);
     if (!retrou::hbl_load_to_memory(path, error)) {
-        if (log) {
-            log << "HBL failed: " << error << std::endl;
-        }
+        launcher_log("HBL failed: " + error);
         return false;
     }
-    if (log) {
-        log << "HBL ok" << std::endl;
-    }
+    launcher_log("HBL ok");
     return true;
 }
 

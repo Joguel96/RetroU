@@ -7,15 +7,23 @@ Libretro enlazado estáticamente**, igual que RetroArch Wii U.
 
 | App | Core | Sistema |
 |---|---|---|
+| `RetroU.wuhb` | ninguno (launcher) | detecta y lanza el RPX |
 | `RetroU-NES.wuhb` | fceumm | NES |
 | `RetroU-SNES.wuhb` | snes9x | SNES |
 | `RetroU-GBA.wuhb` | mgba | GBA |
 | `RetroU-Test.wuhb` | test_core | prueba de vídeo |
 
-También se generan los `.rpx` equivalentes. Los RPX llevan las fuentes Lato
-embebidas y no necesitan `/vol/content` ni una WUHB para arrancar. El icono y
-los splashes solo existen en el WUHB; un RPX suelto se lanza desde HBL/Aroma
-como el `RetroU-Test.rpx`.
+Los RPX de core se copian a `retrou/cores/`:
+
+```text
+RetroU-NES.rpx
+RetroU-SNES.rpx
+RetroU-GBA.rpx
+```
+
+`RetroU.wuhb` es el ejecutable oficial: al pulsar A sobre una ROM, escribe
+`launch/last.txt` y lanza el RPX del sistema. El RPX lee ese archivo, lo borra
+y carga la ROM automáticamente con su core.
 
 ## Qué hace
 

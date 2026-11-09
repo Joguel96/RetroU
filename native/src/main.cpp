@@ -775,7 +775,32 @@ void handle_action(AppState &app, int action)
             }
             {
                 const RomEntry &rom = *games[app.game];
-#if defined(RETROU_STATIC_CORE) && defined(RETROU_CORE_SYSTEM)
+#if defined(RETROU_LAUNCHER)
+                std::string label;
+                if (rom.system == "nes") {
+                    label = "NES";
+                } else if (rom.system == "snes") {
+                    label = "SNES";
+                } else if (rom.system == "gba") {
+                    label = "GBA";
+                } else {
+                    app.message = "No hay RPX para " + rom.system;
+                    break;
+                }
+
+                std::string rpx_path = join_path(
+                    join_path(app.library.sd_root, "retrou"),
+                    "cores/RetroU-" + label + ".rpx");
+                struct stat info;
+                if (stat(rpx_path.c_str(), &info) != 0) {
+                    app.message = "Falta retrou/cores/RetroU-" + label + ".rpx";
+                    break;
+                }
+                app.launch_core = rpx_path;
+                app.launch_rom = rom.path;
+                app.pending_launch = true;
+                app.running = false;
+#elif defined(RETROU_STATIC_CORE) && defined(RETROU_CORE_SYSTEM)
                 if (rom.system != RETROU_CORE_SYSTEM) {
                     app.message = std::string("Esta build es ") + RETROU_CORE_LABEL;
                     break;
@@ -1115,6 +1140,28 @@ void run_static_core(AppState &app, const std::string &rom_path,
 }
 #endif
 
+void read_last_launch(AppState &app)
+{
+    std::string path = join_path(join_path(app.library.sd_root, "retrou"), "launch/last.txt");
+    std::ifstream in(path);
+    if (!in) {
+        return;
+    }
+
+    std::string rom_path;
+    std::getline(in, rom_path);
+    in.close();
+
+    if (!rom_path.empty()) {
+        struct stat info;
+        if (stat(rom_path.c_str(), &info) == 0) {
+            app.rpl_rom = rom_path;
+            app.pending_rpl = true;
+        }
+    }
+    std::remove(path.c_str());
+}
+
 void run_test_core(AppState &app, SDL_Renderer *tv, SDL_Renderer *drc,
                    TTF_Font *heading_font, TTF_Font *body_font, TTF_Font *small_font)
 {
@@ -1187,6 +1234,9 @@ int main(int argc, char **argv)
     AppState app;
     app.library = load_library();
     rebuild_indexes(app);
+#if defined(RETROU_STATIC_CORE) && !defined(RETROU_TEST_CORE)
+    read_last_launch(app);
+#endif
     if (app.library.roms.empty()) {
         app.message = "Copia ROMs a sd:/retrou/roms/<Consola>/";
     } else if (app.library.cores.empty()) {

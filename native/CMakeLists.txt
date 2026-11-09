@@ -129,6 +129,25 @@ add_static_retrou(retrou_nes nes "NES" "${FCEUMM_CORE}")
 add_static_retrou(retrou_snes snes "SNES" "${SNES9X_CORE}")
 add_static_retrou(retrou_gba gba "GBA" "${MGBA_CORE}")
 
+# Official frontend/launcher. It has no core; it launches the matching RPX.
+add_executable(retrou_launcher
+    src/main.cpp
+    src/rpl_core.cpp
+    src/rpl_loader.cpp
+)
+target_compile_definitions(retrou_launcher PRIVATE RETROU_LAUNCHER=1)
+configure_retrou(retrou_launcher)
+wut_create_rpx(retrou_launcher)
+wut_create_wuhb(retrou_launcher
+    CONTENT    "${CMAKE_CURRENT_SOURCE_DIR}/content"
+    NAME       "RetroU"
+    SHORTNAME  "RetroU"
+    AUTHOR     "joguel96"
+    ICON       "${CMAKE_CURRENT_SOURCE_DIR}/../assets/icon.png"
+    TVSPLASH   "${CMAKE_CURRENT_SOURCE_DIR}/../assets/tv-splash.png"
+    DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/../assets/drc-splash.png"
+)
+
 # Test build with the synthetic core compiled into the RPX.
 add_executable(retrou_test
     src/main.cpp

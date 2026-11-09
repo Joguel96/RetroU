@@ -2,6 +2,7 @@
 #include <SDL_ttf.h>
 
 #include "rpl_core.hpp"
+#include "hbl.hpp"
 #include <whb/sdcard.h>
 #include <sysapp/launch.h>
 
@@ -378,38 +379,20 @@ bool launch_core(const std::string &sd_root, const std::string &core_path,
         path = "/vol/external01/" + path.substr(4);
     }
 
-    /* The public WUT header declares two arguments, but sysapp's real
-     * entry point takes (path, length, zero). Keep the length explicit. */
-    using LaunchByPathFn = int (*)(const char *, uint32_t, uint32_t);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wcast-function-type"
-    LaunchByPathFn launch = reinterpret_cast<LaunchByPathFn>(
-        &_SYSLaunchTitleByPathFromLauncher);
-#pragma GCC diagnostic pop
-
-    std::vector<std::string> candidates;
-    if (path.rfind("/vol/", 0) == 0) {
-        candidates.push_back("fs:" + path);
-    }
-    candidates.push_back(path);
-    if (path.rfind("/vol/external01/", 0) == 0) {
-        candidates.push_back("sd:/" + path.substr(16));
-    }
-
     std::ofstream log("/vol/external01/retrou/launcher.log", std::ios::app);
-    int result = -1;
-    for (const std::string &candidate : candidates) {
-        result = launch(candidate.c_str(), static_cast<uint32_t>(candidate.size()), 0);
-        if (log) {
-            log << "launch " << candidate << " result=" << result << "\n";
-        }
-        if (result >= 0) {
-            return true;
-        }
+    if (log) {
+        log << "HBL load " << path << "\n";
     }
-
-    error = "No se pudo lanzar el RPX";
-    return false;
+    if (!retrou::hbl_load_to_memory(path, error)) {
+        if (log) {
+            log << "HBL failed: " << error << "\n";
+        }
+        return false;
+    }
+    if (log) {
+        log << "HBL ok\n";
+    }
+    return true;
 }
 
 struct TextCache {

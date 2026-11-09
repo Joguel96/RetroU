@@ -69,7 +69,8 @@ function(stage_rpx target output_name)
 endfunction()
 
 function(configure_retrou target)
-    target_sources(${target} PRIVATE "${FONT_REGULAR_OBJ}" "${FONT_BOLD_OBJ}")
+    target_sources(${target} PRIVATE "${FONT_REGULAR_OBJ}" "${FONT_BOLD_OBJ}"
+                                      "${CMAKE_CURRENT_SOURCE_DIR}/src/hbl.cpp")
     set_source_files_properties("${FONT_REGULAR_OBJ}" "${FONT_BOLD_OBJ}"
         PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
 

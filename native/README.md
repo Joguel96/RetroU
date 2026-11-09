@@ -1,59 +1,64 @@
-# App nativa Wii U — modo RPX estático
+# App nativa Wii U — WUHB por consola
 
 Frontend RetroU con **WUT + SDL2 + SDL2_ttf**. Cada build lleva **un core
-Libretro enlazado estáticamente**, igual que RetroArch Wii U.
+Libretro enlazado estáticamente** y se distribuye como WUHB independiente.
 
 ## Apps generadas
 
 | App | Core | Sistema |
 |---|---|---|
-| `RetroU.wuhb` | ninguno (launcher) | detecta y lanza el RPX con Mocha |
 | `RetroU-NES.wuhb` | fceumm | NES |
 | `RetroU-SNES.wuhb` | snes9x | SNES |
 | `RetroU-GBA.wuhb` | mgba | GBA |
 | `RetroU-Test.wuhb` | test_core | prueba de vídeo |
 
-Los RPX de core se copian a `retrou/cores/`:
+Distribución:
 
 ```text
-RetroU-NES.rpx
-RetroU-SNES.rpx
-RetroU-GBA.rpx
+dist/wiiu/apps/RetroU-NES/RetroU-NES.wuhb
+dist/wiiu/apps/RetroU-SNES/RetroU-SNES.wuhb
+dist/wiiu/apps/RetroU-GBA/RetroU-GBA.wuhb
+dist/wiiu/apps/RetroU-Test/RetroU-Test.wuhb
 ```
 
-`RetroU.wuhb` se copia automáticamente a `dist/wiiu/apps/retrou/RetroU.wuhb`
-(equivale a `sd:/wiiu/apps/retrou/RetroU.wuhb`).
+No hay launcher, `RetroU.wuhb`, `retrou/cores` ni RPX sueltos.
 
-El launcher escribe `launch/last.txt` y lanza el RPX del sistema con
-**libmocha**:
+## Datos
 
-```cpp
-Mocha_InitLibrary();
-Mocha_PrepareRPXLaunch(&load_info);
-Mocha_LaunchHomebrewWrapperEx(&std_args);
+```text
+sd:/retrou/roms/nes/
+sd:/retrou/roms/snes/
+sd:/retrou/roms/gba/
+
+sd:/retrou/config/theme.conf
+sd:/retrou/config/nes/nes.conf
+sd:/retrou/config/nes/control-map.conf
+sd:/retrou/config/nes/video.conf
+...
+sd:/retrou/saves/<consola>/save/
+sd:/retrou/snap/<consola>/
 ```
 
-Requiere `MochaPayload`/EnvironmentLoader activo en Aroma o Tiramisu.
-El RPX destino lee `last.txt`, lo borra y carga la ROM con su core.
+Cada app crea sus carpetas y archivos de configuración si no existen.
 
 ## Qué hace
 
-- Escanea `sd:/retrou/roms/<Consola>/`.
-- Muestra la UI de cristal con consolas, contadores y tarjetas.
-- **A** carga la ROM con el core integrado en esa app.
-- **Minus** abre el menú de RetroU.
+- Escanea `sd:/retrou/roms/<consola>/`.
+- Muestra solo la grilla de juegos, sin barra de consolas.
+- **A** carga la ROM con el core integrado.
+- **Plus** abre el sidebar con filtros, controles y ajustes.
+- **Minus + Plus** abre el menú superpuesto durante el core.
 - El render de la UI es bajo demanda: solo repinta cuando hay entrada o cambia
   el estado, no a 60 FPS constante.
 
-No hay selector de cores: cada app es un sistema. Si abres una ROM de otro
-sistema, avisa de que esa build no la soporta.
+No hay selector de cores: cada app es un sistema.
 
 ## Lo que falta
 
-- Audio e input del core (fase 2).
-- SRAM/savestates.
+- Audio e input del core.
+- SRAM/savestates reales (las carpetas ya existen).
+- Mapeo de controles y ajustes de vídeo funcionales.
 - Carátulas reales.
-- Descarga/instalación de builds de cores.
 
 ## Build
 

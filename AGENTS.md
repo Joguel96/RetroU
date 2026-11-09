@@ -49,7 +49,8 @@ Requisitos históricos del usuario:
 
 ## 3. Arquitectura actual (`main`)
 
-Modelo elegido: **apps RPX estáticas**, similar a RetroArch Wii U.
+Modelo elegido: **una WUHB independiente por consola**, como las apps virtuales
+de Switch. No hay launcher ni carpeta de cores en la SD.
 
 Cada app contiene:
 
@@ -65,75 +66,60 @@ Apps:
 | `retrou_snes` | snes9x | SNES |
 | `retrou_gba` | mgba | GBA |
 | `retrou_test` | `test_core.cpp` | test de vídeo |
-| `retrou_launcher` | ninguno | launcher oficial |
 
 Salidas:
 
 ```text
-native/build/retrou_nes.rpx / .wuhb
-native/build/retrou_snes.rpx / .wuhb
-native/build/retrou_gba.rpx / .wuhb
-native/build/retrou_test.rpx / .wuhb
-native/build/retrou_launcher.rpx / .wuhb
+native/build/retrou_nes.wuhb
+native/build/retrou_snes.wuhb
+native/build/retrou_gba.wuhb
+native/build/retrou_test.wuhb
 ```
 
-Los RPX de core se copian a:
+Distribución:
 
 ```text
-dist/retrou/cores/RetroU-NES.rpx
-dist/retrou/cores/RetroU-SNES.rpx
-dist/retrou/cores/RetroU-GBA.rpx
-dist/retrou/cores/RetroU-Test.rpx
+dist/wiiu/apps/RetroU-NES/RetroU-NES.wuhb
+dist/wiiu/apps/RetroU-SNES/RetroU-SNES.wuhb
+dist/wiiu/apps/RetroU-GBA/RetroU-GBA.wuhb
+dist/wiiu/apps/RetroU-Test/RetroU-Test.wuhb
 ```
 
-El launcher se copia a:
+No se distribuyen RPX sueltos ni `RetroU.wuhb` launcher.
+
+## 4. Datos y configuración
 
 ```text
-dist/wiiu/apps/retrou/RetroU.wuhb
-dist/RetroU.wuhb
+sd:/retrou/roms/nes/
+sd:/retrou/roms/snes/
+sd:/retrou/roms/gba/
+
+sd:/retrou/config/theme.conf              tema compartido
+
+sd:/retrou/config/nes/
+  nes.conf
+  control-map.conf
+  video.conf
+sd:/retrou/config/snes/
+  snes.conf
+  control-map.conf
+  video.conf
+sd:/retrou/config/gba/
+  gba.conf
+  control-map.conf
+  video.conf
+
+sd:/retrou/saves/<consola>/save/          SRAM de juegos
+sd:/retrou/snap/<consola>/                slots de guardado de la app
 ```
 
-`dist/` está ignorado por git.
+Las carpetas de ROMs se aceptan en minúscula (`nes`, `snes`, `gba`) y también
+en mayúscula por compatibilidad. La ruta canónica es minúscula.
 
-## 4. Estado del launcher
+`theme.conf` es común. `nes.conf`, `control-map.conf` y `video.conf` son
+independientes por app.
 
-`RetroU.wuhb` es el ejecutable oficial: no tiene core; escanea ROMs y debería
-lanzar el RPX correspondiente. Flujo previsto:
-
-```text
-RetroU.wuhb
-  → A sobre ROM
-  → escribe sd:/retrou/launch/last.txt
-  → lanza sd:/retrou/cores/RetroU-<sistema>.rpx
-  → el RPX lee last.txt, lo borra y carga la ROM
-```
-
-Antes del port actual se probaron rutas `fs:/vol`, `/vol` y `sd:/` con
-`_SYSLaunchTitleByPathFromLauncher` y un port HBL con `SC0x25`; ambos fallaron
-en WUHB de Aroma.
-
-El test `retrou_test.rpx` **sí funcionó**: era una app independiente, no un
-salto entre apps. Ese éxito no valida el launcher.
-
-### Lanzador con Mocha (implementado)
-
-El launcher usa el mismo mecanismo que el fork `ashquarky/RetroArch` rama
-`wiiu-wut`, vía `libmocha`:
-
-- `native/src/mocha_launch.hpp` / `mocha_launch.cpp`
-- `native/third_party/libmocha` (headers + `libmocha.a`, LGPLv3)
-- `Mocha_InitLibrary`
-- `Mocha_PrepareRPXLaunch` con `LOAD_RPX_TARGET_SD_CARD`
-- `Mocha_LaunchHomebrewWrapperEx` con `SYSStandardArgsIn`
-
-El RPX se pasa como ruta relativa a la SD (`retrou/cores/RetroU-XXX.rpx`).
-El launcher escribe `launch/last.txt`, lanza el RPX y sale. El RPX lee
-`last.txt`, lo borra y carga la ROM.
-
-Requiere `MochaPayload`/EnvironmentLoader activo. `hbl.cpp` queda como código
-experimental y ya no se compila en las apps.
-
-Pendiente: **probar en hardware**.
+Ya no se usa `sd:/retrou/cores`, HBL, Mocha ni `launch/last.txt`.
 
 ## 5. Cores
 
@@ -194,44 +180,46 @@ No extender el RPL sin petición explícita. Si se retoma, hacerlo en su rama.
 
 ## 7. UI y rendimiento
 
-- UI de cristal propia, en español.
-- Navegación con D-Pad/stick, A, B, X, Y, L/R, Minus.
-- `Minus` abre el menú superpuesto de RetroU durante el core.
+- UI de cristal propia, en español, guiada por `Joguel96/retroui`.
+- Navegación con D-Pad/stick, A, B, Plus.
+- No hay barra lateral de consolas ni vista de ajustes separada.
+- Solo la grilla de juegos a pantalla completa.
+- `Plus` abre el sidebar superpuesto con filtros, controles y ajustes.
+- `Minus + Plus` abre el menú superpuesto durante el core.
 - El menú de juego pausa el core.
 - El render de la UI es bajo demanda (`ui_dirty`), no a 60 FPS constantes.
-- Contadores por consola y lista visible están cacheados.
-- El usuario reportó que el catálogo seguía lento; la mejora de render bajo
-  demanda está implementada pero **no validada en hardware**.
-- Las fuentes Lato van embebidas en los RPX con `objcopy`; no dependen de
-  `/vol/content`.
-- Un RPX suelto no tiene icono ni splash; eso solo lo aporta el WUHB.
+- Las fuentes Lato van embebidas en los WUHB con `objcopy`.
 
 ## 8. Logs
 
 ```text
 sd:/retrou/retrou_rpx.log      app estática (init/run)
 sd:/retrou/retrou_rpl.log      RPL (solo rama experimental)
-sd:/retrou/launcher.log        intentos del launcher
-sd:/retrou/launch/last.txt     ROM pendiente para el RPX destino
 ```
 
-`last.txt` es de un solo uso: el RPX lo borra al arrancar.
+Ya no se usa `launcher.log` ni `launch/last.txt`.
 
 ## 9. Directorios y datos
 
 ```text
-sd:/wiiu/apps/retrou/RetroU.wuhb
-sd:/retrou/roms/<Consola>/
-sd:/retrou/cores/RetroU-NES.rpx
-sd:/retrou/cores/RetroU-SNES.rpx
-sd:/retrou/cores/RetroU-GBA.rpx
-sd:/retrou/cores/system/
-sd:/retrou/cores/savefiles/
-sd:/retrou/thumbnails/
-sd:/retrou/launch/
+sd:/wiiu/apps/RetroU-NES/RetroU-NES.wuhb
+sd:/wiiu/apps/RetroU-SNES/RetroU-SNES.wuhb
+sd:/wiiu/apps/RetroU-GBA/RetroU-GBA.wuhb
+
+sd:/retrou/roms/nes/
+sd:/retrou/roms/snes/
+sd:/retrou/roms/gba/
+
+sd:/retrou/config/theme.conf
+sd:/retrou/config/<consola>/<consola>.conf
+sd:/retrou/config/<consola>/control-map.conf
+sd:/retrou/config/<consola>/video.conf
+
+sd:/retrou/saves/<consola>/save/
+sd:/retrou/snap/<consola>/
 ```
 
-No usar rutas `retroarch/`.
+No usar rutas `retroarch/` ni `retrou/cores/`.
 
 ## 10. Build
 
@@ -264,13 +252,15 @@ No commitear:
 
 ## 11. Estado funcional y limitaciones
 
-- NES/SNES/GBA: app RPX estática generada y compilada.
-- `RetroU-Test` funciona en hardware (test de vídeo).
+- NES/SNES/GBA: WUHB estática generada y compilada.
+- `RetroU-Test` sigue disponible como build de desarrollo.
 - No probado en hardware: NES/SNES/GBA con ROM real.
 - **Input del core no implementado**: los botones aún no llegan al emulador.
 - **Audio del core no implementado**.
 - SRAM/savestates/carátulas reales pendientes.
-- El launcher con Mocha está implementado; **no probado en hardware**.
+- El sidebar funciona, pero Controles/Ajustes son placeholders.
+- El guardado de SRAM/snap todavía no escribe archivos; solo se crean las
+  carpetas.
 - No afirmar que algo está probado en hardware si no lo está.
 
 ## 12. Convenciones

@@ -22,6 +22,7 @@ public:
     bool loadGame(const std::string &rom_path, std::string &error);
     void runFrame();
     void present(SDL_Renderer *renderer, int width, int height) const;
+    void setSaveDirectory(const std::string &path) { save_directory_ = path; }
 
     bool loaded() const { return loaded_; }
     const std::string &name() const { return name_; }
@@ -71,6 +72,7 @@ private:
     std::string log_path_ = "/vol/external01/retrou/retrou_rpl.log";
     std::string name_;
     std::string rom_path_;
+    std::string save_directory_ = "/vol/external01/retrou/saves/default/save";
 
     ApiVersionFn api_version_ = nullptr;
     InitFn init_ = nullptr;

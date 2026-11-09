@@ -11,8 +11,7 @@ RplCore *RplCore::instance_ = nullptr;
 
 namespace {
 
-const char *kSystemDirectory = "/vol/external01/retrou/cores/system";
-const char *kSaveDirectory = "/vol/external01/retrou/cores/savefiles";
+const char *kSystemDirectory = "/vol/external01/retrou/config/system";
 
 Uint32 sdlFormatFor(uint32_t format)
 {
@@ -74,7 +73,9 @@ bool RplCore::environmentCallback(unsigned cmd, void *data)
             return true;
         case RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY:
             if (data) {
-                *static_cast<const char **>(data) = kSaveDirectory;
+                *static_cast<const char **>(data) =
+                    instance_ ? instance_->save_directory_.c_str()
+                              : "/vol/external01/retrou/saves/default/save";
             }
             return true;
         case RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME:
@@ -235,8 +236,8 @@ bool RplCore::loadStaticCore(SDL_Renderer *tv, SDL_Renderer *drc, std::string &e
     drc_ = drc;
     static_test_ = true;
     log_path_ = "/vol/external01/retrou/retrou_rpx.log";
-    mkdir("/vol/external01/retrou/cores/system", 0777);
-    mkdir("/vol/external01/retrou/cores/savefiles", 0777);
+    mkdir("/vol/external01/retrou/config/system", 0777);
+    mkdir("/vol/external01/retrou/saves/default/save", 0777);
     log("RplCore::loadStaticCore");
 
     api_version_ = retro_api_version;

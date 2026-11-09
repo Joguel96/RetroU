@@ -2,7 +2,6 @@
 #include <SDL_ttf.h>
 
 #include "rpl_core.hpp"
-#include "mocha_launch.hpp"
 #include <whb/sdcard.h>
 #include <sysapp/launch.h>
 
@@ -80,6 +79,11 @@ struct AppState {
     int counts[kConsoleCount + 1] = {};
     std::vector<const RomEntry *> visible;
     bool running = true;
+    bool sidebar_open = false;
+    int sidebar_index = 0;
+    int sort_mode = 0;       /* 0 = name, 1 = region */
+    int region_filter = 0;   /* 0 = all, 1 = USA, 2 = Europe, 3 = Japan */
+    char name_initial = 0;   /* 0 = all */
     bool pending_launch = false;
     bool pending_rpl = false;
     std::string launch_core;
@@ -278,13 +282,112 @@ std::string mount_sd()
     return "sd:";
 }
 
+std::string current_system_id()
+{
+#if defined(RETROU_CORE_SYSTEM)
+    return RETROU_CORE_SYSTEM;
+#else
+    return "test";
+#endif
+}
+
+std::string system_config_dir(const std::string &sd_root)
+{
+    return join_path(join_path(join_path(sd_root, "retrou"), "config"),
+                     current_system_id());
+}
+
+void write_default_file(const std::string &path, const char *contents)
+{
+    struct stat info;
+    if (stat(path.c_str(), &info) == 0) {
+        return;
+    }
+    std::ofstream out(path, std::ios::binary | std::ios::trunc);
+    if (out) {
+        out << contents;
+    }
+}
+
+void load_system_config(AppState &app)
+{
+    std::string path = join_path(system_config_dir(app.library.sd_root),
+                                 current_system_id() + ".conf");
+    std::ifstream in(path);
+    if (!in) {
+        return;
+    }
+    std::string line;
+    while (std::getline(in, line)) {
+        size_t eq = line.find('=');
+        if (eq == std::string::npos) {
+            continue;
+        }
+        std::string key = line.substr(0, eq);
+        std::string value = line.substr(eq + 1);
+        if (key == "sort") {
+            app.sort_mode = value == "region" ? 1 : 0;
+        } else if (key == "region") {
+            app.region_filter = std::max(0, std::min(3, std::atoi(value.c_str())));
+        } else if (key == "initial") {
+            int initial = std::atoi(value.c_str());
+            app.name_initial = initial >= 'A' && initial <= 'Z'
+                                   ? static_cast<char>(initial)
+                                   : 0;
+        }
+    }
+}
+
+void save_system_config(const AppState &app)
+{
+    std::string path = join_path(system_config_dir(app.library.sd_root),
+                                 current_system_id() + ".conf");
+    std::ofstream out(path, std::ios::binary | std::ios::trunc);
+    if (!out) {
+        return;
+    }
+    out << "sort=" << (app.sort_mode == 1 ? "region" : "name") << "\n";
+    out << "region=" << app.region_filter << "\n";
+    out << "initial=" << static_cast<int>(app.name_initial) << "\n";
+}
+
+void ensure_system_dirs(const std::string &sd_root)
+{
+    std::string retro = join_path(sd_root, "retrou");
+    std::string system = current_system_id();
+    mkdir(join_path(retro, "config").c_str(), 0777);
+    mkdir(join_path(join_path(retro, "config"), system).c_str(), 0777);
+    mkdir(join_path(retro, "saves").c_str(), 0777);
+    mkdir(join_path(join_path(retro, "saves"), system).c_str(), 0777);
+    mkdir(join_path(join_path(join_path(retro, "saves"), system), "save").c_str(), 0777);
+    mkdir(join_path(retro, "snap").c_str(), 0777);
+    mkdir(join_path(join_path(retro, "snap"), system).c_str(), 0777);
+
+    mkdir(join_path(join_path(retro, "config"), "system").c_str(), 0777);
+    write_default_file(join_path(join_path(retro, "config"), "theme.conf"),
+                       "theme=retroui\nstyle=crystal\n");
+    std::string dir = join_path(join_path(retro, "config"), system);
+    write_default_file(join_path(dir, system + ".conf"),
+                       "sort=name\nregion=0\ninitial=0\n");
+    write_default_file(join_path(dir, "control-map.conf"),
+                       "a=0\nb=1\nx=2\ny=3\nl=4\nr=5\nstart=6\nselect=7\n");
+    write_default_file(join_path(dir, "video.conf"),
+                       "scale=integer\naspect=core\nfilter=linear\n");
+}
+
+std::string system_save_directory(const std::string &sd_root)
+{
+    return join_path(join_path(join_path(join_path(sd_root, "retrou"), "saves"),
+                               current_system_id()),
+                     "save");
+}
+
 Library load_library()
 {
     Library library;
     library.sd_root = mount_sd();
     std::string retro_root = join_path(library.sd_root, "retrou");
     scan_roms(join_path(retro_root, "roms"), library);
-    scan_cores(join_path(retro_root, "cores"), library);
     return library;
 }
 
@@ -324,13 +427,55 @@ int console_index_by_id(const std::string &id)
     return 0;
 }
 
+int title_region(const std::string &title)
+{
+    if (title.find("(USA)") != std::string::npos) {
+        return 1;
+    }
+    if (title.find("(Europe)") != std::string::npos) {
+        return 2;
+    }
+    if (title.find("(Japan)") != std::string::npos) {
+        return 3;
+    }
+    return 0;
+}
+
 void refresh_visible(AppState &app)
 {
     app.visible.clear();
     for (const RomEntry &rom : app.library.roms) {
-        if (app.system == 0 || rom.system == kConsoles[app.system - 1].id) {
-            app.visible.push_back(&rom);
+        if (app.system != 0 && rom.system != kConsoles[app.system - 1].id) {
+            continue;
         }
+        if (app.name_initial != 0 && !rom.title.empty()) {
+            char initial = static_cast<char>(std::toupper(
+                static_cast<unsigned char>(rom.title[0])));
+            if (initial != app.name_initial) {
+                continue;
+            }
+        }
+        if (app.region_filter != 0 && title_region(rom.title) != app.region_filter) {
+            continue;
+        }
+        app.visible.push_back(&rom);
+    }
+
+    if (app.sort_mode == 1) {
+        std::sort(app.visible.begin(), app.visible.end(),
+                  [](const RomEntry *a, const RomEntry *b) {
+                      int ra = title_region(a->title);
+                      int rb = title_region(b->title);
+                      if (ra != rb) {
+                          return ra < rb;
+                      }
+                      return lower_copy(a->title) < lower_copy(b->title);
+                  });
+    } else {
+        std::sort(app.visible.begin(), app.visible.end(),
+                  [](const RomEntry *a, const RomEntry *b) {
+                      return lower_copy(a->title) < lower_copy(b->title);
+                  });
     }
 
     if (app.visible.empty()) {
@@ -356,45 +501,6 @@ void rebuild_indexes(AppState &app)
     }
 
     refresh_visible(app);
-}
-
-void launcher_log(const std::string &message)
-{
-    std::ofstream out("/vol/external01/retrou/launcher.log", std::ios::app);
-    out << std::unitbuf;
-    if (out) {
-        out << message << std::endl;
-    }
-}
-
-bool launch_core(const std::string &sd_root, const std::string &core_path,
-                 const std::string &rom_path, std::string &error)
-{
-    std::string launch_dir = join_path(join_path(sd_root, "retrou"), "launch");
-    mkdir(launch_dir.c_str(), 0777);
-
-    std::string launch_file = join_path(launch_dir, "last.txt");
-    std::ofstream out(launch_file, std::ios::binary | std::ios::trunc);
-    if (!out) {
-        error = "No se pudo escribir launch/last.txt";
-        return false;
-    }
-    out << rom_path << "\n" << core_path << "\n";
-    out.close();
-
-    /* sysapp wants the IOSU path, not the stdio devoptab prefix. */
-    std::string path = core_path;
-    if (path.rfind("sd:/", 0) == 0) {
-        path = "/vol/external01/" + path.substr(4);
-    }
-
-    launcher_log("Mocha launch " + path);
-    if (!retrou::mocha_launch_rpx(path, rom_path, error)) {
-        launcher_log("Mocha failed: " + error);
-        return false;
-    }
-    launcher_log("Mocha ok");
-    return true;
 }
 
 struct TextCache {
@@ -575,49 +681,18 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
     const int margin = tv ? 28 : 18;
     const int header_h = tv ? 84 : 64;
     const int footer_h = tv ? 62 : 46;
-    const int sidebar_w = tv ? 230 : 158;
     const int gap = tv ? 14 : 9;
-    const int columns = tv ? 4 : 3;
+    const int columns = tv ? 5 : 3;
     const int rows = tv ? 3 : 2;
 
     const uint32_t accent = app.system == 0 ? 0xF5D97F : kConsoles[app.system - 1].color;
     draw_background(renderer, width, height, accent);
     draw_header(renderer, cache, title_font, small_font, width, height, tv, connected);
 
-    /* Sidebar */
-    int sidebar_x = margin;
-    int sidebar_y = header_h + 8;
-    int sidebar_h = height - sidebar_y - footer_h - margin;
-    fill_rect(renderer, sidebar_x, sidebar_y, sidebar_w, sidebar_h, rgba(15, 23, 42, 170));
-    outline_rect(renderer, sidebar_x, sidebar_y, sidebar_w, sidebar_h, rgba(255, 255, 255, 38));
-
-    draw_text(renderer, cache, small_font, "CONSOLAS", sidebar_x + 14, sidebar_y + 12,
-              rgba(148, 163, 184));
-    int row_y = sidebar_y + 38;
-    int row_h = tv ? 40 : 31;
-    for (int i = 0; i <= kConsoleCount; ++i) {
-        const char *name = i == 0 ? "Todas" : kConsoles[i - 1].name;
-        int count = console_count(app, i);
-        bool selected = app.system == i;
-        if (selected) {
-            fill_rect(renderer, sidebar_x + 8, row_y - 3, sidebar_w - 16, row_h - 3,
-                      rgba(255, 255, 255, 24));
-            outline_rect(renderer, sidebar_x + 8, row_y - 3, sidebar_w - 16, row_h - 3,
-                         rgba(255, 255, 255, 80));
-        }
-        draw_text(renderer, cache, body_font, name, sidebar_x + 18, row_y, rgba(241, 245, 249));
-        std::string count_text = std::to_string(count);
-        draw_text(renderer, cache, small_font, count_text,
-                  sidebar_x + sidebar_w - 18 - text_width(small_font, count_text), row_y + 2,
-                  rgba(148, 163, 184));
-        row_y += row_h;
-    }
-
-    /* Content */
-    int content_x = sidebar_x + sidebar_w + (tv ? 18 : 10);
-    int content_w = width - content_x - margin;
-    int content_y = header_h + 8;
-    int content_h = height - content_y - footer_h - margin;
+    const int content_x = margin;
+    const int content_w = width - margin * 2;
+    const int content_y = header_h + 8;
+    const int content_h = height - content_y - footer_h - margin;
 
     const std::vector<const RomEntry *> &games = app.visible;
     if (games.empty()) {
@@ -684,7 +759,7 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
     fill_rect(renderer, 0, footer_y, width, footer_h, rgba(8, 13, 24, 210));
     outline_rect(renderer, 0, footer_y, width, 1, rgba(255, 255, 255, 30));
     draw_text(renderer, cache, small_font,
-              "L/R  CONSOLA     D-PAD  NAVEGAR     A  JUGAR     B  VOLVER     X  DETALLE",
+              "D-PAD  NAVEGAR     A  JUGAR     B  VOLVER     PLUS  MENÚ",
               margin, footer_y + (footer_h - 18) / 2, rgba(203, 213, 225));
 
     if (!app.message.empty()) {
@@ -695,6 +770,103 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
                      rgba(255, 255, 255, 60));
         draw_text_center(renderer, cache, small_font, app.message, width / 2,
                          footer_y - 37, rgba(255, 255, 255));
+    }
+}
+
+void render_sidebar(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_font,
+                    TTF_Font *body_font, TTF_Font *small_font, int width, int height,
+                    const AppState &app)
+{
+    fill_rect(renderer, 0, 0, width, height, rgba(0, 0, 0, 175));
+
+    int panel_w = std::min(width - 40, 380);
+    int panel_x = width - panel_w - 24;
+    int panel_y = 24;
+    int panel_h = height - 48;
+
+    fill_rect(renderer, panel_x, panel_y, panel_w, panel_h, rgba(15, 23, 42, 245));
+    outline_rect(renderer, panel_x, panel_y, panel_w, panel_h, rgba(255, 255, 255, 80));
+
+    draw_text(renderer, cache, heading_font, "MENÚ RETROU", panel_x + 20, panel_y + 20,
+              rgba(255, 255, 255));
+    draw_text(renderer, cache, small_font, "PLUS / B  CERRAR", panel_x + 20, panel_y + 54,
+              rgba(148, 163, 184));
+
+    std::string name_value = app.name_initial == 0
+                                 ? "Todos"
+                                 : std::string(1, app.name_initial);
+    std::string sort_value = app.sort_mode == 0 ? "Nombre" : "Región";
+    const char *regions[] = {"Todas", "USA", "Europa", "Japón"};
+    std::string region_value = regions[std::max(0, std::min(3, app.region_filter))];
+
+    const std::string labels[] = {
+        "Nombre: " + name_value,
+        "Ordenar por: " + sort_value,
+        "Región: " + region_value,
+        "Controles",
+        "Ajustes",
+    };
+
+    int y = panel_y + 92;
+    for (int i = 0; i < 5; ++i) {
+        if (i == app.sidebar_index) {
+            fill_rect(renderer, panel_x + 12, y - 9, panel_w - 24, 44,
+                      rgba(245, 217, 127, 42));
+            outline_rect(renderer, panel_x + 12, y - 9, panel_w - 24, 44,
+                         rgba(245, 217, 127, 150));
+        }
+        draw_text(renderer, cache, body_font, labels[i], panel_x + 26, y,
+                  i == app.sidebar_index ? rgba(255, 255, 255) : rgba(203, 213, 225));
+        y += 56;
+    }
+
+    draw_text(renderer, cache, small_font,
+              "Nombre filtra por inicial. Controles/Ajustes se guardan",
+              panel_x + 20, panel_y + panel_h - 52, rgba(148, 163, 184));
+    draw_text(renderer, cache, small_font,
+              "en config/<consola>/",
+              panel_x + 20, panel_y + panel_h - 30, rgba(148, 163, 184));
+}
+
+void sidebar_action(AppState &app, int action)
+{
+    switch (action) {
+        case 0:
+            app.sidebar_index = (app.sidebar_index + 4) % 5;
+            break;
+        case 1:
+            app.sidebar_index = (app.sidebar_index + 1) % 5;
+            break;
+        case 9:
+            app.sidebar_open = false;
+            break;
+        case 6:
+            if (app.sidebar_index == 0) {
+                if (app.name_initial == 0) {
+                    app.name_initial = 'A';
+                } else if (app.name_initial >= 'Z') {
+                    app.name_initial = 0;
+                } else {
+                    app.name_initial = static_cast<char>(app.name_initial + 1);
+                }
+                refresh_visible(app);
+            } else if (app.sidebar_index == 1) {
+                app.sort_mode = (app.sort_mode + 1) % 2;
+                refresh_visible(app);
+            } else if (app.sidebar_index == 2) {
+                app.region_filter = (app.region_filter + 1) % 4;
+                refresh_visible(app);
+            } else if (app.sidebar_index == 3) {
+                app.message = "Mapeo de controles: próxima fase";
+            } else {
+                app.message = "Ajustes de vídeo: próxima fase";
+            }
+            if (app.sidebar_index <= 2) {
+                save_system_config(app);
+            }
+            break;
+        default:
+            break;
     }
 }
 
@@ -767,10 +939,7 @@ void handle_action(AppState &app, int action)
             move_selection(app, 1, 0, 4, static_cast<int>(games.size()));
             break;
         case 4: /* system previous */
-            set_system(app, app.system - 1);
-            break;
         case 5: /* system next */
-            set_system(app, app.system + 1);
             break;
         case 6: /* launch */
             if (games.empty()) {
@@ -782,32 +951,7 @@ void handle_action(AppState &app, int action)
             }
             {
                 const RomEntry &rom = *games[app.game];
-#if defined(RETROU_LAUNCHER)
-                std::string label;
-                if (rom.system == "nes") {
-                    label = "NES";
-                } else if (rom.system == "snes") {
-                    label = "SNES";
-                } else if (rom.system == "gba") {
-                    label = "GBA";
-                } else {
-                    app.message = "No hay RPX para " + rom.system;
-                    break;
-                }
-
-                std::string rpx_path = join_path(
-                    join_path(app.library.sd_root, "retrou"),
-                    "cores/RetroU-" + label + ".rpx");
-                struct stat info;
-                if (stat(rpx_path.c_str(), &info) != 0) {
-                    app.message = "Falta retrou/cores/RetroU-" + label + ".rpx";
-                    break;
-                }
-                app.launch_core = rpx_path;
-                app.launch_rom = rom.path;
-                app.pending_launch = true;
-                app.running = false;
-#elif defined(RETROU_STATIC_CORE) && defined(RETROU_CORE_SYSTEM)
+#if defined(RETROU_STATIC_CORE) && defined(RETROU_CORE_SYSTEM)
                 if (rom.system != RETROU_CORE_SYSTEM) {
                     app.message = std::string("Esta build es ") + RETROU_CORE_LABEL;
                     break;
@@ -818,22 +962,7 @@ void handle_action(AppState &app, int action)
 #elif defined(RETROU_STATIC_CORE)
                 app.message = "Este build es solo de prueba";
 #else
-                const CoreEntry *core = find_core(app.library, rom.system);
-                if (!core) {
-                    app.message = "No hay core .rpl/.rpx para " + rom.system;
-                    break;
-                }
-                if (core->rpl) {
-                    app.rpl_core = core->path;
-                    app.rpl_rom = rom.path;
-                    app.pending_rpl = true;
-                    app.message = "Cargando core en RetroU...";
-                    break;
-                }
-                app.launch_core = core->path;
-                app.launch_rom = rom.path;
-                app.pending_launch = true;
-                app.running = false;
+                app.message = "Esta build no tiene core";
 #endif
             }
             break;
@@ -843,11 +972,70 @@ void handle_action(AppState &app, int action)
         case 8: /* favorite */
             app.message = "Favoritos: proxima fase";
             break;
-        case 9: /* back to all */
-            set_system(app, 0);
+        case 9: /* back / close sidebar */
+            app.sidebar_open = false;
             break;
         default:
             break;
+    }
+}
+
+struct CoreMenuState {
+    bool open = false;
+    bool minus = false;
+    bool plus = false;
+    bool latched = false;
+    int selected = 0;
+};
+
+void core_menu_event(CoreMenuState &menu, const SDL_Event &event, bool &close_game)
+{
+    if (event.type == SDL_CONTROLLERBUTTONDOWN) {
+        if (event.cbutton.button == SDL_CONTROLLER_BUTTON_BACK) {
+            menu.minus = true;
+        } else if (event.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
+            menu.plus = true;
+        }
+
+        if (menu.minus && menu.plus && !menu.open && !menu.latched) {
+            menu.open = true;
+            menu.selected = 0;
+            menu.latched = true;
+        }
+
+        if (!menu.open) {
+            return;
+        }
+
+        if (event.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_UP ||
+            event.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN ||
+            event.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_LEFT ||
+            event.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
+            menu.selected = (menu.selected + 1) % 2;
+        } else if (event.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
+            if (menu.selected == 1) {
+                close_game = true;
+            } else {
+                menu.open = false;
+                menu.latched = false;
+            }
+        } else if (event.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
+            menu.open = false;
+            menu.latched = false;
+        }
+    } else if (event.type == SDL_CONTROLLERBUTTONUP) {
+        if (event.cbutton.button == SDL_CONTROLLER_BUTTON_BACK) {
+            menu.minus = false;
+        } else if (event.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
+            menu.plus = false;
+        }
+        if (!menu.minus || !menu.plus) {
+            menu.latched = false;
+        }
+    } else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+        menu.open = !menu.open;
+        menu.selected = 0;
+        menu.latched = false;
     }
 }
 
@@ -867,7 +1055,7 @@ void render_core_menu(SDL_Renderer *renderer, TextCache &cache, TTF_Font *headin
 
     draw_text(renderer, cache, heading_font, "MENÚ RETROU", panel_x + 24, panel_y + 20,
               rgba(255, 255, 255));
-    draw_text(renderer, cache, small_font, "MINUS  CERRAR     A  SELECCIONAR",
+    draw_text(renderer, cache, small_font, "MINUS + PLUS  CERRAR MENÚ     A  SELECCIONAR",
               panel_x + 24, panel_y + 58, rgba(148, 163, 184));
 
     const char *options[] = {
@@ -905,6 +1093,7 @@ void run_rpl_core(AppState &app, const std::string &core_path, const std::string
     }
 
     retrou::RplCore core;
+    core.setSaveDirectory(system_save_directory(app.library.sd_root));
     std::string error;
 
     TextCache loading_tv;
@@ -937,8 +1126,8 @@ void run_rpl_core(AppState &app, const std::string &core_path, const std::string
         return;
     }
 
-    bool menu_open = false;
-    int menu_selected = 0;
+    CoreMenuState menu;
+    bool close_game = false;
     TextCache tv_menu_text;
     TextCache drc_menu_text;
 
@@ -949,54 +1138,20 @@ void run_rpl_core(AppState &app, const std::string &core_path, const std::string
                 app.running = false;
                 break;
             }
+            core_menu_event(menu, event, close_game);
+        }
 
-            if (event.type == SDL_CONTROLLERBUTTONDOWN) {
-                unsigned button = event.cbutton.button;
-
-                if (button == SDL_CONTROLLER_BUTTON_BACK) {
-                    menu_open = !menu_open;
-                    menu_selected = 0;
-                    continue;
-                }
-
-                if (!menu_open) {
-                    /* B no longer closes the core; only the menu does. */
-                    continue;
-                }
-
-                if (button == SDL_CONTROLLER_BUTTON_DPAD_UP ||
-                    button == SDL_CONTROLLER_BUTTON_DPAD_LEFT) {
-                    menu_selected = (menu_selected + 1) % 2;
-                } else if (button == SDL_CONTROLLER_BUTTON_DPAD_DOWN ||
-                           button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
-                    menu_selected = (menu_selected + 1) % 2;
-                } else if (button == SDL_CONTROLLER_BUTTON_A) {
-                    if (menu_selected == 1) {
-                        core.unload();
-                        app.message = "Juego cerrado";
-                        return;
-                    }
-                    menu_open = false;
-                } else if (button == SDL_CONTROLLER_BUTTON_B) {
-                    menu_open = false;
-                }
-            }
-
-            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
-                if (menu_open) {
-                    menu_open = false;
-                } else {
-                    menu_open = true;
-                    menu_selected = 0;
-                }
-            }
+        if (close_game) {
+            core.unload();
+            app.message = "Juego cerrado";
+            return;
         }
 
         if (!app.running) {
             break;
         }
 
-        if (!menu_open) {
+        if (!menu.open) {
             core.runFrame();
         }
 
@@ -1004,9 +1159,9 @@ void run_rpl_core(AppState &app, const std::string &core_path, const std::string
             SDL_SetRenderDrawColor(tv, 0, 0, 0, 255);
             SDL_RenderClear(tv);
             core.present(tv, 1280, 720);
-            if (menu_open) {
+            if (menu.open) {
                 render_core_menu(tv, tv_menu_text, heading_font, body_font, small_font,
-                                 1280, 720, menu_selected);
+                                 1280, 720, menu.selected);
             }
             SDL_RenderPresent(tv);
         }
@@ -1014,9 +1169,9 @@ void run_rpl_core(AppState &app, const std::string &core_path, const std::string
             SDL_SetRenderDrawColor(drc, 0, 0, 0, 255);
             SDL_RenderClear(drc);
             core.present(drc, 854, 480);
-            if (menu_open) {
+            if (menu.open) {
                 render_core_menu(drc, drc_menu_text, heading_font, body_font, small_font,
-                                 854, 480, menu_selected);
+                                 854, 480, menu.selected);
             }
             SDL_RenderPresent(drc);
         }
@@ -1040,6 +1195,7 @@ void run_static_core(AppState &app, const std::string &rom_path,
     }
 
     retrou::RplCore core;
+    core.setSaveDirectory(system_save_directory(app.library.sd_root));
     std::string error;
 
     TextCache loading_tv;
@@ -1069,8 +1225,8 @@ void run_static_core(AppState &app, const std::string &rom_path,
         return;
     }
 
-    bool menu_open = false;
-    int menu_selected = 0;
+    CoreMenuState menu;
+    bool close_game = false;
     TextCache tv_menu_text;
     TextCache drc_menu_text;
 
@@ -1081,42 +1237,19 @@ void run_static_core(AppState &app, const std::string &rom_path,
                 app.running = false;
                 break;
             }
-            if (event.type == SDL_CONTROLLERBUTTONDOWN) {
-                unsigned button = event.cbutton.button;
-                if (button == SDL_CONTROLLER_BUTTON_BACK) {
-                    menu_open = !menu_open;
-                    menu_selected = 0;
-                    continue;
-                }
-                if (!menu_open) {
-                    continue;
-                }
-                if (button == SDL_CONTROLLER_BUTTON_DPAD_UP ||
-                    button == SDL_CONTROLLER_BUTTON_DPAD_LEFT ||
-                    button == SDL_CONTROLLER_BUTTON_DPAD_DOWN ||
-                    button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
-                    menu_selected = (menu_selected + 1) % 2;
-                } else if (button == SDL_CONTROLLER_BUTTON_A) {
-                    if (menu_selected == 1) {
-                        core.unload();
-                        app.message = "Test RPX cerrado";
-                        return;
-                    }
-                    menu_open = false;
-                } else if (button == SDL_CONTROLLER_BUTTON_B) {
-                    menu_open = false;
-                }
-            }
-            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
-                menu_open = !menu_open;
-                menu_selected = 0;
-            }
+            core_menu_event(menu, event, close_game);
+        }
+
+        if (close_game) {
+            core.unload();
+            app.message = "Juego cerrado";
+            return;
         }
 
         if (!app.running) {
             break;
         }
-        if (!menu_open) {
+        if (!menu.open) {
             core.runFrame();
         }
 
@@ -1124,9 +1257,9 @@ void run_static_core(AppState &app, const std::string &rom_path,
             SDL_SetRenderDrawColor(tv, 0, 0, 0, 255);
             SDL_RenderClear(tv);
             core.present(tv, 1280, 720);
-            if (menu_open) {
+            if (menu.open) {
                 render_core_menu(tv, tv_menu_text, heading_font, body_font, small_font,
-                                 1280, 720, menu_selected);
+                                 1280, 720, menu.selected);
             }
             SDL_RenderPresent(tv);
         }
@@ -1134,9 +1267,9 @@ void run_static_core(AppState &app, const std::string &rom_path,
             SDL_SetRenderDrawColor(drc, 0, 0, 0, 255);
             SDL_RenderClear(drc);
             core.present(drc, 854, 480);
-            if (menu_open) {
+            if (menu.open) {
                 render_core_menu(drc, drc_menu_text, heading_font, body_font, small_font,
-                                 854, 480, menu_selected);
+                                 854, 480, menu.selected);
             }
             SDL_RenderPresent(drc);
         }
@@ -1247,14 +1380,15 @@ int main(int argc, char **argv)
 
     AppState app;
     app.library = load_library();
-    rebuild_indexes(app);
-#if defined(RETROU_STATIC_CORE) && !defined(RETROU_TEST_CORE)
-    read_last_launch(app);
+    ensure_system_dirs(app.library.sd_root);
+#if defined(RETROU_CORE_SYSTEM)
+    app.system = console_index_by_id(RETROU_CORE_SYSTEM);
 #endif
+    rebuild_indexes(app);
+    load_system_config(app);
+    refresh_visible(app);
     if (app.library.roms.empty()) {
-        app.message = "Copia ROMs a sd:/retrou/roms/<Consola>/";
-    } else if (app.library.cores.empty()) {
-        app.message = "Copia cores .rpx a sd:/retrou/cores/";
+        app.message = "Copia ROMs a sd:/retrou/roms/<consola>/";
     }
 
     SDL_GameController *controller = open_first_controller();
@@ -1291,28 +1425,48 @@ int main(int argc, char **argv)
                 }
             }
             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
+                auto dispatch = [&](int action) {
+                    if (app.sidebar_open) {
+                        sidebar_action(app, action);
+                    } else {
+                        handle_action(app, action);
+                    }
+                };
                 switch (event.cbutton.button) {
-                    case SDL_CONTROLLER_BUTTON_DPAD_UP: handle_action(app, 0); break;
-                    case SDL_CONTROLLER_BUTTON_DPAD_DOWN: handle_action(app, 1); break;
-                    case SDL_CONTROLLER_BUTTON_DPAD_LEFT: handle_action(app, 2); break;
-                    case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: handle_action(app, 3); break;
-                    case SDL_CONTROLLER_BUTTON_LEFTSHOULDER: handle_action(app, 4); break;
-                    case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER: handle_action(app, 5); break;
-                    case SDL_CONTROLLER_BUTTON_A: handle_action(app, 6); break;
-                    case SDL_CONTROLLER_BUTTON_B: handle_action(app, 9); break;
-                    case SDL_CONTROLLER_BUTTON_X: handle_action(app, 7); break;
-                    case SDL_CONTROLLER_BUTTON_Y: handle_action(app, 8); break;
-                    case SDL_CONTROLLER_BUTTON_START: run_test_core(app, tv_renderer, drc_renderer, heading_font, body_font, small_font); break;
+                    case SDL_CONTROLLER_BUTTON_DPAD_UP: dispatch(0); break;
+                    case SDL_CONTROLLER_BUTTON_DPAD_DOWN: dispatch(1); break;
+                    case SDL_CONTROLLER_BUTTON_DPAD_LEFT: dispatch(2); break;
+                    case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: dispatch(3); break;
+                    case SDL_CONTROLLER_BUTTON_A: dispatch(6); break;
+                    case SDL_CONTROLLER_BUTTON_B: dispatch(9); break;
+                    case SDL_CONTROLLER_BUTTON_X: dispatch(7); break;
+                    case SDL_CONTROLLER_BUTTON_Y: dispatch(8); break;
+                    case SDL_CONTROLLER_BUTTON_START:
+#if defined(RETROU_TEST_CORE)
+                        run_test_core(app, tv_renderer, drc_renderer, heading_font,
+                                      body_font, small_font);
+#else
+                        app.sidebar_open = !app.sidebar_open;
+                        app.sidebar_index = 0;
+#endif
+                        break;
                     default: break;
                 }
             }
             if (event.type == SDL_KEYDOWN) {
+                auto dispatch = [&](int action) {
+                    if (app.sidebar_open) {
+                        sidebar_action(app, action);
+                    } else {
+                        handle_action(app, action);
+                    }
+                };
                 switch (event.key.keysym.sym) {
-                    case SDLK_UP: handle_action(app, 0); break;
-                    case SDLK_DOWN: handle_action(app, 1); break;
-                    case SDLK_LEFT: handle_action(app, 2); break;
-                    case SDLK_RIGHT: handle_action(app, 3); break;
-                    case SDLK_RETURN: handle_action(app, 6); break;
+                    case SDLK_UP: dispatch(0); break;
+                    case SDLK_DOWN: dispatch(1); break;
+                    case SDLK_LEFT: dispatch(2); break;
+                    case SDLK_RIGHT: dispatch(3); break;
+                    case SDLK_RETURN: dispatch(6); break;
                     case SDLK_ESCAPE: app.running = false; break;
                     default: break;
                 }
@@ -1346,6 +1500,10 @@ int main(int argc, char **argv)
             SDL_RenderClear(tv_renderer);
             render_screen(tv_renderer, tv_text, title_font, heading_font, body_font, small_font,
                           app, 1280, 720, true, connected);
+            if (app.sidebar_open) {
+                render_sidebar(tv_renderer, tv_text, heading_font, body_font, small_font,
+                               1280, 720, app);
+            }
             SDL_RenderPresent(tv_renderer);
         }
         if (drc_renderer) {
@@ -1353,6 +1511,10 @@ int main(int argc, char **argv)
             SDL_RenderClear(drc_renderer);
             render_screen(drc_renderer, drc_text, title_font, heading_font, body_font, small_font,
                           app, 854, 480, false, connected);
+            if (app.sidebar_open) {
+                render_sidebar(drc_renderer, drc_text, heading_font, body_font, small_font,
+                               854, 480, app);
+            }
             SDL_RenderPresent(drc_renderer);
         }
         ui_dirty = false;
@@ -1374,15 +1536,5 @@ int main(int argc, char **argv)
     if (drc_window) SDL_DestroyWindow(drc_window);
 
     SDL_Quit();
-
-    /* Mocha must be the last thing before main returns: SDL_Quit/ProcUI would
-     * otherwise send the app back to the Wii U menu and cancel H&S launch. */
-    if (app.pending_launch) {
-        std::string error;
-        if (!launch_core(app.library.sd_root, app.launch_core, app.launch_rom, error)) {
-            return 1;
-        }
-    }
-
     return 0;
 }

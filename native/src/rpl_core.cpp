@@ -10,16 +10,6 @@ RplCore *RplCore::instance_ = nullptr;
 
 namespace {
 
-const char *kCoreLogPath = "/vol/external01/retrou/retrou.log";
-
-void core_log(const std::string &message)
-{
-    std::ofstream out(kCoreLogPath, std::ios::app);
-    if (out) {
-        out << message << "\n";
-    }
-}
-
 const char *kSystemDirectory = "/vol/external01/retrou/cores/system";
 const char *kSaveDirectory = "/vol/external01/retrou/cores/savefiles";
 
@@ -43,6 +33,14 @@ RplCore::RplCore() = default;
 RplCore::~RplCore()
 {
     unload();
+}
+
+void RplCore::log(const std::string &message) const
+{
+    std::ofstream out(log_path_, std::ios::app);
+    if (out) {
+        out << message << "\n";
+    }
 }
 
 bool RplCore::environmentCallback(unsigned cmd, void *data)
@@ -166,14 +164,16 @@ bool RplCore::load(const std::string &path, SDL_Renderer *tv, SDL_Renderer *drc,
     instance_ = this;
     tv_ = tv;
     drc_ = drc;
-    core_log("RplCore::load " + path);
+    static_test_ = false;
+    log_path_ = "/vol/external01/retrou/retrou_rpl.log";
+    log("RplCore::load " + path);
 
     if (!loader_.load(path, error)) {
-        core_log("RplCore loader failed: " + error);
+        log("RplCore loader failed: " + error);
         return false;
     }
     loaded_ = true;
-    core_log("RplCore loader ok");
+    log("RplCore loader ok");
 
     api_version_ = reinterpret_cast<ApiVersionFn>(resolve("retro_api_version", error));
     init_ = reinterpret_cast<InitFn>(resolve("retro_init", error));
@@ -192,18 +192,18 @@ bool RplCore::load(const std::string &path, SDL_Renderer *tv, SDL_Renderer *drc,
     reset_ = reinterpret_cast<ResetFn>(resolve("retro_reset", error));
 
     if (!error.empty()) {
-        core_log("RplCore resolve failed: " + error);
+        log("RplCore resolve failed: " + error);
         unload();
         return false;
     }
-    core_log("RplCore exports ok");
+    log("RplCore exports ok");
 
     if (api_version_) {
-        core_log("retro_api_version ptr=" +
+        log("retro_api_version ptr=" +
                  std::to_string(reinterpret_cast<uintptr_t>(api_version_)));
-        core_log("before retro_api_version");
+        log("before retro_api_version");
         unsigned version = api_version_();
-        core_log("after retro_api_version " + std::to_string(version));
+        log("after retro_api_version " + std::to_string(version));
     }
 
     set_environment_(environmentCallback);
@@ -217,12 +217,60 @@ bool RplCore::load(const std::string &path, SDL_Renderer *tv, SDL_Renderer *drc,
     get_system_info_(&info);
     name_ = info.library_name ? info.library_name : "core";
 
-    core_log("RplCore before retro_init");
+    log("RplCore before retro_init");
     init_();
     initialized_ = true;
-    core_log("RplCore after retro_init");
+    log("RplCore after retro_init");
     return true;
 }
+
+#ifdef RETROU_STATIC_TEST
+bool RplCore::loadStaticTest(SDL_Renderer *tv, SDL_Renderer *drc, std::string &error)
+{
+    (void)error;
+    unload();
+    instance_ = this;
+    tv_ = tv;
+    drc_ = drc;
+    static_test_ = true;
+    log_path_ = "/vol/external01/retrou/retrou_rpx.log";
+    log("RplCore::loadStaticTest");
+
+    api_version_ = retro_api_version;
+    init_ = retro_init;
+    deinit_ = retro_deinit;
+    set_environment_ = retro_set_environment;
+    set_video_ = retro_set_video_refresh;
+    set_audio_ = retro_set_audio_sample;
+    set_audio_batch_ = retro_set_audio_sample_batch;
+    set_input_poll_ = retro_set_input_poll;
+    set_input_state_ = retro_set_input_state;
+    get_system_info_ = retro_get_system_info;
+    get_av_info_ = retro_get_system_av_info;
+    load_game_ = retro_load_game;
+    unload_game_ = retro_unload_game;
+    run_ = retro_run;
+    reset_ = retro_reset;
+    loaded_ = true;
+
+    set_environment_(environmentCallback);
+    set_video_(videoCallback);
+    set_audio_(audioCallback);
+    set_audio_batch_(audioBatchCallback);
+    set_input_poll_(inputPollCallback);
+    set_input_state_(inputStateCallback);
+
+    retro_system_info info{};
+    get_system_info_(&info);
+    name_ = info.library_name ? info.library_name : "static test";
+
+    log("RplCore before retro_init (static)");
+    init_();
+    initialized_ = true;
+    log("RplCore after retro_init (static)");
+    return true;
+}
+#endif
 
 bool RplCore::loadGame(const std::string &rom_path, std::string &error)
 {
@@ -233,7 +281,7 @@ bool RplCore::loadGame(const std::string &rom_path, std::string &error)
 
     retro_game_info game{};
     rom_path_ = rom_path;
-    core_log("RplCore loadGame " + rom_path_);
+    log("RplCore loadGame " + rom_path_);
     game.path = rom_path_.c_str();
     game.data = nullptr;
     game.size = 0;
@@ -241,11 +289,11 @@ bool RplCore::loadGame(const std::string &rom_path, std::string &error)
 
     if (!load_game_(&game)) {
         error = "retro_load_game devolvio false";
-        core_log("retro_load_game failed");
+        log("retro_load_game failed");
         return false;
     }
 
-    core_log("retro_load_game ok");
+    log("retro_load_game ok");
     game_loaded_ = true;
     return true;
 }
@@ -254,13 +302,13 @@ void RplCore::runFrame()
 {
     static int frame_count = 0;
     if (frame_count < 3) {
-        core_log("retro_run before " + std::to_string(frame_count));
+        log("retro_run before " + std::to_string(frame_count));
     }
     if (run_) {
         run_();
     }
     if (frame_count < 3) {
-        core_log("retro_run after " + std::to_string(frame_count));
+        log("retro_run after " + std::to_string(frame_count));
         ++frame_count;
     }
 }
@@ -329,7 +377,7 @@ void RplCore::destroyTextures()
 
 void RplCore::unload()
 {
-    core_log("RplCore::unload");
+    log("RplCore::unload");
     if (loaded_) {
         if (game_loaded_ && unload_game_) {
             unload_game_();
@@ -340,9 +388,12 @@ void RplCore::unload()
         }
         initialized_ = false;
         destroyTextures();
-        loader_.unload();
+        if (!static_test_) {
+            loader_.unload();
+        }
         loaded_ = false;
     }
+    static_test_ = false;
 
     if (instance_ == this) {
         instance_ = nullptr;

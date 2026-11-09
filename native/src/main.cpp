@@ -833,7 +833,7 @@ void run_rpl_core(AppState &app, const std::string &core_path, const std::string
                   TTF_Font *body_font, TTF_Font *small_font)
 {
     {
-        std::ofstream log("/vol/external01/retrou/retrou.log", std::ios::trunc);
+        std::ofstream log("/vol/external01/retrou/retrou_rpl.log", std::ios::trunc);
         if (log) {
             log << "=== run_rpl_core " << core_path << " rom=" << rom_path << " ===\n";
         }
@@ -961,13 +961,137 @@ void run_rpl_core(AppState &app, const std::string &core_path, const std::string
     core.unload();
 }
 
+#ifdef RETROU_STATIC_TEST
+void run_static_test_core(AppState &app, SDL_Renderer *tv, SDL_Renderer *drc,
+                          TTF_Font *heading_font, TTF_Font *body_font,
+                          TTF_Font *small_font)
+{
+    {
+        std::ofstream log("/vol/external01/retrou/retrou_rpx.log", std::ios::trunc);
+        if (log) {
+            log << "=== run_static_test_core ===\n";
+        }
+    }
+
+    retrou::RplCore core;
+    std::string error;
+
+    TextCache loading_tv;
+    TextCache loading_drc;
+    if (tv) {
+        SDL_SetRenderDrawColor(tv, 0, 0, 0, 255);
+        SDL_RenderClear(tv);
+        draw_text_center(tv, loading_tv, heading_font, "Cargando test RPX...", 640, 344,
+                         rgba(255, 255, 255));
+        SDL_RenderPresent(tv);
+    }
+    if (drc) {
+        SDL_SetRenderDrawColor(drc, 0, 0, 0, 255);
+        SDL_RenderClear(drc);
+        draw_text_center(drc, loading_drc, heading_font, "Cargando test RPX...", 427, 224,
+                         rgba(255, 255, 255));
+        SDL_RenderPresent(drc);
+    }
+
+    if (!core.loadStaticTest(tv, drc, error)) {
+        app.message = "RPX: " + error;
+        return;
+    }
+    if (!core.loadGame("", error)) {
+        app.message = "RPX juego: " + error;
+        core.unload();
+        return;
+    }
+
+    bool menu_open = false;
+    int menu_selected = 0;
+    TextCache tv_menu_text;
+    TextCache drc_menu_text;
+
+    while (app.running) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                app.running = false;
+                break;
+            }
+            if (event.type == SDL_CONTROLLERBUTTONDOWN) {
+                unsigned button = event.cbutton.button;
+                if (button == SDL_CONTROLLER_BUTTON_BACK) {
+                    menu_open = !menu_open;
+                    menu_selected = 0;
+                    continue;
+                }
+                if (!menu_open) {
+                    continue;
+                }
+                if (button == SDL_CONTROLLER_BUTTON_DPAD_UP ||
+                    button == SDL_CONTROLLER_BUTTON_DPAD_LEFT ||
+                    button == SDL_CONTROLLER_BUTTON_DPAD_DOWN ||
+                    button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
+                    menu_selected = (menu_selected + 1) % 2;
+                } else if (button == SDL_CONTROLLER_BUTTON_A) {
+                    if (menu_selected == 1) {
+                        core.unload();
+                        app.message = "Test RPX cerrado";
+                        return;
+                    }
+                    menu_open = false;
+                } else if (button == SDL_CONTROLLER_BUTTON_B) {
+                    menu_open = false;
+                }
+            }
+            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+                menu_open = !menu_open;
+                menu_selected = 0;
+            }
+        }
+
+        if (!app.running) {
+            break;
+        }
+        if (!menu_open) {
+            core.runFrame();
+        }
+
+        if (tv) {
+            SDL_SetRenderDrawColor(tv, 0, 0, 0, 255);
+            SDL_RenderClear(tv);
+            core.present(tv, 1280, 720);
+            if (menu_open) {
+                render_core_menu(tv, tv_menu_text, heading_font, body_font, small_font,
+                                 1280, 720, menu_selected);
+            }
+            SDL_RenderPresent(tv);
+        }
+        if (drc) {
+            SDL_SetRenderDrawColor(drc, 0, 0, 0, 255);
+            SDL_RenderClear(drc);
+            core.present(drc, 854, 480);
+            if (menu_open) {
+                render_core_menu(drc, drc_menu_text, heading_font, body_font, small_font,
+                                 854, 480, menu_selected);
+            }
+            SDL_RenderPresent(drc);
+        }
+        SDL_Delay(16);
+    }
+
+    core.unload();
+}
+#endif
+
 void run_test_core(AppState &app, SDL_Renderer *tv, SDL_Renderer *drc,
                    TTF_Font *heading_font, TTF_Font *body_font, TTF_Font *small_font)
 {
+#ifdef RETROU_STATIC_TEST
+    run_static_test_core(app, tv, drc, heading_font, body_font, small_font);
+#else
     std::string test_path = join_path(join_path(app.library.sd_root, "retrou"),
                                       "cores/test.rpl");
     run_rpl_core(app, test_path, "", tv, drc,
                  heading_font, body_font, small_font);
+#endif
 }
 
 } // namespace

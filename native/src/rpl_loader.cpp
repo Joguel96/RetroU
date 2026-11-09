@@ -21,7 +21,7 @@ namespace retrou {
 
 namespace {
 
-const char *kLogPath = "/vol/external01/retrou/retrou.log";
+const char *kLogPath = "/vol/external01/retrou/retrou_rpl.log";
 
 void rpl_log(const std::string &message)
 {

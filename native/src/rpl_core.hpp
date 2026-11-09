@@ -26,6 +26,10 @@ public:
     bool loaded() const { return loaded_; }
     const std::string &name() const { return name_; }
 
+#ifdef RETROU_STATIC_TEST
+    bool loadStaticTest(SDL_Renderer *tv, SDL_Renderer *drc, std::string &error);
+#endif
+
 private:
     using ApiVersionFn = unsigned (*)();
     using InitFn = void (*)();
@@ -63,6 +67,8 @@ private:
     bool game_loaded_ = false;
     bool initialized_ = false;
     bool loaded_ = false;
+    bool static_test_ = false;
+    std::string log_path_ = "/vol/external01/retrou/retrou_rpl.log";
     std::string name_;
     std::string rom_path_;
 
@@ -91,6 +97,7 @@ private:
     static int16_t inputStateCallback(unsigned port, unsigned device, unsigned index, unsigned id);
 
     void *resolve(const char *name, std::string &error);
+    void log(const std::string &message) const;
     void updateTexture(SDL_Renderer *renderer, SDL_Texture *&texture);
     void destroyTextures();};
 

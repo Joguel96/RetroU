@@ -786,8 +786,51 @@ void handle_action(AppState &app, int action)
     }
 }
 
+void render_core_menu(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_font,
+                      TTF_Font *body_font, TTF_Font *small_font, int width, int height,
+                      int selected)
+{
+    fill_rect(renderer, 0, 0, width, height, rgba(0, 0, 0, 165));
+
+    int panel_w = std::min(width - 48, 560);
+    int panel_h = 286;
+    int panel_x = (width - panel_w) / 2;
+    int panel_y = (height - panel_h) / 2;
+
+    fill_rect(renderer, panel_x, panel_y, panel_w, panel_h, rgba(15, 23, 42, 245));
+    outline_rect(renderer, panel_x, panel_y, panel_w, panel_h, rgba(255, 255, 255, 80));
+
+    draw_text(renderer, cache, heading_font, "MENÚ RETROU", panel_x + 24, panel_y + 20,
+              rgba(255, 255, 255));
+    draw_text(renderer, cache, small_font, "MINUS  CERRAR     A  SELECCIONAR",
+              panel_x + 24, panel_y + 58, rgba(148, 163, 184));
+
+    const char *options[] = {
+        "Continuar",
+        "Cerrar juego y volver a RetroU",
+    };
+
+    for (int i = 0; i < 2; ++i) {
+        int y = panel_y + 92 + i * 52;
+        if (i == selected) {
+            fill_rect(renderer, panel_x + 14, y - 8, panel_w - 28, 40,
+                      rgba(245, 217, 127, 45));
+            outline_rect(renderer, panel_x + 14, y - 8, panel_w - 28, 40,
+                         rgba(245, 217, 127, 150));
+        }
+        draw_text(renderer, cache, body_font, options[i], panel_x + 30, y,
+                  i == selected ? rgba(255, 255, 255) : rgba(203, 213, 225));
+    }
+
+    draw_text(renderer, cache, small_font, "Savestates y remapeo: próximamente",
+              panel_x + 24, panel_y + panel_h - 48, rgba(148, 163, 184));
+    draw_text(renderer, cache, small_font, "B  CERRAR MENÚ",
+              panel_x + 24, panel_y + panel_h - 26, rgba(148, 163, 184));
+}
+
 void run_rpl_core(AppState &app, const std::string &core_path, const std::string &rom_path,
-                  SDL_Renderer *tv, SDL_Renderer *drc)
+                  SDL_Renderer *tv, SDL_Renderer *drc, TTF_Font *heading_font,
+                  TTF_Font *body_font, TTF_Font *small_font)
 {
     retrou::RplCore core;
     std::string error;
@@ -808,7 +851,10 @@ void run_rpl_core(AppState &app, const std::string &core_path, const std::string
         return;
     }
 
-    app.message = core.name();
+    bool menu_open = false;
+    int menu_selected = 0;
+    TextCache tv_menu_text;
+    TextCache drc_menu_text;
 
     while (app.running) {
         SDL_Event event;
@@ -817,15 +863,46 @@ void run_rpl_core(AppState &app, const std::string &core_path, const std::string
                 app.running = false;
                 break;
             }
-            if (event.type == SDL_CONTROLLERBUTTONDOWN &&
-                (event.cbutton.button == SDL_CONTROLLER_BUTTON_B ||
-                 event.cbutton.button == SDL_CONTROLLER_BUTTON_START)) {
-                core.unload();
-                return;
+
+            if (event.type == SDL_CONTROLLERBUTTONDOWN) {
+                unsigned button = event.cbutton.button;
+
+                if (button == SDL_CONTROLLER_BUTTON_BACK) {
+                    menu_open = !menu_open;
+                    menu_selected = 0;
+                    continue;
+                }
+
+                if (!menu_open) {
+                    /* B no longer closes the core; only the menu does. */
+                    continue;
+                }
+
+                if (button == SDL_CONTROLLER_BUTTON_DPAD_UP ||
+                    button == SDL_CONTROLLER_BUTTON_DPAD_LEFT) {
+                    menu_selected = (menu_selected + 1) % 2;
+                } else if (button == SDL_CONTROLLER_BUTTON_DPAD_DOWN ||
+                           button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
+                    menu_selected = (menu_selected + 1) % 2;
+                } else if (button == SDL_CONTROLLER_BUTTON_A) {
+                    if (menu_selected == 1) {
+                        core.unload();
+                        app.message = "Juego cerrado";
+                        return;
+                    }
+                    menu_open = false;
+                } else if (button == SDL_CONTROLLER_BUTTON_B) {
+                    menu_open = false;
+                }
             }
+
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
-                core.unload();
-                return;
+                if (menu_open) {
+                    menu_open = false;
+                } else {
+                    menu_open = true;
+                    menu_selected = 0;
+                }
             }
         }
 
@@ -833,18 +910,28 @@ void run_rpl_core(AppState &app, const std::string &core_path, const std::string
             break;
         }
 
-        core.runFrame();
+        if (!menu_open) {
+            core.runFrame();
+        }
 
         if (tv) {
             SDL_SetRenderDrawColor(tv, 0, 0, 0, 255);
             SDL_RenderClear(tv);
             core.present(tv, 1280, 720);
+            if (menu_open) {
+                render_core_menu(tv, tv_menu_text, heading_font, body_font, small_font,
+                                 1280, 720, menu_selected);
+            }
             SDL_RenderPresent(tv);
         }
         if (drc) {
             SDL_SetRenderDrawColor(drc, 0, 0, 0, 255);
             SDL_RenderClear(drc);
             core.present(drc, 854, 480);
+            if (menu_open) {
+                render_core_menu(drc, drc_menu_text, heading_font, body_font, small_font,
+                                 854, 480, menu_selected);
+            }
             SDL_RenderPresent(drc);
         }
         SDL_Delay(16);
@@ -853,9 +940,11 @@ void run_rpl_core(AppState &app, const std::string &core_path, const std::string
     core.unload();
 }
 
-void run_test_core(AppState &app, SDL_Renderer *tv, SDL_Renderer *drc)
+void run_test_core(AppState &app, SDL_Renderer *tv, SDL_Renderer *drc,
+                   TTF_Font *heading_font, TTF_Font *body_font, TTF_Font *small_font)
 {
-    run_rpl_core(app, "sd:/retrou/cores/test.rpl", "", tv, drc);
+    run_rpl_core(app, "sd:/retrou/cores/test.rpl", "", tv, drc,
+                 heading_font, body_font, small_font);
 }
 
 } // namespace
@@ -955,7 +1044,7 @@ int main(int argc, char **argv)
                     case SDL_CONTROLLER_BUTTON_B: handle_action(app, 9); break;
                     case SDL_CONTROLLER_BUTTON_X: handle_action(app, 7); break;
                     case SDL_CONTROLLER_BUTTON_Y: handle_action(app, 8); break;
-                    case SDL_CONTROLLER_BUTTON_START: run_test_core(app, tv_renderer, drc_renderer); break;
+                    case SDL_CONTROLLER_BUTTON_START: run_test_core(app, tv_renderer, drc_renderer, heading_font, body_font, small_font); break;
                     default: break;
                 }
             }
@@ -978,7 +1067,8 @@ int main(int argc, char **argv)
             std::string rom_path = app.rpl_rom;
             app.rpl_core.clear();
             app.rpl_rom.clear();
-            run_rpl_core(app, core_path, rom_path, tv_renderer, drc_renderer);
+            run_rpl_core(app, core_path, rom_path, tv_renderer, drc_renderer,
+                         heading_font, body_font, small_font);
             continue;
         }
 

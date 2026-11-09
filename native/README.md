@@ -68,10 +68,15 @@ sd:/retrou/cores/savefiles/
 | D-Pad / stick | mover selección |
 | L / R | consola anterior / siguiente |
 | A | cargar core RPL + ROM, o lanzar `.rpx` |
-| B | volver a "Todas" |
+| B | volver a "Todas" (catálogo) / cerrar menú en juego |
 | X | detalle (placeholder) |
 | Y | favorito (placeholder) |
 | Start | ejecutar `test.rpl` |
+| Minus (-) | abrir/cerrar el menú de RetroU durante un core |
+
+En el menú de juego (Minus) el core queda pausado. Por ahora las opciones son
+`Continuar` y `Cerrar juego y volver a RetroU`; savestates y remapeo quedan para
+la siguiente fase.
 
 `SDL_PollEvent` es quien bombea ProcUI en el port SDL2; no se llama a
 `WHBProc` ni a `ProcUI` directamente.

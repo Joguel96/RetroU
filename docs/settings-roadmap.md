@@ -30,8 +30,10 @@ con exports `retro_*` (`wut_create_rpl` + `wut_add_exports`).
 
 ### Condición a validar
 
-Aroma debe permitir cargar un `.rpl` de core desde `sd:/retrou/cores/` con
-`OSDynLoad` o un loader RPL propio. Si no es posible:
+Aroma no carga un `.rpl` suelto de la SD con `OSDynLoad_Acquire`; solo resuelve
+módulos Aroma ya cargados o RPLs del sistema. Para cores bajo demanda hay que
+usar un loader RPL propio (descomprimir secciones, mapear, relocalizar y
+resolver imports) o empaquetar el core como módulo Aroma `.wms`.
 
 - **Fallback A:** un core estático integrado en RetroU (como RetroArch Wii U).
   RetroU se queda abierto, pero hay un core por build.
@@ -103,9 +105,9 @@ sd:/retrou/states/<core>/<game>.slotN
 
 ## Fases
 
-1. Spike: compilar `fceumm` como `.rpl`, cargarlo y dibujar un frame.
-   Estado: `test.rpl` y `fceumm.rpl` compilan con exports `retro_*`; el
-   frontend ya usa `OSDynLoad_Acquire` y `retro_run`. Falta probarlo en hardware.
+1. Spike: compilar `fceumm` como `.rpl`, cargarlo con el loader propio y dibujar
+   un frame. Estado: `test.rpl` y `fceumm.rpl` compilan con exports `retro_*`;
+   el loader ya descomprime y relocaliza `test.rpl`. Falta probarlo en hardware.
 2. Frontend mínimo: vídeo, audio, input, SRAM, savestate.
 3. UI nativa de catálogo y ajustes básicos.
 4. Memoria, escalado, widescreen y overrides.

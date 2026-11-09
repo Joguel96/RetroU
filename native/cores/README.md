@@ -3,8 +3,8 @@
 Esta carpeta contiene el frontend Libretro mínimo y dos cores de prueba:
 
 - `test_core.cpp` / `test_core.def`: core sintético que genera un frame de color.
-  Sirve para validar `OSDynLoad_Acquire`, exports `retro_*` y el pipeline de
-  vídeo sin depender de una ROM.
+  Sirve para validar el loader RPL propio, los exports `retro_*` y el pipeline
+  de vídeo sin depender de una ROM.
 - `fceumm_rpl/`: empaqueta `fceumm_libretro_wiiu.a` como `.rpl`.
 
 ## Generar el core de prueba
@@ -28,11 +28,12 @@ El resultado se copia a `dist/retrou/cores/fceumm.rpl`.
 
 ## Cómo lo carga RetroU
 
-- `OSDynLoad_Acquire("sd:/retrou/cores/<core>.rpl", &module)`.
-- `OSDynLoad_FindExport(...)` de `retro_init`, `retro_run`, etc.
-- `retro_load_game()` con la ROM elegida.
-- `retro_run()` en el bucle de RetroU; `video_refresh` actualiza una textura
-  SDL que se pinta en TV y GamePad.
+- `RplLoader` lee el `.rpl` de la SD.
+- Descomprime `.text`, `.rodata`, `.data`, `.bss` y `.fexports`.
+- Aplica las relocaciones y resuelve imports débiles de newlib.
+- Busca `retro_init`, `retro_run`, etc. en `.fexports`.
+- `retro_run()` corre en el bucle de RetroU; `video_refresh` actualiza una
+  textura SDL que se pinta en TV y GamePad.
 
-`fceumm.rpl` todavía no implementa audio/input en el frontend; es la base para
-la fase 2.
+No usa `OSDynLoad_Acquire`: Aroma no carga un `.rpl` suelto de la SD; solo
+resuelve módulos ya cargados o RPLs del sistema.

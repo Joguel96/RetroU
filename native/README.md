@@ -1,7 +1,7 @@
 # App nativa Wii U
 
-Frontend RetroU con **WUT + SDL2 + SDL2_ttf** y carga de cores **`.rpl`** en
-proceso mediante `OSDynLoad`.
+Frontend RetroU con **WUT + SDL2 + SDL2_ttf** y un **loader RPL propio** para
+ejecutar cores dentro del proceso de RetroU.
 
 ## Qué hace
 
@@ -14,7 +14,19 @@ proceso mediante `OSDynLoad`.
   - si hay un core `.rpl` para el sistema, lo carga **dentro de RetroU** y
     ejecuta la ROM (RetroU no se cierra);
   - si solo hay `.rpx`, mantiene el fallback de lanzar la app del core.
-- **Start** ejecuta `test.rpl`, un core sintético para validar el pipeline.
+- **Start** ejecuta `test.rpl`, un core sintético para validar el loader.
+- **Minus** abre el menú de RetroU durante el core.
+
+## Loader RPL
+
+`RplLoader` lee el `.rpl` de `sd:/retrou/cores/`, descomprime sus secciones
+(zlib), las mapea en un bloque de memoria, aplica las relocaciones
+`ADDR32/ADDR16/REL24/GHS_REL16` y resuelve los imports débiles de newlib
+(`__syscall_*`, `__register_frame_info`). Después busca los exports `retro_*`
+en `.fexports`.
+
+No usa `OSDynLoad_Acquire` para el core: Aroma solo resuelve módulos ya cargados
+o RPLs del sistema, no un `.rpl` suelto de la SD.
 
 ## Cores RPL
 

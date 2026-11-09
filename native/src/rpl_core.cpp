@@ -140,10 +140,8 @@ int16_t RplCore::inputStateCallback(unsigned port, unsigned device, unsigned ind
 
 void *RplCore::resolve(const char *symbol, std::string &error)
 {
-    void *address = nullptr;
-    OSDynLoad_Error result = OSDynLoad_FindExport(
-        module_, OS_DYNLOAD_EXPORT_FUNC, symbol, &address);
-    if (result != OS_DYNLOAD_OK || !address) {
+    void *address = loader_.findExport(symbol);
+    if (!address) {
         error = std::string("Falta export ") + symbol;
         return nullptr;
     }
@@ -158,14 +156,10 @@ bool RplCore::load(const std::string &path, SDL_Renderer *tv, SDL_Renderer *drc,
     tv_ = tv;
     drc_ = drc;
 
-    OSDynLoad_Error result = OSDynLoad_Acquire(path.c_str(), &module_);
-    if (result != OS_DYNLOAD_OK || !module_) {
-        char message[96];
-        std::snprintf(message, sizeof(message), "OSDynLoad_Acquire fallo: 0x%08X", result);
-        error = message;
-        module_ = nullptr;
+    if (!loader_.load(path, error)) {
         return false;
     }
+    loaded_ = true;
 
     api_version_ = reinterpret_cast<ApiVersionFn>(resolve("retro_api_version", error));
     init_ = reinterpret_cast<InitFn>(resolve("retro_init", error));
@@ -210,7 +204,7 @@ bool RplCore::load(const std::string &path, SDL_Renderer *tv, SDL_Renderer *drc,
 
 bool RplCore::loadGame(const std::string &rom_path, std::string &error)
 {
-    if (!module_ || !load_game_) {
+    if (!loaded_ || !load_game_) {
         error = "Core no cargado";
         return false;
     }
@@ -305,7 +299,7 @@ void RplCore::destroyTextures()
 
 void RplCore::unload()
 {
-    if (module_) {
+    if (loaded_) {
         if (game_loaded_ && unload_game_) {
             unload_game_();
         }
@@ -315,8 +309,8 @@ void RplCore::unload()
         }
         initialized_ = false;
         destroyTextures();
-        OSDynLoad_Release(module_);
-        module_ = nullptr;
+        loader_.unload();
+        loaded_ = false;
     }
 
     if (instance_ == this) {

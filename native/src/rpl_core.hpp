@@ -1,8 +1,9 @@
 #pragma once
 
 #include <SDL.h>
-#include <coreinit/dynload.h>
 #include <libretro.h>
+
+#include "rpl_loader.hpp"
 
 #include <cstdint>
 #include <string>
@@ -22,7 +23,7 @@ public:
     void runFrame();
     void present(SDL_Renderer *renderer, int width, int height) const;
 
-    bool loaded() const { return module_ != nullptr; }
+    bool loaded() const { return loaded_; }
     const std::string &name() const { return name_; }
 
 private:
@@ -48,9 +49,8 @@ private:
     using GetMemorySizeFn = size_t (*)(unsigned);
     using SetControllerFn = void (*)(unsigned, unsigned);
 
-    OSDynLoad_Module module_ = nullptr;
-    SDL_Renderer *tv_ = nullptr;
-    SDL_Renderer *drc_ = nullptr;
+    RplLoader loader_;
+    SDL_Renderer *tv_ = nullptr;    SDL_Renderer *drc_ = nullptr;
     SDL_Texture *tv_texture_ = nullptr;
     SDL_Texture *drc_texture_ = nullptr;
     uint32_t pixel_format_ = RETRO_PIXEL_FORMAT_RGB565;
@@ -62,6 +62,7 @@ private:
     size_t frame_pitch_ = 0;
     bool game_loaded_ = false;
     bool initialized_ = false;
+    bool loaded_ = false;
     std::string name_;
     std::string rom_path_;
 

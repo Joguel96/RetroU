@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_executable(RetroU
     src/main.cpp
     src/rpl_core.cpp
+    src/rpl_loader.cpp
 )
 
 target_include_directories(RetroU PRIVATE
@@ -15,6 +16,7 @@ target_include_directories(RetroU PRIVATE
     cores
     /opt/devkitpro/portlibs/wiiu/include
     /opt/devkitpro/portlibs/wiiu/include/SDL2
+    /opt/devkitpro/portlibs/ppc/include
 )
 
 target_link_libraries(RetroU PRIVATE

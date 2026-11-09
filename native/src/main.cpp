@@ -2,7 +2,7 @@
 #include <SDL_ttf.h>
 
 #include "rpl_core.hpp"
-#include "hbl.hpp"
+#include "mocha_launch.hpp"
 #include <whb/sdcard.h>
 #include <sysapp/launch.h>
 
@@ -388,12 +388,12 @@ bool launch_core(const std::string &sd_root, const std::string &core_path,
         path = "/vol/external01/" + path.substr(4);
     }
 
-    launcher_log("HBL load " + path);
-    if (!retrou::hbl_load_to_memory(path, error)) {
-        launcher_log("HBL failed: " + error);
+    launcher_log("Mocha launch " + path);
+    if (!retrou::mocha_launch_rpx(path, rom_path, error)) {
+        launcher_log("Mocha failed: " + error);
         return false;
     }
-    launcher_log("HBL ok");
+    launcher_log("Mocha ok");
     return true;
 }
 

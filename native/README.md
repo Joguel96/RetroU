@@ -7,7 +7,7 @@ Libretro enlazado estáticamente**, igual que RetroArch Wii U.
 
 | App | Core | Sistema |
 |---|---|---|
-| `RetroU.wuhb` | ninguno (launcher) | detecta y lanza el RPX |
+| `RetroU.wuhb` | ninguno (launcher) | detecta y lanza el RPX con Mocha |
 | `RetroU-NES.wuhb` | fceumm | NES |
 | `RetroU-SNES.wuhb` | snes9x | SNES |
 | `RetroU-GBA.wuhb` | mgba | GBA |
@@ -23,6 +23,18 @@ RetroU-GBA.rpx
 
 `RetroU.wuhb` se copia automáticamente a `dist/wiiu/apps/retrou/RetroU.wuhb`
 (equivale a `sd:/wiiu/apps/retrou/RetroU.wuhb`).
+
+El launcher escribe `launch/last.txt` y lanza el RPX del sistema con
+**libmocha**:
+
+```cpp
+Mocha_InitLibrary();
+Mocha_PrepareRPXLaunch(&load_info);
+Mocha_LaunchHomebrewWrapperEx(&std_args);
+```
+
+Requiere `MochaPayload`/EnvironmentLoader activo en Aroma o Tiramisu.
+El RPX destino lee `last.txt`, lo borra y carga la ROM con su core.
 
 ## Qué hace
 

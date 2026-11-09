@@ -70,7 +70,7 @@ endfunction()
 
 function(configure_retrou target)
     target_sources(${target} PRIVATE "${FONT_REGULAR_OBJ}" "${FONT_BOLD_OBJ}"
-                                      "${CMAKE_CURRENT_SOURCE_DIR}/src/hbl.cpp")
+                                      "${CMAKE_CURRENT_SOURCE_DIR}/src/mocha_launch.cpp")
     set_source_files_properties("${FONT_REGULAR_OBJ}" "${FONT_BOLD_OBJ}"
         PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
 
@@ -80,6 +80,7 @@ function(configure_retrou target)
         /opt/devkitpro/portlibs/wiiu/include
         /opt/devkitpro/portlibs/wiiu/include/SDL2
         /opt/devkitpro/portlibs/ppc/include
+        "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libmocha/include"
     )
 
     target_link_libraries(${target} PRIVATE
@@ -93,6 +94,7 @@ function(configure_retrou target)
         brotlicommon
         SDL2
         m
+        "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libmocha/lib/libmocha.a"
     )
 
     target_compile_options(${target} PRIVATE -Wall -Wextra)

@@ -108,29 +108,32 @@ RetroU.wuhb
   → el RPX lee last.txt, lo borra y carga la ROM
 ```
 
-Antes del port HBL, el salto entre apps no funcionaba: al lanzar un juego el
-sistema volvía al menú de Wii U. Se probaron rutas `fs:/vol`, `/vol` y `sd:/`
-con `_SYSLaunchTitleByPathFromLauncher`; no era el método correcto.
+Antes del port actual se probaron rutas `fs:/vol`, `/vol` y `sd:/` con
+`_SYSLaunchTitleByPathFromLauncher` y un port HBL con `SC0x25`; ambos fallaron
+en WUHB de Aroma.
 
 El test `retrou_test.rpx` **sí funcionó**: era una app independiente, no un
 salto entre apps. Ese éxito no valida el launcher.
 
-### Port HBL implementado
+### Lanzador con Mocha (implementado)
 
-El launcher ahora usa el mecanismo HBL de RetroArch en lugar de
-`_SYSLaunchTitleByPathFromLauncher`:
+El launcher usa el mismo mecanismo que el fork `ashquarky/RetroArch` rama
+`wiiu-wut`, vía `libmocha`:
 
-- `native/src/hbl.hpp` / `hbl.cpp`
-- `HBL_loadToMemory`
-- `SC0x25_KernelCopyData` (syscall `0x2500`)
-- mapa de memoria HBL (`MEM_BASE = 0x00800000`)
-- `ARGV_MAGIC` / `ARGV_PTR` en `MEM_BASE + 0x1380`
+- `native/src/mocha_launch.hpp` / `mocha_launch.cpp`
+- `native/third_party/libmocha` (headers + `libmocha.a`, LGPLv3)
+- `Mocha_InitLibrary`
+- `Mocha_PrepareRPXLaunch` con `LOAD_RPX_TARGET_SD_CARD`
+- `Mocha_LaunchHomebrewWrapperEx` con `SYSStandardArgsIn`
 
-El launcher escribe `launch/last.txt`, carga el RPX destino en HBL y sale. El
-RPX lee `last.txt` y carga la ROM.
+El RPX se pasa como ruta relativa a la SD (`retrou/cores/RetroU-XXX.rpx`).
+El launcher escribe `launch/last.txt`, lanza el RPX y sale. El RPX lee
+`last.txt`, lo borra y carga la ROM.
 
-Pendiente: **probar en hardware**. Riesgos: `SC0x25` no permitido desde WUHB
-de Aroma, conflicto con WUMSLoader en `0x00800000`, y dependencia de firmware.
+Requiere `MochaPayload`/EnvironmentLoader activo. `hbl.cpp` queda como código
+experimental y ya no se compila en las apps.
+
+Pendiente: **probar en hardware**.
 
 ## 5. Cores
 
@@ -267,7 +270,7 @@ No commitear:
 - **Input del core no implementado**: los botones aún no llegan al emulador.
 - **Audio del core no implementado**.
 - SRAM/savestates/carátulas reales pendientes.
-- El launcher HBL está implementado; **no probado en hardware**.
+- El launcher con Mocha está implementado; **no probado en hardware**.
 - No afirmar que algo está probado en hardware si no lo está.
 
 ## 12. Convenciones

@@ -621,7 +621,6 @@ void *RplLoader::findExport(const std::string &name) const
 
 void RplLoader::unload()
 {
-    OSSetThreadAffinity(OSGetCurrentThread(), 0x7);
     if (allocation_) {
         if (system_allocation_) {
             OSFreeToSystem(allocation_);

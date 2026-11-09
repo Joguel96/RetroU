@@ -104,6 +104,8 @@ sd:/retrou/states/<core>/<game>.slotN
 ## Fases
 
 1. Spike: compilar `fceumm` como `.rpl`, cargarlo y dibujar un frame.
+   Estado: `test.rpl` y `fceumm.rpl` compilan con exports `retro_*`; el
+   frontend ya usa `OSDynLoad_Acquire` y `retro_run`. Falta probarlo en hardware.
 2. Frontend mínimo: vídeo, audio, input, SRAM, savestate.
 3. UI nativa de catálogo y ajustes básicos.
 4. Memoria, escalado, widescreen y overrides.

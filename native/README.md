@@ -1,30 +1,39 @@
 # App nativa Wii U
 
-Esqueleto funcional de RetroU usando **WUT + SDL2 + SDL2_ttf**.
+Frontend RetroU con **WUT + SDL2 + SDL2_ttf** y carga de cores **`.rpl`** en
+proceso mediante `OSDynLoad`.
 
 ## Qué hace
 
 - Abre dos ventanas SDL2: TV (1280x720) y GamePad (854x480).
 - Monta la SD y escanea `sd:/retrou/roms/<Consola>/`.
-- Escanea `sd:/retrou/cores/*.rpx`.
-- Muestra una UI de cristal con las 9 consolas, contadores y tarjetas.
-- Navega con D-Pad / stick, A, B, X, Y, L/R.
-- Al pulsar A escribe `sd:/retrou/launch/last.txt` y lanza el core `.rpx`
-  correspondiente con `_SYSLaunchTitleByPathFromLauncher` usando la firma real
-  `(path, len, 0)` y la ruta IOSU sin prefijo `fs:`.
+- Escanea `sd:/retrou/cores/*.rpl` y `*.rpx`.
+- Muestra la UI de cristal con consolas, contadores y tarjetas.
+- Navega con D-Pad/stick, A, B, X, Y, L/R.
+- **A**:
+  - si hay un core `.rpl` para el sistema, lo carga **dentro de RetroU** y
+    ejecuta la ROM (RetroU no se cierra);
+  - si solo hay `.rpx`, mantiene el fallback de lanzar la app del core.
+- **Start** ejecuta `test.rpl`, un core sintético para validar el pipeline.
+
+## Cores RPL
+
+- `sd:/retrou/cores/fceumm.rpl` (NES, generado con
+  `native/cores/build-fceumm-rpl.sh`).
+- `sd:/retrou/cores/test.rpl` (core de prueba que dibuja un frame de color).
+- Los cores del buildbot son `.rpx` completos; no se pueden cargar en proceso.
+  Hay que compilar cada core como `.rpl` con exports `retro_*`.
+
+Ver [cores/README.md](cores/README.md).
 
 ## Qué falta
 
-- Paso de ROM al core. `_SYSLaunchTitleByPathFromLauncher` no acepta argv; el
-  core arranca standalone. Para lanzar core + ROM hay que implementar el camino
-  HBL/argv de `docs/retroarch-reference.md` o parchear el core.
-- Carátulas reales: ahora se dibujan portadas placeholder con iniciales.
-- Persistencia de favoritos, ajustes y último juego.
-- Portar el resto de vistas de `web/`.
+- Audio e input dentro del frontend Libretro (fase 2).
+- Selector de ROM y guardado de SRAM/savestates.
+- Carátulas reales.
+- Portar todas las vistas de `web/`.
 
 ## Build
-
-En MSYS2/devkitPro:
 
 ```sh
 cd native
@@ -40,20 +49,17 @@ build/RetroU.rpx
 build/RetroU.wuhb
 ```
 
-El WUHB incluye `content/ui.ttf`, `content/ui-bold.ttf` y `content/OFL.txt`
-(Lato, SIL OFL), además del icono y los splashes de `../assets/`.
+El WUHB incluye las fuentes Lato OFL y el icono/splashes de `../assets/`.
 
 ## SD
 
 ```text
 sd:/retrou/roms/NES/...
-sd:/retrou/roms/SNES/...
-sd:/retrou/cores/fceumm.rpx
-sd:/retrou/cores/snes9x_libretro.rpx
-sd:/retrou/launch/last.txt
+sd:/retrou/cores/fceumm.rpl
+sd:/retrou/cores/test.rpl
+sd:/retrou/cores/system/
+sd:/retrou/cores/savefiles/
 ```
-
-El mapeo de core por sistema está en `kConsoles` dentro de `src/main.cpp`.
 
 ## Input
 
@@ -61,11 +67,11 @@ El mapeo de core por sistema está en `kConsoles` dentro de `src/main.cpp`.
 |---|---|
 | D-Pad / stick | mover selección |
 | L / R | consola anterior / siguiente |
-| A | lanzar juego / core |
+| A | cargar core RPL + ROM, o lanzar `.rpx` |
 | B | volver a "Todas" |
 | X | detalle (placeholder) |
 | Y | favorito (placeholder) |
-| Start | detalle (placeholder) |
+| Start | ejecutar `test.rpl` |
 
 `SDL_PollEvent` es quien bombea ProcUI en el port SDL2; no se llama a
 `WHBProc` ni a `ProcUI` directamente.

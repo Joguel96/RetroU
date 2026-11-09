@@ -3,7 +3,13 @@ web/node_modules/
 web/dist/
 web/.vite/
 native/build/
+native/cores/build/
+native/cores/fceumm_rpl/build/
 dist/
+
+# Local core sources / references
+.spike_fceumm/
+.ref_*/
 
 # Logs and OS files
 *.log

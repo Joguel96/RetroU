@@ -1,6 +1,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
+#include "rpl_core.hpp"
 #include <whb/sdcard.h>
 #include <sysapp/launch.h>
 
@@ -54,6 +55,7 @@ struct CoreEntry {
     std::string name;
     std::string path;
     std::string lower;
+    bool rpl = false;
 };
 
 struct Library {
@@ -71,8 +73,11 @@ struct AppState {
     std::vector<const RomEntry *> visible;
     bool running = true;
     bool pending_launch = false;
+    bool pending_rpl = false;
     std::string launch_core;
     std::string launch_rom;
+    std::string rpl_core;
+    std::string rpl_rom;
     std::string message;
 };
 
@@ -227,7 +232,7 @@ void scan_cores(const std::string &cores_root, Library &library)
     struct dirent *entry;
     while ((entry = readdir(dir)) != nullptr) {
         std::string name = entry->d_name;
-        if (!ends_with_nocase(name, ".rpx")) {
+        if (!ends_with_nocase(name, ".rpx") && !ends_with_nocase(name, ".rpl")) {
             continue;
         }
 
@@ -235,12 +240,18 @@ void scan_cores(const std::string &cores_root, Library &library)
         core.name = strip_extension(name);
         core.path = join_path(cores_root, name);
         core.lower = lower_copy(core.name);
+        core.rpl = ends_with_nocase(name, ".rpl");
         library.cores.push_back(core);
     }
     closedir(dir);
 
     std::sort(library.cores.begin(), library.cores.end(),
-              [](const CoreEntry &a, const CoreEntry &b) { return a.lower < b.lower; });
+              [](const CoreEntry &a, const CoreEntry &b) {
+                  if (a.rpl != b.rpl) {
+                      return a.rpl;
+                  }
+                  return a.lower < b.lower;
+              });
 }
 
 std::string mount_sd()
@@ -292,7 +303,7 @@ const CoreEntry *find_core(const Library &library, const std::string &system)
         start = end + 1;
     }
 
-    return library.cores.empty() ? nullptr : &library.cores.front();
+    return nullptr;
 }
 
 int console_index_by_id(const std::string &id)
@@ -659,7 +670,7 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
     fill_rect(renderer, 0, footer_y, width, footer_h, rgba(8, 13, 24, 210));
     outline_rect(renderer, 0, footer_y, width, 1, rgba(255, 255, 255, 30));
     draw_text(renderer, cache, small_font,
-              "L/R  CONSOLA     D-PAD  NAVEGAR     A  JUGAR     B  VOLVER     X  DETALLE",
+              "L/R  CONSOLA     D-PAD  NAVEGAR     A  JUGAR     B  VOLVER     X  DETALLE     START  TEST RPL",
               margin, footer_y + (footer_h - 18) / 2, rgba(203, 213, 225));
 
     if (!app.message.empty()) {
@@ -745,7 +756,14 @@ void handle_action(AppState &app, int action)
                 const RomEntry &rom = *games[app.game];
                 const CoreEntry *core = find_core(app.library, rom.system);
                 if (!core) {
-                    app.message = "No hay core .rpx para " + rom.system;
+                    app.message = "No hay core .rpl/.rpx para " + rom.system;
+                    break;
+                }
+                if (core->rpl) {
+                    app.rpl_core = core->path;
+                    app.rpl_rom = rom.path;
+                    app.pending_rpl = true;
+                    app.message = "Cargando core en RetroU...";
                     break;
                 }
                 app.launch_core = core->path;
@@ -766,6 +784,78 @@ void handle_action(AppState &app, int action)
         default:
             break;
     }
+}
+
+void run_rpl_core(AppState &app, const std::string &core_path, const std::string &rom_path,
+                  SDL_Renderer *tv, SDL_Renderer *drc)
+{
+    retrou::RplCore core;
+    std::string error;
+
+    std::string dyn_path = core_path;
+    if (dyn_path.rfind("/vol/external01/", 0) == 0) {
+        dyn_path = "sd:/" + dyn_path.substr(16);
+    }
+
+    if (!core.load(dyn_path, tv, drc, error)) {
+        app.message = "RPL: " + error;
+        return;
+    }
+
+    if (!core.loadGame(rom_path, error)) {
+        app.message = "RPL juego: " + error;
+        core.unload();
+        return;
+    }
+
+    app.message = core.name();
+
+    while (app.running) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                app.running = false;
+                break;
+            }
+            if (event.type == SDL_CONTROLLERBUTTONDOWN &&
+                (event.cbutton.button == SDL_CONTROLLER_BUTTON_B ||
+                 event.cbutton.button == SDL_CONTROLLER_BUTTON_START)) {
+                core.unload();
+                return;
+            }
+            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
+                core.unload();
+                return;
+            }
+        }
+
+        if (!app.running) {
+            break;
+        }
+
+        core.runFrame();
+
+        if (tv) {
+            SDL_SetRenderDrawColor(tv, 0, 0, 0, 255);
+            SDL_RenderClear(tv);
+            core.present(tv, 1280, 720);
+            SDL_RenderPresent(tv);
+        }
+        if (drc) {
+            SDL_SetRenderDrawColor(drc, 0, 0, 0, 255);
+            SDL_RenderClear(drc);
+            core.present(drc, 854, 480);
+            SDL_RenderPresent(drc);
+        }
+        SDL_Delay(16);
+    }
+
+    core.unload();
+}
+
+void run_test_core(AppState &app, SDL_Renderer *tv, SDL_Renderer *drc)
+{
+    run_rpl_core(app, "sd:/retrou/cores/test.rpl", "", tv, drc);
 }
 
 } // namespace
@@ -865,7 +955,7 @@ int main(int argc, char **argv)
                     case SDL_CONTROLLER_BUTTON_B: handle_action(app, 9); break;
                     case SDL_CONTROLLER_BUTTON_X: handle_action(app, 7); break;
                     case SDL_CONTROLLER_BUTTON_Y: handle_action(app, 8); break;
-                    case SDL_CONTROLLER_BUTTON_START: handle_action(app, 7); break;
+                    case SDL_CONTROLLER_BUTTON_START: run_test_core(app, tv_renderer, drc_renderer); break;
                     default: break;
                 }
             }
@@ -880,6 +970,16 @@ int main(int argc, char **argv)
                     default: break;
                 }
             }
+        }
+
+        if (app.pending_rpl) {
+            app.pending_rpl = false;
+            std::string core_path = app.rpl_core;
+            std::string rom_path = app.rpl_rom;
+            app.rpl_core.clear();
+            app.rpl_rom.clear();
+            run_rpl_core(app, core_path, rom_path, tv_renderer, drc_renderer);
+            continue;
         }
 
         if (tv_renderer) {

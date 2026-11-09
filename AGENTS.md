@@ -108,29 +108,29 @@ RetroU.wuhb
   → el RPX lee last.txt, lo borra y carga la ROM
 ```
 
-**Actualmente el salto entre apps no funciona de forma fiable.** Al lanzar un
-juego el sistema vuelve al menú de Wii U. Se probaron rutas `fs:/vol`,
-`/vol` y `sd:/` con `_SYSLaunchTitleByPathFromLauncher`; no es el método
-correcto.
+Antes del port HBL, el salto entre apps no funcionaba: al lanzar un juego el
+sistema volvía al menú de Wii U. Se probaron rutas `fs:/vol`, `/vol` y `sd:/`
+con `_SYSLaunchTitleByPathFromLauncher`; no era el método correcto.
 
 El test `retrou_test.rpx` **sí funcionó**: era una app independiente, no un
 salto entre apps. Ese éxito no valida el launcher.
 
-### Decisión pendiente
+### Port HBL implementado
 
-El usuario quiere el launcher. El siguiente trabajo acordado es **portar el
-mecanismo HBL de RetroArch**, no seguir probando rutas:
+El launcher ahora usa el mecanismo HBL de RetroArch en lugar de
+`_SYSLaunchTitleByPathFromLauncher`:
 
+- `native/src/hbl.hpp` / `hbl.cpp`
 - `HBL_loadToMemory`
 - `SC0x25_KernelCopyData` (syscall `0x2500`)
 - mapa de memoria HBL (`MEM_BASE = 0x00800000`)
 - `ARGV_MAGIC` / `ARGV_PTR` en `MEM_BASE + 0x1380`
-- carga del RPX destino y paso de argumentos
 
-Referencia: `libretro/RetroArch`, `os/wiiu/hbl.c`, `os/wiiu/hbl.h`,
-`os/wiiu/system/stubs_rpl.S`.
+El launcher escribe `launch/last.txt`, carga el RPX destino en HBL y sale. El
+RPX lee `last.txt` y carga la ROM.
 
-No implementar HBL sin autorización y sin plan corto aprobado.
+Pendiente: **probar en hardware**. Riesgos: `SC0x25` no permitido desde WUHB
+de Aroma, conflicto con WUMSLoader en `0x00800000`, y dependencia de firmware.
 
 ## 5. Cores
 
@@ -267,7 +267,7 @@ No commitear:
 - **Input del core no implementado**: los botones aún no llegan al emulador.
 - **Audio del core no implementado**.
 - SRAM/savestates/carátulas reales pendientes.
-- El launcher entre apps no funciona; se va a portar HBL.
+- El launcher HBL está implementado; **no probado en hardware**.
 - No afirmar que algo está probado en hardware si no lo está.
 
 ## 12. Convenciones
@@ -282,14 +282,13 @@ No commitear:
 - Si una compilación falla, investigar y reportar; no ocultar errores.
 - Si se requiere hardware, decirlo explícitamente y no inventar resultados.
 
-## 13. Protocolo para el siguiente trabajo (HBL)
+## 13. Protocolo para cambios futuros
 
 Antes de tocar código, presentar al usuario:
 
 1. archivos que se crearán/modificarán;
-2. explicación corta de `HBL_loadToMemory`, `SC0x25` y el mapa de memoria;
-3. cómo se pasará la ROM al RPX destino;
-4. cómo se probará;
-5. riesgos: compatibilidad Aroma, memoria, RPX, firma/permisos.
+2. explicación corta del cambio;
+3. cómo se probará;
+4. riesgos.
 
 Esperar autorización. Después implementar en un cambio acotado y verificable.

@@ -832,8 +832,32 @@ void run_rpl_core(AppState &app, const std::string &core_path, const std::string
                   SDL_Renderer *tv, SDL_Renderer *drc, TTF_Font *heading_font,
                   TTF_Font *body_font, TTF_Font *small_font)
 {
+    {
+        std::ofstream log("/vol/external01/retrou/retrou.log", std::ios::trunc);
+        if (log) {
+            log << "=== run_rpl_core " << core_path << " rom=" << rom_path << " ===\n";
+        }
+    }
+
     retrou::RplCore core;
     std::string error;
+
+    TextCache loading_tv;
+    TextCache loading_drc;
+    if (tv) {
+        SDL_SetRenderDrawColor(tv, 0, 0, 0, 255);
+        SDL_RenderClear(tv);
+        draw_text_center(tv, loading_tv, heading_font, "Cargando core...", 640, 344,
+                         rgba(255, 255, 255));
+        SDL_RenderPresent(tv);
+    }
+    if (drc) {
+        SDL_SetRenderDrawColor(drc, 0, 0, 0, 255);
+        SDL_RenderClear(drc);
+        draw_text_center(drc, loading_drc, heading_font, "Cargando core...", 427, 224,
+                         rgba(255, 255, 255));
+        SDL_RenderPresent(drc);
+    }
 
     std::string dyn_path = core_path;
 

@@ -18,6 +18,16 @@ namespace retrou {
 
 namespace {
 
+const char *kLogPath = "/vol/external01/retrou/retrou.log";
+
+void rpl_log(const std::string &message)
+{
+    std::ofstream out(kLogPath, std::ios::app);
+    if (out) {
+        out << message << "\n";
+    }
+}
+
 constexpr uint32_t kShfAlloc = 0x2;
 constexpr uint32_t kShfDeflated = 0x08000000;
 constexpr uint32_t kShtNobits = 8;
@@ -119,9 +129,10 @@ bool RplLoader::read_file(const std::string &path, std::vector<uint8_t> &out, st
     out.resize(static_cast<size_t>(size));
     file.read(reinterpret_cast<char *>(out.data()), size);
     if (!file) {
-        error = "No se pudo leer " + path;
+        error = "No se pudo leer " + actual_path;
         return false;
     }
+    rpl_log("read_file: " + actual_path + " size=" + std::to_string(out.size()));
     return true;
 }
 
@@ -265,6 +276,9 @@ bool RplLoader::load_sections(const std::vector<uint8_t> &file, std::string &err
         return false;
     }
 
+    rpl_log("load_sections: shnum=" + std::to_string(shnum) +
+            " total=" + std::to_string(total));
+
     allocation_ = OSAllocFromSystem(total, 0x1000);
     if (allocation_) {
         system_allocation_ = true;
@@ -278,6 +292,8 @@ bool RplLoader::load_sections(const std::vector<uint8_t> &file, std::string &err
     }
     allocation_size_ = total;
     memset(allocation_, 0, total);
+    rpl_log("allocation=" + std::to_string(reinterpret_cast<uintptr_t>(allocation_)) +
+            " size=" + std::to_string(total));
 
     for (Section &section : sections_) {
         if (!section.loaded) {
@@ -343,6 +359,7 @@ void *RplLoader::resolve_external(const std::string &name, bool weak)
 
 bool RplLoader::apply_relocations(std::string &error)
 {
+    rpl_log("apply_relocations: start");
     for (Section &rela : sections_) {
         if (rela.type != kShtRela || rela.data.empty()) {
             continue;
@@ -475,6 +492,7 @@ bool RplLoader::apply_relocations(std::string &error)
 
     DCFlushRange(allocation_, allocation_size_);
     ICInvalidateRange(allocation_, allocation_size_);
+    rpl_log("apply_relocations: done");
     return true;
 }
 
@@ -493,8 +511,7 @@ bool RplLoader::parse_exports(std::string &error)
         }
 
         for (uint32_t i = 0; i < count; ++i) {
-            uint32_t value = (static_cast<uint32_t>(runtime[8 + i * 8]) << 24) |
-                             (static_cast<uint32_t>(runtime[8 + i * 8 + 1]) << 16) |
+            uint32_t value = (static_cast<uint32_t>(runtime[8 + i * 8]) << 24) |                             (static_cast<uint32_t>(runtime[8 + i * 8 + 1]) << 16) |
                              (static_cast<uint32_t>(runtime[8 + i * 8 + 2]) << 8) |
                              static_cast<uint32_t>(runtime[8 + i * 8 + 3]);
             uint32_t name_offset = (static_cast<uint32_t>(runtime[8 + i * 8 + 4]) << 24) |
@@ -509,6 +526,7 @@ bool RplLoader::parse_exports(std::string &error)
                 exports_[name] = reinterpret_cast<void *>(static_cast<uintptr_t>(value));
             }
         }
+        rpl_log("exports=" + std::to_string(exports_.size()));
         return !exports_.empty();
     }
 

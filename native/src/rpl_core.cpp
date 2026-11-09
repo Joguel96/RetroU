@@ -2,12 +2,23 @@
 
 #include <cstdio>
 #include <cstring>
+#include <fstream>
 
 namespace retrou {
 
 RplCore *RplCore::instance_ = nullptr;
 
 namespace {
+
+const char *kCoreLogPath = "/vol/external01/retrou/retrou.log";
+
+void core_log(const std::string &message)
+{
+    std::ofstream out(kCoreLogPath, std::ios::app);
+    if (out) {
+        out << message << "\n";
+    }
+}
 
 const char *kSystemDirectory = "/vol/external01/retrou/cores/system";
 const char *kSaveDirectory = "/vol/external01/retrou/cores/savefiles";
@@ -155,11 +166,14 @@ bool RplCore::load(const std::string &path, SDL_Renderer *tv, SDL_Renderer *drc,
     instance_ = this;
     tv_ = tv;
     drc_ = drc;
+    core_log("RplCore::load " + path);
 
     if (!loader_.load(path, error)) {
+        core_log("RplCore loader failed: " + error);
         return false;
     }
     loaded_ = true;
+    core_log("RplCore loader ok");
 
     api_version_ = reinterpret_cast<ApiVersionFn>(resolve("retro_api_version", error));
     init_ = reinterpret_cast<InitFn>(resolve("retro_init", error));
@@ -178,9 +192,11 @@ bool RplCore::load(const std::string &path, SDL_Renderer *tv, SDL_Renderer *drc,
     reset_ = reinterpret_cast<ResetFn>(resolve("retro_reset", error));
 
     if (!error.empty()) {
+        core_log("RplCore resolve failed: " + error);
         unload();
         return false;
     }
+    core_log("RplCore exports ok");
 
     if (api_version_) {
         api_version_();
@@ -197,8 +213,10 @@ bool RplCore::load(const std::string &path, SDL_Renderer *tv, SDL_Renderer *drc,
     get_system_info_(&info);
     name_ = info.library_name ? info.library_name : "core";
 
+    core_log("RplCore before retro_init");
     init_();
     initialized_ = true;
+    core_log("RplCore after retro_init");
     return true;
 }
 
@@ -211,6 +229,7 @@ bool RplCore::loadGame(const std::string &rom_path, std::string &error)
 
     retro_game_info game{};
     rom_path_ = rom_path;
+    core_log("RplCore loadGame " + rom_path_);
     game.path = rom_path_.c_str();
     game.data = nullptr;
     game.size = 0;
@@ -218,17 +237,27 @@ bool RplCore::loadGame(const std::string &rom_path, std::string &error)
 
     if (!load_game_(&game)) {
         error = "retro_load_game devolvio false";
+        core_log("retro_load_game failed");
         return false;
     }
 
+    core_log("retro_load_game ok");
     game_loaded_ = true;
     return true;
 }
 
 void RplCore::runFrame()
 {
+    static int frame_count = 0;
+    if (frame_count < 3) {
+        core_log("retro_run before " + std::to_string(frame_count));
+    }
     if (run_) {
         run_();
+    }
+    if (frame_count < 3) {
+        core_log("retro_run after " + std::to_string(frame_count));
+        ++frame_count;
     }
 }
 
@@ -296,6 +325,7 @@ void RplCore::destroyTextures()
 
 void RplCore::unload()
 {
+    core_log("RplCore::unload");
     if (loaded_) {
         if (game_loaded_ && unload_game_) {
             unload_game_();

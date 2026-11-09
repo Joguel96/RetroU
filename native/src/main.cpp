@@ -380,14 +380,36 @@ bool launch_core(const std::string &sd_root, const std::string &core_path,
 
     /* The public WUT header declares two arguments, but sysapp's real
      * entry point takes (path, length, zero). Keep the length explicit. */
-    using LaunchByPathFn = void (*)(const char *, uint32_t, uint32_t);
+    using LaunchByPathFn = int (*)(const char *, uint32_t, uint32_t);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-function-type"
     LaunchByPathFn launch = reinterpret_cast<LaunchByPathFn>(
         &_SYSLaunchTitleByPathFromLauncher);
 #pragma GCC diagnostic pop
-    launch(path.c_str(), static_cast<uint32_t>(path.size()), 0);
-    return true;
+
+    std::vector<std::string> candidates;
+    if (path.rfind("/vol/", 0) == 0) {
+        candidates.push_back("fs:" + path);
+    }
+    candidates.push_back(path);
+    if (path.rfind("/vol/external01/", 0) == 0) {
+        candidates.push_back("sd:/" + path.substr(16));
+    }
+
+    std::ofstream log("/vol/external01/retrou/launcher.log", std::ios::app);
+    int result = -1;
+    for (const std::string &candidate : candidates) {
+        result = launch(candidate.c_str(), static_cast<uint32_t>(candidate.size()), 0);
+        if (log) {
+            log << "launch " << candidate << " result=" << result << "\n";
+        }
+        if (result >= 0) {
+            return true;
+        }
+    }
+
+    error = "No se pudo lanzar el RPX";
+    return false;
 }
 
 struct TextCache {
@@ -1165,7 +1187,14 @@ void read_last_launch(AppState &app)
 void run_test_core(AppState &app, SDL_Renderer *tv, SDL_Renderer *drc,
                    TTF_Font *heading_font, TTF_Font *body_font, TTF_Font *small_font)
 {
-#if defined(RETROU_STATIC_CORE) && defined(RETROU_TEST_CORE)
+#if defined(RETROU_LAUNCHER)
+    (void)tv;
+    (void)drc;
+    (void)heading_font;
+    (void)body_font;
+    (void)small_font;
+    app.message = "Usa RetroU-Test.wuhb";
+#elif defined(RETROU_STATIC_CORE) && defined(RETROU_TEST_CORE)
     run_static_core(app, "", tv, drc, heading_font, body_font, small_font);
 #elif defined(RETROU_STATIC_CORE)
     (void)tv;

@@ -21,9 +21,8 @@ RetroU-SNES.rpx
 RetroU-GBA.rpx
 ```
 
-`RetroU.wuhb` es el ejecutable oficial: al pulsar A sobre una ROM, escribe
-`launch/last.txt` y lanza el RPX del sistema. El RPX lee ese archivo, lo borra
-y carga la ROM automáticamente con su core.
+`RetroU.wuhb` se copia automáticamente a `dist/wiiu/apps/retrou/RetroU.wuhb`
+(equivale a `sd:/wiiu/apps/retrou/RetroU.wuhb`).
 
 ## Qué hace
 

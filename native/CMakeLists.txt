@@ -148,6 +148,17 @@ wut_create_wuhb(retrou_launcher
     DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/../assets/drc-splash.png"
 )
 
+add_custom_target(stage_launcher ALL
+    COMMAND "${CMAKE_COMMAND}" -E make_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/retrou"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "${CMAKE_CURRENT_BINARY_DIR}/retrou_launcher.wuhb"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/retrou/RetroU.wuhb"
+    DEPENDS retrou_launcher_wuhb
+    COMMENT "Staging RetroU.wuhb in dist/wiiu/apps/retrou"
+    VERBATIM
+)
+
 # Test build with the synthetic core compiled into the RPX.
 add_executable(retrou_test
     src/main.cpp

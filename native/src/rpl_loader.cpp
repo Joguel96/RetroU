@@ -1,6 +1,7 @@
 #include "rpl_loader.hpp"
 
 #include <coreinit/cache.h>
+#include <coreinit/codegen.h>
 #include <coreinit/memdefaultheap.h>
 #include <coreinit/memory.h>
 
@@ -279,12 +280,18 @@ bool RplLoader::load_sections(const std::vector<uint8_t> &file, std::string &err
     rpl_log("load_sections: shnum=" + std::to_string(shnum) +
             " total=" + std::to_string(total));
 
-    allocation_ = OSAllocFromSystem(total, 0x1000);
+    void *codegen_address = nullptr;
+    uint32_t codegen_size = 0;
+    OSGetCodegenVirtAddrRange(&codegen_address, &codegen_size);
+    rpl_log("codegen=" + std::to_string(reinterpret_cast<uintptr_t>(codegen_address)) +
+            " size=" + std::to_string(codegen_size));
+
+    allocation_ = MEMAllocFromDefaultHeapEx(total, 0x1000);
     if (allocation_) {
-        system_allocation_ = true;
-    } else {
-        allocation_ = MEMAllocFromDefaultHeapEx(total, 0x1000);
         system_allocation_ = false;
+    } else {
+        allocation_ = OSAllocFromSystem(total, 0x1000);
+        system_allocation_ = allocation_ != nullptr;
     }
     if (!allocation_) {
         error = "Sin memoria para el RPL";

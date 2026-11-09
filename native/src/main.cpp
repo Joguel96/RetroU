@@ -1373,16 +1373,16 @@ int main(int argc, char **argv)
     if (tv_window) SDL_DestroyWindow(tv_window);
     if (drc_window) SDL_DestroyWindow(drc_window);
 
-    /* Ask sysapp to switch titles while ProcUI is still alive. SDL_Quit
-     * then releases the SDL port; the OS loads the core after we return. */
+    SDL_Quit();
+
+    /* Mocha must be the last thing before main returns: SDL_Quit/ProcUI would
+     * otherwise send the app back to the Wii U menu and cancel H&S launch. */
     if (app.pending_launch) {
         std::string error;
         if (!launch_core(app.library.sd_root, app.launch_core, app.launch_rom, error)) {
-            SDL_Quit();
             return 1;
         }
     }
 
-    SDL_Quit();
     return 0;
 }

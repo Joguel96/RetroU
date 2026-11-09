@@ -53,6 +53,21 @@ set(SNES9X_CORE "${CMAKE_CURRENT_SOURCE_DIR}/../.cores/snes9x/libretro/snes9x_li
 set(MGBA_CORE "${CMAKE_CURRENT_SOURCE_DIR}/../.cores/mgba/build/mgba_libretro.a"
     CACHE FILEPATH "mgba static core")
 
+function(stage_rpx target output_name)
+    get_target_property(RPX_FILE ${target} WUT_RPL)
+    if(RPX_FILE)
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E make_directory
+                    "${CMAKE_CURRENT_SOURCE_DIR}/../dist/retrou/cores"
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                    "${RPX_FILE}"
+                    "${CMAKE_CURRENT_SOURCE_DIR}/../dist/retrou/cores/${output_name}"
+            COMMENT "Staging ${output_name} in dist/retrou/cores"
+            VERBATIM
+        )
+    endif()
+endfunction()
+
 function(configure_retrou target)
     target_sources(${target} PRIVATE "${FONT_REGULAR_OBJ}" "${FONT_BOLD_OBJ}")
     set_source_files_properties("${FONT_REGULAR_OBJ}" "${FONT_BOLD_OBJ}"
@@ -98,6 +113,7 @@ function(add_static_retrou target system label core)
     configure_retrou(${target})
     target_link_libraries(${target} PRIVATE "${core}" m z)
     wut_create_rpx(${target})
+    stage_rpx(${target} "RetroU-${label}.rpx")
     wut_create_wuhb(${target}
         CONTENT    "${CMAKE_CURRENT_SOURCE_DIR}/content"
         NAME       "RetroU ${label}"
@@ -126,6 +142,7 @@ target_compile_definitions(retrou_test PRIVATE
 )
 configure_retrou(retrou_test)
 wut_create_rpx(retrou_test)
+stage_rpx(retrou_test "RetroU-Test.rpx")
 wut_create_wuhb(retrou_test
     CONTENT    "${CMAKE_CURRENT_SOURCE_DIR}/content"
     NAME       "RetroU Test"

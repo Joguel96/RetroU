@@ -6,6 +6,31 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(LIBRETRO_COMMON "${CMAKE_CURRENT_SOURCE_DIR}/../.cores/fceumm/src/drivers/libretro/libretro-common")
+set(OBJCOPY "/opt/devkitpro/devkitPPC/bin/powerpc-eabi-objcopy.exe")
+set(FONT_OBJECT_DIR "${CMAKE_CURRENT_BINARY_DIR}/embedded_fonts")
+set(FONT_REGULAR_OBJ "${FONT_OBJECT_DIR}/ui_ttf.o")
+set(FONT_BOLD_OBJ "${FONT_OBJECT_DIR}/ui_bold_ttf.o")
+
+add_custom_command(
+    OUTPUT "${FONT_REGULAR_OBJ}"
+    COMMAND "${CMAKE_COMMAND}" -E make_directory "${FONT_OBJECT_DIR}"
+    COMMAND "${OBJCOPY}" -I binary -O elf32-powerpc -B powerpc
+            --rename-section .data=.rodata,alloc,load,readonly,data,contents
+            ui.ttf "${FONT_REGULAR_OBJ}"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/content"
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/content/ui.ttf"
+)
+
+add_custom_command(
+    OUTPUT "${FONT_BOLD_OBJ}"
+    COMMAND "${CMAKE_COMMAND}" -E make_directory "${FONT_OBJECT_DIR}"
+    COMMAND "${OBJCOPY}" -I binary -O elf32-powerpc -B powerpc
+            --rename-section .data=.rodata,alloc,load,readonly,data,contents
+            ui-bold.ttf "${FONT_BOLD_OBJ}"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/content"
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/content/ui-bold.ttf"
+)
+
 set(RETRO_COMMON_SOURCES
     "${LIBRETRO_COMMON}/compat/compat_strl.c"
     "${LIBRETRO_COMMON}/file/file_path.c"
@@ -29,6 +54,10 @@ set(MGBA_CORE "${CMAKE_CURRENT_SOURCE_DIR}/../.cores/mgba/build/mgba_libretro.a"
     CACHE FILEPATH "mgba static core")
 
 function(configure_retrou target)
+    target_sources(${target} PRIVATE "${FONT_REGULAR_OBJ}" "${FONT_BOLD_OBJ}")
+    set_source_files_properties("${FONT_REGULAR_OBJ}" "${FONT_BOLD_OBJ}"
+        PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
+
     target_include_directories(${target} PRIVATE
         src
         cores

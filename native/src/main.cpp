@@ -20,6 +20,13 @@
 #include <string>
 #include <vector>
 
+extern "C" {
+extern const unsigned char _binary_ui_ttf_start[];
+extern const unsigned char _binary_ui_ttf_end[];
+extern const unsigned char _binary_ui_bold_ttf_start[];
+extern const unsigned char _binary_ui_bold_ttf_end[];
+}
+
 namespace {
 
 struct ConsoleDef {
@@ -708,8 +715,22 @@ SDL_GameController *open_first_controller()
 
 TTF_Font *open_font(bool bold, int size)
 {
+    const unsigned char *begin = bold ? _binary_ui_bold_ttf_start : _binary_ui_ttf_start;
+    const unsigned char *end = bold ? _binary_ui_bold_ttf_end : _binary_ui_ttf_end;
+    size_t length = static_cast<size_t>(end - begin);
+    if (length > 0) {
+        SDL_RWops *rw = SDL_RWFromConstMem(begin, static_cast<int>(length));
+        if (rw) {
+            TTF_Font *font = TTF_OpenFontRW(rw, 1, size);
+            if (font) {
+                return font;
+            }
+        }
+    }
+
     const char *primary = bold ? "/vol/content/ui-bold.ttf" : "/vol/content/ui.ttf";
-    const char *fallback = bold ? "sd:/retrou/assets/ui-bold.ttf" : "sd:/retrou/assets/ui.ttf";
+    const char *fallback = bold ? "/vol/external01/retrou/assets/ui-bold.ttf"
+                                : "/vol/external01/retrou/assets/ui.ttf";
     const char *paths[] = {primary, fallback};
 
     for (const char *path : paths) {

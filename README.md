@@ -73,15 +73,17 @@ sd:/retrou/launch/last.txt
 ## Hoja de ruta
 
 1. ~~Esqueleto nativo + escaneo + lanzamiento de `.rpx`~~.
-2. Lanzar core + ROM (HBL/argv o core parcheado).
-3. Carátulas reales desde `thumbnails.libretro.com`.
-4. Portar las vistas de `web/` a la UI nativa.
-5. Empaquetar y probar en hardware.
+2. Validar core `.rpl` en proceso (fceumm) y frontend Libretro.
+3. Vídeo/audio/input, SRAM y savestates dentro de RetroU.
+4. Ajustes de memoria, escalado, widescreen y overrides.
+5. Carátulas reales desde `thumbnails.libretro.com`.
+6. Portar las vistas de `web/` a la UI nativa y probar en hardware.
 
 ## Documentación
 
 - [Referencia RetroArch](docs/retroarch-reference.md)
 - [Interfaz y mando](docs/ui.md)
+- [Arquitectura y ajustes](docs/settings-roadmap.md)
 - [App nativa](native/README.md)
 
 ## Guías externas

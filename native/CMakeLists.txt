@@ -68,6 +68,8 @@ function(configure_retrou target)
 
     target_link_libraries(${target} PRIVATE
         SDL2_ttf
+        SDL2_image
+        webp
         freetype
         harfbuzz
         png

@@ -1,5 +1,6 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_image.h>
 
 #include "rpl_core.hpp"
 #include <whb/sdcard.h>
@@ -550,6 +551,51 @@ int title_year(const std::string &title)
     return 0;
 }
 
+std::map<std::string, SDL_Texture *> g_covers;
+
+SDL_Texture *cover_for(SDL_Renderer *renderer, const RomEntry &game)
+{
+    std::string safe = game.title;
+    for (char &c : safe) {
+        if (c == '/' || c == '\\') c = '_';
+    }
+    std::string path = "/vol/external01/retrou/thumbnails/" + game.system + "/" + safe + ".png";
+    auto it = g_covers.find(path);
+    if (it != g_covers.end()) return it->second;
+    struct stat info;
+    if (stat(path.c_str(), &info) != 0) {
+        g_covers[path] = nullptr;
+        return nullptr;
+    }
+    SDL_Texture *texture = IMG_LoadTexture(renderer, path.c_str());
+    g_covers[path] = texture;
+    return texture;
+}
+
+void draw_star(SDL_Renderer *renderer, int cx, int cy, int outer, int inner, SDL_Color color)
+{
+    SDL_Vertex vertices[12]{};
+    vertices[0].position = {static_cast<float>(cx), static_cast<float>(cy)};
+    vertices[0].color = color;
+    vertices[0].tex_coord = {0, 0};
+    for (int i = 0; i < 10; ++i) {
+        float angle = -3.14159265f / 2.0f + i * 3.14159265f / 5.0f;
+        int radius = (i % 2 == 0) ? outer : inner;
+        vertices[i + 1].position = {
+            static_cast<float>(cx + std::cos(angle) * radius),
+            static_cast<float>(cy + std::sin(angle) * radius)};
+        vertices[i + 1].color = color;
+        vertices[i + 1].tex_coord = {0, 0};
+    }
+    int indices[30];
+    for (int i = 0; i < 10; ++i) {
+        indices[i * 3] = 0;
+        indices[i * 3 + 1] = i + 1;
+        indices[i * 3 + 2] = (i + 1) % 10 + 1;
+    }
+    SDL_RenderGeometry(renderer, nullptr, vertices, 11, indices, 30);
+}
+
 void refresh_visible(AppState &app)
 {
     app.visible.clear();
@@ -997,6 +1043,11 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
                     SDL_RenderDrawPoint(renderer, px, py);
                 }
             }
+            SDL_Texture *cover = cover_for(renderer, game);
+            if (cover) {
+                SDL_Rect dst{x + 2, y + 2, card_w - 4, cover_h - 2};
+                SDL_RenderCopy(renderer, cover, nullptr, &dst);
+            }
             fill_rounded_rect(renderer, x + 2, y + cover_h, card_w - 4,
                               card_h - cover_h - 2, 10, rgba(theme.backgroundBottom, 225));
             outline_rounded_rect(renderer, x, y, card_w, card_h, 12,
@@ -1020,15 +1071,22 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
             std::string initials = game.title.substr(0, 2);
             std::transform(initials.begin(), initials.end(), initials.begin(),
                            [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
-            draw_text_center(renderer, cache, title_font, initials,
-                             x + card_w / 2, y + cover_h / 2 - 28,
-                             rgba(255, 255, 255, 225));
+            if (!cover) {
+                draw_text_center(renderer, cache, title_font, initials,
+                                 x + card_w / 2, y + cover_h / 2 - 28,
+                                 rgba(255, 255, 255, 225));
+            }
+            if (game.favorite) {
+                draw_star(renderer, x + card_w - 24, y + 22, 11, 4, rgba(theme.accent));
+            }
 
             int text_y = y + cover_h + 10;
             std::string title = fit_text(body_font, game.title, card_w - 20);
             draw_text(renderer, cache, body_font, title, x + 10, text_y,
                       rgba(theme.text));
-            std::string meta = "ROM  ·  " + std::to_string(index + 1);
+            int year = title_year(game.title);
+            std::string meta = console ? console->name : game.system;
+            if (year > 0) meta += "  ·  " + std::to_string(year);
             draw_text(renderer, cache, small_font, meta, x + 10,
                       text_y + (tv ? 25 : 20), rgba(theme.muted));
         }

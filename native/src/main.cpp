@@ -136,6 +136,7 @@ struct AppState {
                                      SDL_CONTROLLER_BUTTON_BACK};
     std::array<std::array<int, 8>, 2> control_maps = {control_map, control_map};
     int control_port = 0;
+    std::array<int, 2> controller_port = {0, 1};
     int control_option = 0;
     bool control_listening = false;
     bool assets_downloading = false;
@@ -155,6 +156,10 @@ struct AppState {
     std::string rpl_rom;
     std::string message;
 };
+
+SDL_GameController *g_game_port[2] = {nullptr, nullptr};
+std::vector<SDL_GameController *> g_controllers;
+void select_game_controllers(const AppState &app);
 
 SDL_Color rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255)
 {
@@ -570,6 +575,8 @@ void load_control_config(AppState &app)
         if (eq == std::string::npos) continue;
         std::string key = line.substr(0, eq);
         int value = std::atoi(line.substr(eq + 1).c_str());
+        if (key == "device1") app.controller_port[0] = value;
+        else if (key == "device2") app.controller_port[1] = value;
         const char *keys[] = {"a", "b", "x", "y", "l", "r", "start", "select"};
         for (int i = 0; i < 8; ++i) {
             if (key == keys[i]) app.control_maps[port][i] = value;
@@ -585,14 +592,14 @@ void load_control_config(AppState &app)
     }
 }
 
-void save_control_config(const AppState &app)
-{
+void save_control_config(const AppState &app){
     std::string path = join_path(system_config_dir(app.library.sd_root), "control-map.conf");
     std::ofstream out(path, std::ios::trunc);
     if (!out) return;
     const char *keys[] = {"a", "b", "x", "y", "l", "r", "start", "select"};
     for (int port = 0; port < 2; ++port) {
         out << "[p" << (port + 1) << "]\n";
+        out << "device" << (port + 1) << "=" << app.controller_port[port] << "\n";
         for (int i = 0; i < 8; ++i) {
             out << keys[i] << "=" << app.control_maps[port][i] << "\n";
         }
@@ -1683,7 +1690,15 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
         draw_text(renderer, cache, body_font,
                   app.control_port == 0 ? "CONTROLLER 1" : "CONTROLLER 2",
                   content_x + 24, content_y + 148, rgba(current_theme(app).accent));
-        int y = content_y + 172;
+        std::string device = "Sin mando";
+        int index = app.controller_port[app.control_port];
+        if (index >= 0 && index < static_cast<int>(g_controllers.size())) {
+            const char *name = SDL_GameControllerName(g_controllers[index]);
+            device = name ? name : "Mando";
+        }
+        draw_text(renderer, cache, small_font, "Mando: " + device,
+                  content_x + 24, content_y + 170, rgba(current_theme(app).text));
+        int y = content_y + 194;
         for (int i = 0; i < 8; ++i) {
             bool selected = i == app.control_option;
             if (selected) {
@@ -1697,9 +1712,9 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
             draw_text(renderer, cache, small_font,
                       std::string(actionNames[i]) + "  →  " + value,
                       content_x + 28, y, rgba(current_theme(app).text));
-            y += 19;
+            y += 17;
         }
-        draw_text(renderer, cache, small_font, "IZQ/DER  PUERTO     A  REMAPEAR     B  CANCELAR",
+        draw_text(renderer, cache, small_font, "IZQ/DER PUERTO  Y MANDO  A REMAPEAR  B CANCELAR",
                   content_x + 24, content_y + content_h - 34, rgba(current_theme(app).muted));
     }
 
@@ -1756,6 +1771,14 @@ void settings_action(AppState &app, int action)
         } else {
             app.dirty = true;
             app.message = "Cambio temporal: pulsa + para guardar";
+        }
+    } else if (action == 8) {
+        if (app.settings_index == 2 && !g_controllers.empty()) {
+            app.controller_port[app.control_port] =
+                (app.controller_port[app.control_port] + 1) % g_controllers.size();
+            select_game_controllers(app);
+            app.dirty = true;
+            app.message = "Mando del juego cambiado";
         }
     } else if (action == 9) {
         app.settings_screen = false;
@@ -1853,24 +1876,34 @@ SDL_GameController *open_first_controller()
     return nullptr;
 }
 
-SDL_GameController *g_second_controller = nullptr;
-
-SDL_GameController *open_second_controller(SDL_GameController *first)
+void open_all_controllers()
 {
-    if (!first) return nullptr;
-    SDL_Joystick *first_joystick = SDL_GameControllerGetJoystick(first);
-    SDL_JoystickID first_id = SDL_JoystickInstanceID(first_joystick);
+    g_controllers.clear();
     for (int i = 0; i < SDL_NumJoysticks(); ++i) {
         if (!SDL_IsGameController(i)) continue;
-        SDL_Joystick *joystick = SDL_JoystickOpen(i);
-        if (!joystick) continue;
-        SDL_JoystickID id = SDL_JoystickInstanceID(joystick);
-        SDL_JoystickClose(joystick);
-        if (id == first_id) continue;
-        SDL_GameController *second = SDL_GameControllerOpen(i);
-        if (second) return second;
+        SDL_GameController *controller = SDL_GameControllerOpen(i);
+        if (controller) g_controllers.push_back(controller);
     }
-    return nullptr;
+}
+
+SDL_GameController *menu_controller()
+{
+    for (SDL_GameController *controller : g_controllers) {
+        const char *name = SDL_GameControllerName(controller);
+        if (name && (std::strstr(name, "GamePad") || std::strstr(name, "Gamepad"))) {
+            return controller;
+        }
+    }
+    return g_controllers.empty() ? nullptr : g_controllers[0];
+}
+
+void select_game_controllers(const AppState &app)
+{
+    for (int port = 0; port < 2; ++port) {
+        int index = app.controller_port[port];
+        g_game_port[port] = (index >= 0 && index < static_cast<int>(g_controllers.size()))
+                                ? g_controllers[index] : nullptr;
+    }
 }
 
 TTF_Font *open_font(bool bold, int size)
@@ -2186,7 +2219,7 @@ void run_static_core(AppState &app, const std::string &rom_path,
     retrou::RplCore core;
     core.setSaveDirectory(system_save_directory(app.library.sd_root));
     core.setController(controller);
-    core.setControllers(controller, g_second_controller);
+    core.setControllers(g_game_port[0], g_game_port[1]);
     core.setControlMaps(app.control_maps);
     std::string error;
 
@@ -2405,11 +2438,12 @@ int main(int argc, char **argv)
         app.message = "Copia ROMs a sd:/retrou/roms/<consola>/";
     }
 
-    SDL_GameController *controller = open_first_controller();
+    SDL_GameController *controller = nullptr;
+    open_all_controllers();
+    controller = menu_controller();
+    select_game_controllers(app);
     boot_log("after open controller");
     bool connected = controller != nullptr;
-    g_second_controller = open_second_controller(controller);
-    boot_log("after open second controller");
 
     TextCache tv_text;
     TextCache drc_text;
@@ -2451,8 +2485,11 @@ int main(int argc, char **argv)
     boot_log("before main loop");
 
     while (app.running) {
-        if (!controller) {            bool was_connected = connected;
-            controller = open_first_controller();
+        if (!controller) {
+            bool was_connected = connected;
+            open_all_controllers();
+            controller = menu_controller();
+            select_game_controllers(app);
             connected = controller != nullptr;
             if (was_connected != connected) {
                 ui_dirty = true;

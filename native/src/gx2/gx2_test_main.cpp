@@ -141,6 +141,20 @@ int main()
             cardMetas[i] = kGames[i].meta;
         }
     }
+    // Pre-truncate titles once: fitText is FreeType work and must not run
+    // every frame.
+    std::vector<std::string> cardTitlesFit(10);
+    for (int i = 0; i < 10; ++i) {
+        cardTitlesFit[i] = text::fitText(cardTitles[i].c_str(), 15, cardW - 24.0f);
+    }
+    text::prewarm("Biblioteca", 34);
+    text::prewarm("FILTRAR Y ORGANIZAR", 16);
+    for (int i = 0; i < 4; ++i) text::prewarm(filters[i], 15);
+    for (int i = 0; i < 10; ++i) {
+        text::prewarm(cardTitlesFit[i].c_str(), 15);
+        text::prewarm(cardMetas[i].c_str(), 12);
+    }
+    text::prewarm("A  JUGAR    B  VOLVER    PLUS  FILTROS", 15);
 
     while (true) {
         // GamePad input: move the focused card with the D-pad.
@@ -193,7 +207,7 @@ int main()
             drawRoundRect(x + 2.0f, y + coverH, cardW - 4.0f, cardH - coverH - 2.0f, 10.0f,
                           cardFooter);
 
-            text::drawText(text::fitText(cardTitles[i].c_str(), 15, cardW - 24.0f).c_str(),
+            text::drawText(cardTitlesFit[i].c_str(),
                            x + 12.0f, y + coverH + 12.0f, 15, white);
             text::drawText(cardMetas[i].c_str(), x + 12.0f, y + coverH + 34.0f, 12, muted);
         }

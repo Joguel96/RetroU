@@ -44,6 +44,15 @@ struct Glyph {
 
 std::map<GlyphKey, Glyph> g_glyphs;
 
+int g_lastSize = -1;
+void setSize(int size)
+{
+    if (size != g_lastSize) {
+        FT_Set_Pixel_Sizes(g_face, 0, static_cast<FT_UInt>(size));
+        g_lastSize = size;
+    }
+}
+
 bool decodeUtf8(const char *text, uint32_t &out, int &advance)
 {
     const unsigned char *p = reinterpret_cast<const unsigned char *>(text);
@@ -69,7 +78,7 @@ Glyph renderGlyph(uint32_t codepoint, int size)
         return found->second;
     }
 
-    FT_Set_Pixel_Sizes(g_face, 0, static_cast<FT_UInt>(size));
+    setSize(size);
     FT_UInt index = FT_Get_Char_Index(g_face, codepoint);
     if (FT_Load_Glyph(g_face, index, FT_LOAD_DEFAULT) != 0 ||
         FT_Render_Glyph(g_face->glyph, FT_RENDER_MODE_NORMAL) != 0) {
@@ -160,7 +169,7 @@ bool loadFont(const unsigned char *data, size_t size)
 int measureText(const char *text, int pixelSize)
 {
     if (!text || !g_face) return 0;
-    FT_Set_Pixel_Sizes(g_face, 0, static_cast<FT_UInt>(pixelSize));
+    setSize(pixelSize);
     int width = 0;
     const char *cursor = text;
     uint32_t codepoint = 0;

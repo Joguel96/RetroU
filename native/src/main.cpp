@@ -437,6 +437,62 @@ uint32_t theme_color(uint32_t color, uint8_t alpha = 255)
     return (color & 0x00FFFFFF) | (static_cast<uint32_t>(alpha) << 24);
 }
 
+std::string dat_value(const std::string &line)
+{
+    size_t first = line.find('"');
+    size_t last = line.rfind('"');
+    if (first == std::string::npos || last == std::string::npos || last <= first) return "";
+    return line.substr(first + 1, last - first - 1);
+}
+
+void load_dat_file(AppState &app, const std::string &path, const std::string &kind)
+{
+    std::ifstream in(path);
+    if (!in) return;
+    std::vector<std::string> names;
+    std::string value;
+    std::string line;
+    auto flush = [&]() {
+        if (value.empty()) {
+            names.clear();
+            return;
+        }
+        for (const std::string &name : names) {
+            for (RomEntry &rom : app.library.roms) {
+                if (rom.title != name) continue;
+                if (kind == "developer") rom.developer = value;
+                else if (kind == "genre") rom.genre = value;
+                else if (kind == "releaseyear") {
+                    int year = std::atoi(value.c_str());
+                    if (year > 0) rom.year = year;
+                }
+            }
+        }
+        names.clear();
+        value.clear();
+    };
+    while (std::getline(in, line)) {
+        std::string t = line;
+        while (!t.empty() && (t.front() == '\t' || t.front() == ' ')) t.erase(t.begin());
+        if (t.rfind("comment \"", 0) == 0 || t.rfind("name \"", 0) == 0) {
+            names.push_back(dat_value(t));
+        } else if (t.rfind(kind + " \"", 0) == 0) {
+            value = dat_value(t);
+        } else if (t == ")") {
+            flush();
+        }
+    }
+}
+
+void load_libretro_metadata(AppState &app)
+{
+    std::string dir = join_path(join_path(app.library.sd_root, "retrou"), "metadata");
+    std::string system = current_system_id();
+    load_dat_file(app, join_path(dir, system + "-developer.dat"), "developer");
+    load_dat_file(app, join_path(dir, system + "-genre.dat"), "genre");
+    load_dat_file(app, join_path(dir, system + "-releaseyear.dat"), "releaseyear");
+}
+
 void load_metadata(AppState &app)
 {
     std::ifstream in(join_path(system_config_dir(app.library.sd_root), "metadata.conf"));
@@ -614,10 +670,34 @@ SDL_Texture *cover_for(SDL_Renderer *renderer, const RomEntry &game)
         if (it != g_covers.end() && it->second) return it->second;
         struct stat info;
         if (stat(path.c_str(), &info) != 0) continue;
-        SDL_Texture *texture = IMG_LoadTexture(renderer, path.c_str());
+        SDL_Surface *loaded = IMG_Load(path.c_str());
+        if (!loaded) continue;
+        SDL_Surface *surface = SDL_ConvertSurfaceFormat(loaded, SDL_PIXELFORMAT_ARGB8888, 0);
+        SDL_FreeSurface(loaded);
+        if (!surface) continue;
+        SDL_LockSurface(surface);
+        int radius = std::min(24, std::min(surface->w, surface->h) / 8);
+        for (int py = 0; py < surface->h; ++py) {
+            for (int px = 0; px < surface->w; ++px) {
+                int cx = -1, cy = -1;
+                if (px < radius && py < radius) { cx = radius; cy = radius; }
+                else if (px >= surface->w - radius && py < radius) {
+                    cx = surface->w - radius - 1; cy = radius;
+                }
+                if (cx >= 0) {
+                    int dx = px - cx, dy = py - cy;
+                    if (dx * dx + dy * dy > radius * radius) {
+                        *reinterpret_cast<uint32_t *>(
+                            static_cast<uint8_t *>(surface->pixels) + py * surface->pitch + px * 4) = 0;
+                    }
+                }
+            }
+        }
+        SDL_UnlockSurface(surface);
+        SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_FreeSurface(surface);
         g_covers[key] = texture;
-        if (texture) return texture;
-    }
+        if (texture) return texture;    }
     return nullptr;
 }
 
@@ -627,6 +707,68 @@ std::string libretroSystemFolder(const std::string &system)
     if (system == "snes") return "Nintendo - Super Nintendo Entertainment System";
     if (system == "gba") return "Nintendo - Game Boy Advance";
     return "";
+}
+
+size_t curlWriteFile(void *ptr, size_t size, size_t nmemb, void *userdata);
+bool download_if_missing(const RomEntry &game, const char *kind);
+std::string urlEncode(const std::string &value);
+
+bool download_to_file(const std::string &url, const std::string &path)
+{
+    FILE *fp = std::fopen(path.c_str(), "wb");
+    if (!fp) return false;
+    CURL *curl = curl_easy_init();
+    bool ok = false;
+    if (curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
+        curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT, 45L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteFile);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+        ok = curl_easy_perform(curl) == CURLE_OK;
+        curl_easy_cleanup(curl);
+    }
+    std::fclose(fp);
+    if (!ok) std::remove(path.c_str());
+    return ok;
+}
+
+void download_metadata_for_system(const std::string &system)
+{
+    std::string folder = libretroSystemFolder(system);
+    if (folder.empty()) return;
+    std::string dir = "/vol/external01/retrou/metadata";
+    mkdir(dir.c_str(), 0777);
+    const char *kinds[] = {"developer", "genre", "releaseyear"};
+    for (const char *kind : kinds) {
+        std::string path = dir + "/" + system + "-" + kind + ".dat";
+        struct stat info;
+        if (stat(path.c_str(), &info) == 0) continue;
+        std::string url = "https://raw.githubusercontent.com/libretro/libretro-database/master/metadat/" +
+                          std::string(kind) + "/" + urlEncode(folder) + ".dat";
+        download_to_file(url, path);
+    }
+}
+
+void download_assets_thread(std::vector<RomEntry> games)
+{
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    std::string lastMetadata;
+    for (const RomEntry &game : games) {
+        if (game.system == "nes" || game.system == "snes" || game.system == "gba") {
+            if (game.system != lastMetadata) {
+                download_metadata_for_system(game.system);
+                lastMetadata = game.system;
+            }
+            download_if_missing(game, "thumbnails");
+            download_if_missing(game, "backdrops");
+        }
+    }
+    curl_global_cleanup();
 }
 
 std::string urlEncode(const std::string &value)
@@ -696,18 +838,6 @@ bool download_if_missing(const RomEntry &game, const char *kind)
         std::remove(dst.c_str());
     }
     return false;
-}
-
-void download_assets_thread(std::vector<RomEntry> games)
-{
-    curl_global_init(CURL_GLOBAL_DEFAULT);
-    for (const RomEntry &game : games) {
-        if (game.system == "nes" || game.system == "snes" || game.system == "gba") {
-            download_if_missing(game, "thumbnails");
-            download_if_missing(game, "backdrops");
-        }
-    }
-    curl_global_cleanup();
 }
 
 void draw_star(SDL_Renderer *renderer, int cx, int cy, int outer, int inner, SDL_Color color){
@@ -1180,8 +1310,21 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
 
             SDL_Texture *cover = cover_for(renderer, game);
             if (cover) {
-                SDL_Rect dst{x + 2, y + 2, card_w - 4, cover_h - 2};
-                SDL_RenderCopy(renderer, cover, nullptr, &dst);
+                int tw = 0, th = 0;
+                SDL_QueryTexture(cover, nullptr, nullptr, &tw, &th);
+                SDL_Rect src{0, 0, tw, th};
+                int dstW = card_w - 4, dstH = cover_h - 2;
+                float srcAspect = tw > 0 && th > 0 ? static_cast<float>(tw) / th : 1.0f;
+                float dstAspect = static_cast<float>(dstW) / std::max(1, dstH);
+                if (srcAspect > dstAspect) {
+                    src.w = static_cast<int>(th * dstAspect);
+                    src.x = (tw - src.w) / 2;
+                } else {
+                    src.h = static_cast<int>(tw / dstAspect);
+                    src.y = (th - src.h) / 2;
+                }
+                SDL_Rect dst{x + 2, y + 2, dstW, dstH};
+                SDL_RenderCopy(renderer, cover, &src, &dst);
             } else {
                 uint8_t r = static_cast<uint8_t>((game.color >> 16) & 0xFF);
                 uint8_t g = static_cast<uint8_t>((game.color >> 8) & 0xFF);
@@ -2085,6 +2228,7 @@ int main(int argc, char **argv)
     load_system_config(app);
     load_theme(app);
     load_favorites(app);
+    load_libretro_metadata(app);
     load_metadata(app);
     refresh_visible(app);
     {
@@ -2134,7 +2278,7 @@ int main(int argc, char **argv)
         } else {
             app.game = index;
             app.tooltip_shown_focus = -1;
-            ui_dirty = true;
+            handle_action(app, 6);
         }
     };
 

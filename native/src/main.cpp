@@ -498,6 +498,25 @@ void load_libretro_metadata(AppState &app)
 
 std::string normalize_text(std::string value)
 {
+    struct Replacement { const char *from; const char *to; };
+    static const Replacement replacements[] = {
+        {"\xC3\x83\xC2\xA1", "\xC3\xA1"},
+        {"\xC3\x83\xC2\xA9", "\xC3\xA9"},
+        {"\xC3\x83\xC2\xAD", "\xC3\xAD"},
+        {"\xC3\x83\xC2\xB3", "\xC3\xB3"},
+        {"\xC3\x83\xC2\xBA", "\xC3\xBA"},
+        {"\xC3\x83\xC2\xB1", "\xC3\xB1"},
+        {"\xC3\x83\xC2\xBC", "\xC3\xBC"},
+    };
+    for (const Replacement &replacement : replacements) {
+        std::string from(replacement.from);
+        std::string to(replacement.to);
+        size_t pos = 0;
+        while ((pos = value.find(from, pos)) != std::string::npos) {
+            value.replace(pos, from.size(), to);
+            pos += to.size();
+        }
+    }
     return value;
 }
 

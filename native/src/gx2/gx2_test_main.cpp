@@ -1,6 +1,8 @@
 #include "gx2/gx2_renderer.hpp"
 #include "gx2/gx2_text.hpp"
 
+#include <vpad/input.h>
+
 #include <cstdint>
 #include <vector>
 
@@ -109,7 +111,20 @@ int main()
         "Favoritos: No",
     };
 
+    int focused = 0;
+
     while (true) {
+        // GamePad input: move the focused card with the D-pad.
+        VPADStatus vpad{};
+        VPADReadError vpadError = VPAD_READ_NO_SAMPLES;
+        VPADRead(VPAD_CHAN_0, &vpad, 1, &vpadError);
+        if (vpadError == VPAD_READ_SUCCESS) {
+            if (vpad.trigger & VPAD_BUTTON_RIGHT) focused = (focused + 1) % 10;
+            if (vpad.trigger & VPAD_BUTTON_LEFT) focused = (focused + 9) % 10;
+            if (vpad.trigger & VPAD_BUTTON_DOWN) focused = (focused + 5) % 10;
+            if (vpad.trigger & VPAD_BUTTON_UP) focused = (focused + 5) % 10;
+        }
+
         beginFrame(Color{8, 11, 18, 255});
 
         // Background.
@@ -136,11 +151,11 @@ int main()
             const int row = i / columns;
             const float x = gridX + col * (cardW + gap);
             const float y = gridY + row * (cardH + gap);
-            const bool focused = i == 0;
+            const bool isFocused = i == focused;
 
             // Focus ring + card panel (ring = accent behind, panel on top).
             drawRoundRect(x - 3.0f, y - 3.0f, cardW + 6.0f, cardH + 6.0f, 15.0f,
-                          focused ? accent : Color{255, 255, 255, 44});
+                          isFocused ? accent : Color{255, 255, 255, 44});
             drawRoundRect(x, y, cardW, cardH, 12.0f, cardPanel);
 
             // Cover (inset), then footer below it.

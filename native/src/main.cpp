@@ -61,6 +61,7 @@ struct RomEntry {
     std::string path;
     std::string system;
     uint32_t color;
+    bool favorite = false;
 };
 
 struct CoreEntry {
@@ -85,10 +86,13 @@ struct AppState {
     std::vector<const RomEntry *> visible;
     bool running = true;
     bool sidebar_open = false;
+    bool settings_screen = false;
+    bool dirty = false;
+    bool favorites_only = false;
+    int settings_index = 0;
     int sidebar_index = 0;
     int sort_mode = 0;       /* 0 = name, 1 = region */
     int region_filter = 0;   /* 0 = all, 1 = USA, 2 = Europe, 3 = Japan */
-    int grid_columns = 5;    /* 3..6 */
     char name_initial = 0;   /* 0 = all */
     bool pending_launch = false;
     bool pending_rpl = false;
@@ -333,15 +337,6 @@ void load_system_config(AppState &app)
         std::string value = line.substr(eq + 1);
         if (key == "sort") {
             app.sort_mode = value == "region" ? 1 : 0;
-        } else if (key == "region") {
-            app.region_filter = std::max(0, std::min(3, std::atoi(value.c_str())));
-        } else if (key == "initial") {
-            int initial = std::atoi(value.c_str());
-            app.name_initial = initial >= 'A' && initial <= 'Z'
-                                   ? static_cast<char>(initial)
-                                   : 0;
-        } else if (key == "columns") {
-            app.grid_columns = std::max(3, std::min(6, std::atoi(value.c_str())));
         }
     }
 }
@@ -355,9 +350,30 @@ void save_system_config(const AppState &app)
         return;
     }
     out << "sort=" << (app.sort_mode == 1 ? "region" : "name") << "\n";
-    out << "region=" << app.region_filter << "\n";
-    out << "initial=" << static_cast<int>(app.name_initial) << "\n";
-    out << "columns=" << app.grid_columns << "\n";
+}
+
+void load_favorites(AppState &app)
+{
+    std::ifstream in(join_path(system_config_dir(app.library.sd_root), "favorites.conf"));
+    std::string path;
+    while (std::getline(in, path)) {
+        for (RomEntry &rom : app.library.roms) {
+            if (rom.path == path) {
+                rom.favorite = true;
+            }
+        }
+    }
+}
+
+void save_favorites(const AppState &app)
+{
+    std::ofstream out(join_path(system_config_dir(app.library.sd_root), "favorites.conf"),
+                      std::ios::binary | std::ios::trunc);
+    for (const RomEntry &rom : app.library.roms) {
+        if (rom.favorite) {
+            out << rom.path << "\n";
+        }
+    }
 }
 
 void ensure_system_dirs(const std::string &sd_root)
@@ -377,7 +393,7 @@ void ensure_system_dirs(const std::string &sd_root)
                        "theme=retroui\nstyle=crystal\n");
     std::string dir = join_path(join_path(retro, "config"), system);
     write_default_file(join_path(dir, system + ".conf"),
-                       "sort=name\nregion=0\ninitial=0\ncolumns=5\n");
+                       "sort=name\n");
     write_default_file(join_path(dir, "control-map.conf"),
                        "a=0\nb=1\nx=2\ny=3\nl=4\nr=5\nstart=6\nselect=7\n");
     write_default_file(join_path(dir, "video.conf"),
@@ -467,6 +483,9 @@ void refresh_visible(AppState &app)
         if (app.region_filter != 0 && title_region(rom.title) != app.region_filter) {
             continue;
         }
+        if (app.favorites_only && !rom.favorite) {
+            continue;
+        }
         app.visible.push_back(&rom);
     }
 
@@ -486,7 +505,6 @@ void refresh_visible(AppState &app)
                       return lower_copy(a->title) < lower_copy(b->title);
                   });
     }
-
     if (app.visible.empty()) {
         app.game = 0;
         app.scroll_row = 0;
@@ -790,6 +808,9 @@ void move_selection(AppState &app, int dx, int dy, int columns, int count)
     app.message.clear();
 }
 
+void draw_unsaved_banner(SDL_Renderer *renderer, TextCache &cache, TTF_Font *font,
+                         int width, bool settings_screen);
+
 void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_font,
                    TTF_Font *heading_font, TTF_Font *body_font, TTF_Font *small_font,
                    AppState &app, int width, int height, bool tv, bool connected)
@@ -798,7 +819,7 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
     const int header_h = tv ? 84 : 64;
     const int footer_h = tv ? 62 : 46;
     const int gap = tv ? 14 : 9;
-    const int columns = std::max(3, std::min(6, app.grid_columns));
+    const int columns = 5;
     const int rows = tv ? 3 : 2;
 
     const uint32_t accent = app.system == 0 ? 0xF5D97F : kConsoles[app.system - 1].color;
@@ -937,6 +958,9 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
         draw_text_center(renderer, cache, small_font, app.message, width / 2,
                          footer_y - 37, rgba(255, 255, 255));
     }
+    if (app.dirty) {
+        draw_unsaved_banner(renderer, cache, small_font, width, false);
+    }
 }
 
 void render_sidebar(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_font,
@@ -945,8 +969,8 @@ void render_sidebar(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_
 {
     fill_rect(renderer, 0, 0, width, height, rgba(0, 0, 0, 175));
 
-    int panel_w = std::min(width - 40, 380);
-    int panel_x = width - panel_w - 24;
+    int panel_w = std::min(width - 40, 360);
+    int panel_x = 24;
     int panel_y = 24;
     int panel_h = height - 48;
 
@@ -971,13 +995,11 @@ void render_sidebar(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_
         "Nombre: " + name_value,
         "Ordenar por: " + sort_value,
         "Región: " + region_value,
-        "Columnas: " + std::to_string(app.grid_columns),
-        "Controles",
-        "Ajustes",
+        std::string("Favoritos: ") + (app.favorites_only ? "Solo" : "Todos"),
     };
 
     int y = panel_y + 92;
-    for (int i = 0; i < 6; ++i) {
+    for (int i = 0; i < 4; ++i) {
         if (i == app.sidebar_index) {
             fill_rounded_rect(renderer, panel_x + 12, y - 9, panel_w - 24, 44, 10,
                               rgba(245, 217, 127, 42));
@@ -990,10 +1012,10 @@ void render_sidebar(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_
     }
 
     draw_text(renderer, cache, small_font,
-              "Columnas: 3–6. Nombre filtra por inicial.",
+              "FILTRAR Y ORGANIZAR",
               panel_x + 20, panel_y + panel_h - 52, rgba(148, 163, 184));
     draw_text(renderer, cache, small_font,
-              "Los ajustes se guardan en config/<consola>/",
+              "R  AJUSTES",
               panel_x + 20, panel_y + panel_h - 30, rgba(148, 163, 184));
 }
 
@@ -1001,10 +1023,10 @@ void sidebar_action(AppState &app, int action)
 {
     switch (action) {
         case 0:
-            app.sidebar_index = (app.sidebar_index + 5) % 6;
+            app.sidebar_index = (app.sidebar_index + 3) % 4;
             break;
         case 1:
-            app.sidebar_index = (app.sidebar_index + 1) % 6;
+            app.sidebar_index = (app.sidebar_index + 1) % 4;
             break;
         case 9:
             app.sidebar_open = false;
@@ -1022,23 +1044,109 @@ void sidebar_action(AppState &app, int action)
             } else if (app.sidebar_index == 1) {
                 app.sort_mode = (app.sort_mode + 1) % 2;
                 refresh_visible(app);
+                save_system_config(app);
             } else if (app.sidebar_index == 2) {
                 app.region_filter = (app.region_filter + 1) % 4;
                 refresh_visible(app);
-            } else if (app.sidebar_index == 3) {
-                app.grid_columns = app.grid_columns >= 6 ? 3 : app.grid_columns + 1;
-                app.message = "Columnas: " + std::to_string(app.grid_columns);
-            } else if (app.sidebar_index == 4) {
-                app.message = "Mapeo de controles: próxima fase";
             } else {
-                app.message = "Ajustes de vídeo: próxima fase";
-            }
-            if (app.sidebar_index <= 3) {
-                save_system_config(app);
+                app.favorites_only = !app.favorites_only;
+                refresh_visible(app);
             }
             break;
         default:
             break;
+    }
+}
+
+void draw_unsaved_banner(SDL_Renderer *renderer, TextCache &cache, TTF_Font *font,
+                         int width, bool settings_screen)
+{
+    const std::string text = settings_screen
+        ? "Hay cambios sin guardar, presione \"+\" para guardarlos"
+        : "Hay cambios sin guardar, diríjase a ajustes para guardarlos";
+    int text_w = text_width(font, text);
+    int w = text_w + 32;
+    int x = (width - w) / 2;
+    int y = 84;
+    fill_rounded_rect(renderer, x, y, w, 30, 10, rgba(120, 78, 10, 225));
+    outline_rounded_rect(renderer, x, y, w, 30, 10, rgba(245, 217, 127, 190));
+    draw_text(renderer, cache, font, text, x + 16, y + 7, rgba(255, 246, 212));
+}
+
+void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_font,
+                     TTF_Font *heading_font, TTF_Font *body_font, TTF_Font *small_font,
+                     AppState &app, int width, int height, bool tv, bool connected)
+{
+    const int margin = tv ? 28 : 18;
+    draw_background(renderer, width, height, 0x7A8794);
+    draw_header(renderer, cache, title_font, small_font, width, height, tv, connected);
+
+    const int panel_x = margin;
+    const int panel_y = tv ? 100 : 78;
+    const int panel_w = tv ? 300 : 220;
+    const int panel_h = height - panel_y - (tv ? 78 : 58);
+    draw_glass_panel(renderer, panel_x, panel_y, panel_w, panel_h, 18, 225);
+
+    const char *sections[] = {"PERSONALIZAR", "ASSETS", "CONTROLES", "SONIDO", "VÍDEO"};
+    draw_text(renderer, cache, small_font, "AJUSTES", panel_x + 18, panel_y + 18,
+              rgba(148, 163, 184));
+    int y = panel_y + 50;
+    for (int i = 0; i < 5; ++i) {
+        bool selected = i == app.settings_index;
+        if (selected) {
+            fill_rounded_rect(renderer, panel_x + 10, y - 8, panel_w - 20, 38, 9,
+                              rgba(255, 255, 255, 24));
+            outline_rounded_rect(renderer, panel_x + 10, y - 8, panel_w - 20, 38, 9,
+                                 rgba(255, 255, 255, 80));
+        }
+        draw_text(renderer, cache, body_font, sections[i], panel_x + 22, y,
+                  selected ? rgba(255, 255, 255) : rgba(203, 213, 225));
+        y += 48;
+    }
+
+    const int content_x = panel_x + panel_w + 24;
+    const int content_w = width - content_x - margin;
+    const int content_y = panel_y;
+    const int content_h = panel_h;
+    draw_glass_panel(renderer, content_x, content_y, content_w, content_h, 18, 210);
+    draw_text(renderer, cache, heading_font, sections[app.settings_index],
+              content_x + 24, content_y + 24, rgba(255, 255, 255));
+    draw_text(renderer, cache, body_font,
+              "Los cambios se aplican al instante. Pulsa + para guardarlos.",
+              content_x + 24, content_y + 64, rgba(148, 163, 184));
+
+    const char *hints[] = {
+        "Tema, fondos y blur",
+        "Carátulas y backdrops",
+        "Perfiles y mapeo",
+        "Efectos del menú y volumen",
+        "Escalado, filtro y aspecto",
+    };
+    draw_text(renderer, cache, body_font, hints[app.settings_index],
+              content_x + 24, content_y + 108, rgba(203, 213, 225));
+    draw_text(renderer, cache, small_font, "A  MODIFICAR     B / L  VOLVER     +  GUARDAR",
+              content_x + 24, content_y + content_h - 34, rgba(148, 163, 184));
+
+    if (app.dirty) {
+        draw_unsaved_banner(renderer, cache, small_font, width, true);
+    }
+    if (!app.message.empty()) {
+        draw_text(renderer, cache, small_font, app.message, content_x + 24,
+                  content_y + 146, rgba(255, 246, 212));
+    }
+}
+
+void settings_action(AppState &app, int action)
+{
+    if (action == 0) {
+        app.settings_index = (app.settings_index + 4) % 5;
+    } else if (action == 1) {
+        app.settings_index = (app.settings_index + 1) % 5;
+    } else if (action == 6) {
+        app.dirty = true;
+        app.message = "Cambio temporal: pulsa + para guardar";
+    } else if (action == 9) {
+        app.settings_screen = false;
     }
 }
 
@@ -1142,7 +1250,13 @@ void handle_action(AppState &app, int action)
             app.message = "Detalle: proxima fase";
             break;
         case 8: /* favorite */
-            app.message = "Favoritos: proxima fase";
+            if (!app.visible.empty()) {
+                RomEntry *rom = const_cast<RomEntry *>(app.visible[app.game]);
+                rom->favorite = !rom->favorite;
+                save_favorites(app);
+                refresh_visible(app);
+                app.message = rom->favorite ? "Añadido a favoritos" : "Quitado de favoritos";
+            }
             break;
         case 9: /* back / close sidebar */
             app.sidebar_open = false;
@@ -1561,6 +1675,7 @@ int main(int argc, char **argv)
 #endif
     rebuild_indexes(app);
     load_system_config(app);
+    load_favorites(app);
     refresh_visible(app);
     if (app.library.roms.empty()) {
         app.message = "Copia ROMs a sd:/retrou/roms/<consola>/";
@@ -1601,7 +1716,9 @@ int main(int argc, char **argv)
             }
             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
                 auto dispatch = [&](int action) {
-                    if (app.sidebar_open) {
+                    if (app.settings_screen) {
+                        settings_action(app, action);
+                    } else if (app.sidebar_open) {
                         sidebar_action(app, action);
                     } else {
                         handle_action(app, action);
@@ -1613,24 +1730,38 @@ int main(int argc, char **argv)
                     case SDL_CONTROLLER_BUTTON_DPAD_LEFT: dispatch(2); break;
                     case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: dispatch(3); break;
                     case SDL_CONTROLLER_BUTTON_A: dispatch(6); break;
-                    case SDL_CONTROLLER_BUTTON_B: dispatch(9); break;
+                    case SDL_CONTROLLER_BUTTON_B:
+                        if (app.settings_screen) app.settings_screen = false;
+                        else dispatch(9);
+                        break;
                     case SDL_CONTROLLER_BUTTON_X: dispatch(7); break;
                     case SDL_CONTROLLER_BUTTON_Y: dispatch(8); break;
+                    case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
+                        if (app.settings_screen) app.settings_screen = false;
+                        break;
+                    case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
+                        if (!app.settings_screen) {
+                            app.sidebar_open = false;
+                            app.settings_screen = true;
+                        }
+                        break;
                     case SDL_CONTROLLER_BUTTON_START:
-#if defined(RETROU_TEST_CORE)
-                        run_test_core(app, tv_renderer, drc_renderer, heading_font,
-                                      body_font, small_font);
-#else
-                        app.sidebar_open = !app.sidebar_open;
-                        app.sidebar_index = 0;
-#endif
+                        if (app.settings_screen) {
+                            app.dirty = false;
+                            app.message = "Cambios guardados";
+                        } else {
+                            app.sidebar_open = !app.sidebar_open;
+                            app.sidebar_index = 0;
+                        }
                         break;
                     default: break;
                 }
             }
             if (event.type == SDL_KEYDOWN) {
                 auto dispatch = [&](int action) {
-                    if (app.sidebar_open) {
+                    if (app.settings_screen) {
+                        settings_action(app, action);
+                    } else if (app.sidebar_open) {
                         sidebar_action(app, action);
                     } else {
                         handle_action(app, action);
@@ -1642,6 +1773,15 @@ int main(int argc, char **argv)
                     case SDLK_LEFT: dispatch(2); break;
                     case SDLK_RIGHT: dispatch(3); break;
                     case SDLK_RETURN: dispatch(6); break;
+                    case SDLK_q:
+                        if (app.settings_screen) app.settings_screen = false;
+                        break;
+                    case SDLK_e:
+                        if (!app.settings_screen) {
+                            app.sidebar_open = false;
+                            app.settings_screen = true;
+                        }
+                        break;
                     case SDLK_ESCAPE: app.running = false; break;
                     default: break;
                 }
@@ -1673,22 +1813,32 @@ int main(int argc, char **argv)
         if (tv_renderer) {
             SDL_SetRenderDrawColor(tv_renderer, 8, 13, 24, 255);
             SDL_RenderClear(tv_renderer);
-            render_screen(tv_renderer, tv_text, title_font, heading_font, body_font, small_font,
-                          app, 1280, 720, true, connected);
-            if (app.sidebar_open) {
-                render_sidebar(tv_renderer, tv_text, heading_font, body_font, small_font,
-                               1280, 720, app);
+            if (app.settings_screen) {
+                render_settings(tv_renderer, tv_text, title_font, heading_font, body_font,
+                                small_font, app, 1280, 720, true, connected);
+            } else {
+                render_screen(tv_renderer, tv_text, title_font, heading_font, body_font, small_font,
+                              app, 1280, 720, true, connected);
+                if (app.sidebar_open) {
+                    render_sidebar(tv_renderer, tv_text, heading_font, body_font, small_font,
+                                   1280, 720, app);
+                }
             }
             SDL_RenderPresent(tv_renderer);
         }
         if (drc_renderer) {
             SDL_SetRenderDrawColor(drc_renderer, 8, 13, 24, 255);
             SDL_RenderClear(drc_renderer);
-            render_screen(drc_renderer, drc_text, title_font, heading_font, body_font, small_font,
-                          app, 854, 480, false, connected);
-            if (app.sidebar_open) {
-                render_sidebar(drc_renderer, drc_text, heading_font, body_font, small_font,
-                               854, 480, app);
+            if (app.settings_screen) {
+                render_settings(drc_renderer, drc_text, title_font, heading_font, body_font,
+                                small_font, app, 854, 480, false, connected);
+            } else {
+                render_screen(drc_renderer, drc_text, title_font, heading_font, body_font, small_font,
+                              app, 854, 480, false, connected);
+                if (app.sidebar_open) {
+                    render_sidebar(drc_renderer, drc_text, heading_font, body_font, small_font,
+                                   854, 480, app);
+                }
             }
             SDL_RenderPresent(drc_renderer);
         }

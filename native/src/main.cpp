@@ -1087,8 +1087,10 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
     if (!app.visible.empty()) {
         const std::string full = app.visible[std::max(0, std::min(app.game,
             static_cast<int>(app.visible.size()) - 1))]->title;
-        std::string shown = fit_text(body_font, full, width - 120);
-        if (SDL_GetTicks() - app.focus_since >= 5000) {
+        int card_w = (content_w - gap * (columns - 1)) / columns;
+        bool truncated = fit_text(body_font, full, card_w - 20) != full;
+        if (truncated && SDL_GetTicks() - app.focus_since >= 5000) {
+            std::string shown = fit_text(body_font, full, width - 120);
             int tip_w = text_width(body_font, shown) + 30;
             int tip_x = (width - tip_w) / 2;
             int tip_y = footer_y - 44;

@@ -2,11 +2,35 @@
 
 #include <vpad/input.h>
 
-// Incremental GX2 diagnostic: sidebar + 5x2 grid of rounded card panels
-// (solid only, no textures or text). If this holds 60 FPS, the next step adds
-// cover textures, then text, to find what causes the slowdown.
+#include <cstdint>
+#include <vector>
+
+// Incremental GX2 diagnostic: sidebar + 5x2 card panels + cover textures
+// (no text yet). If this holds 60 FPS, the next step adds text.
 
 using namespace retrou::gx2;
+
+static Texture makeCover(uint8_t r0, uint8_t g0, uint8_t b0,
+                         uint8_t r1, uint8_t g1, uint8_t b1)
+{
+    constexpr int w = 96;
+    constexpr int h = 128;
+    std::vector<uint8_t> pixels(static_cast<size_t>(w) * h * 4);
+    for (int y = 0; y < h; ++y) {
+        const float t = static_cast<float>(y) / (h - 1);
+        const uint8_t r = static_cast<uint8_t>(r0 * (1.0f - t) + r1 * t);
+        const uint8_t g = static_cast<uint8_t>(g0 * (1.0f - t) + g1 * t);
+        const uint8_t b = static_cast<uint8_t>(b0 * (1.0f - t) + b1 * t);
+        for (int x = 0; x < w; ++x) {
+            uint8_t *px = &pixels[(static_cast<size_t>(y) * w + x) * 4];
+            px[0] = r;
+            px[1] = g;
+            px[2] = b;
+            px[3] = 255;
+        }
+    }
+    return createTexture(w, h, pixels.data());
+}
 
 int main()
 {
@@ -19,6 +43,14 @@ int main()
     const Color panel{28, 34, 48, 255};
     const Color panelAlt{38, 44, 60, 255};
 
+    Texture covers[10];
+    for (int i = 0; i < 10; ++i) {
+        covers[i] = makeCover(static_cast<uint8_t>(30 + i * 12),
+                              static_cast<uint8_t>(60 + i * 8),
+                              static_cast<uint8_t>(120 - i * 5),
+                              10, 14, 24);
+    }
+
     const int columns = 5;
     const int rows = 2;
     const float gridX = 344.0f;
@@ -28,6 +60,7 @@ int main()
     const float gap = 14.0f;
     const float cardW = (gridW - gap * (columns - 1)) / columns;
     const float cardH = (gridH - gap * (rows - 1)) / rows;
+    const float coverH = cardH * 0.62f;
 
     while (true) {
         VPADStatus vpad{};
@@ -47,6 +80,7 @@ int main()
                 drawRoundRect(x - 3.0f, y - 3.0f, cardW + 6.0f, cardH + 6.0f, 15.0f, accent);
             }
             drawRoundRect(x, y, cardW, cardH, 12.0f, (i % 2) ? panelAlt : panel);
+            drawTextureCover(covers[i], x + 2.0f, y + 2.0f, cardW - 4.0f, coverH - 2.0f);
         }
 
         endFrame();

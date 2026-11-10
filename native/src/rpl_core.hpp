@@ -24,9 +24,13 @@ public:
     void runFrame();
     void present(SDL_Renderer *renderer, int width, int height) const;
     void setSaveDirectory(const std::string &path) { save_directory_ = path; }
-    void setController(SDL_GameController *controller) { controller_ = controller; }
+    void setController(SDL_GameController *controller) { controllers_[0] = controller; }
+    void setControllers(SDL_GameController *first, SDL_GameController *second) {
+        controllers_[0] = first;
+        controllers_[1] = second;
+    }
     void setControlProfile(int profile) { control_profile_ = profile; }
-    void setControlMap(const std::array<int, 8> &map) { control_map_ = map; }
+    void setControlMaps(const std::array<std::array<int, 8>, 2> &maps) { control_maps_ = maps; }
     void startAudio();
     void stopAudio();
 
@@ -83,16 +87,20 @@ private:
     SDL_AudioDeviceID audio_device_ = 0;
     int sample_rate_ = 44100;
     SDL_GameController *controller_ = nullptr;
+    std::array<SDL_GameController *, 2> controllers_ = {nullptr, nullptr};
     uint16_t input_state_ = 0;
+    std::array<uint16_t, 2> input_states_ = {0, 0};
     int control_profile_ = 0;
-    std::array<int, 8> control_map_ = {SDL_CONTROLLER_BUTTON_A,
-                                       SDL_CONTROLLER_BUTTON_B,
-                                       SDL_CONTROLLER_BUTTON_X,
-                                       SDL_CONTROLLER_BUTTON_Y,
-                                       SDL_CONTROLLER_BUTTON_LEFTSHOULDER,
-                                       SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,
-                                       SDL_CONTROLLER_BUTTON_START,
-                                       SDL_CONTROLLER_BUTTON_BACK};
+    std::array<std::array<int, 8>, 2> control_maps_ = {{
+        {SDL_CONTROLLER_BUTTON_A, SDL_CONTROLLER_BUTTON_B, SDL_CONTROLLER_BUTTON_X,
+         SDL_CONTROLLER_BUTTON_Y, SDL_CONTROLLER_BUTTON_LEFTSHOULDER,
+         SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, SDL_CONTROLLER_BUTTON_START,
+         SDL_CONTROLLER_BUTTON_BACK},
+        {SDL_CONTROLLER_BUTTON_A, SDL_CONTROLLER_BUTTON_B, SDL_CONTROLLER_BUTTON_X,
+         SDL_CONTROLLER_BUTTON_Y, SDL_CONTROLLER_BUTTON_LEFTSHOULDER,
+         SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, SDL_CONTROLLER_BUTTON_START,
+         SDL_CONTROLLER_BUTTON_BACK}
+    }};
 
     ApiVersionFn api_version_ = nullptr;
     InitFn init_ = nullptr;

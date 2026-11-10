@@ -134,6 +134,8 @@ struct AppState {
                                      SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,
                                      SDL_CONTROLLER_BUTTON_START,
                                      SDL_CONTROLLER_BUTTON_BACK};
+    std::array<std::array<int, 8>, 2> control_maps = {control_map, control_map};
+    int control_port = 0;
     int control_option = 0;
     bool control_listening = false;
     bool assets_downloading = false;
@@ -560,20 +562,26 @@ void load_control_config(AppState &app)
 {
     std::ifstream in(join_path(system_config_dir(app.library.sd_root), "control-map.conf"));
     std::string line;
+    int port = 0;
     while (std::getline(in, line)) {
+        if (line == "[p1]") { port = 0; continue; }
+        if (line == "[p2]") { port = 1; continue; }
         size_t eq = line.find('=');
         if (eq == std::string::npos) continue;
         std::string key = line.substr(0, eq);
         int value = std::atoi(line.substr(eq + 1).c_str());
         const char *keys[] = {"a", "b", "x", "y", "l", "r", "start", "select"};
         for (int i = 0; i < 8; ++i) {
-            if (key == keys[i]) app.control_map[i] = value;
+            if (key == keys[i]) app.control_maps[port][i] = value;
         }
     }
-    if (app.control_map[4] == 4 && app.control_map[5] == 5 && app.control_map[7] == 7) {
-        app.control_map[4] = SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
-        app.control_map[5] = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
-        app.control_map[7] = SDL_CONTROLLER_BUTTON_BACK;
+    for (int port = 0; port < 2; ++port) {
+        auto &map = app.control_maps[port];
+        if (map[4] == 4 && map[5] == 5 && map[7] == 7) {
+            map[4] = SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
+            map[5] = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
+            map[7] = SDL_CONTROLLER_BUTTON_BACK;
+        }
     }
 }
 
@@ -583,8 +591,11 @@ void save_control_config(const AppState &app)
     std::ofstream out(path, std::ios::trunc);
     if (!out) return;
     const char *keys[] = {"a", "b", "x", "y", "l", "r", "start", "select"};
-    for (int i = 0; i < 8; ++i) {
-        out << keys[i] << "=" << app.control_map[i] << "\n";
+    for (int port = 0; port < 2; ++port) {
+        out << "[p" << (port + 1) << "]\n";
+        for (int i = 0; i < 8; ++i) {
+            out << keys[i] << "=" << app.control_maps[port][i] << "\n";
+        }
     }
 }
 
@@ -1669,7 +1680,10 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
                   content_x + 24, content_y + 204, rgba(current_theme(app).muted));
     } else if (app.settings_index == 2) {
         const char *actionNames[] = {"A", "B", "X", "Y", "L", "R", "START", "SELECT"};
-        int y = content_y + 148;
+        draw_text(renderer, cache, body_font,
+                  app.control_port == 0 ? "CONTROLLER 1" : "CONTROLLER 2",
+                  content_x + 24, content_y + 148, rgba(current_theme(app).accent));
+        int y = content_y + 172;
         for (int i = 0; i < 8; ++i) {
             bool selected = i == app.control_option;
             if (selected) {
@@ -1677,15 +1691,15 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
                                   rgba(current_theme(app).accent, 40));
             }
             const char *mappedName = SDL_GameControllerGetStringForButton(
-                static_cast<SDL_GameControllerButton>(app.control_map[i]));
+                static_cast<SDL_GameControllerButton>(app.control_maps[app.control_port][i]));
             std::string value = mappedName ? mappedName : "?";
             if (app.control_listening && selected) value = "PULSA UN BOTÓN";
             draw_text(renderer, cache, small_font,
                       std::string(actionNames[i]) + "  →  " + value,
                       content_x + 28, y, rgba(current_theme(app).text));
-            y += 28;
+            y += 19;
         }
-        draw_text(renderer, cache, small_font, "A  REMAPEAR     B  CANCELAR",
+        draw_text(renderer, cache, small_font, "IZQ/DER  PUERTO     A  REMAPEAR     B  CANCELAR",
                   content_x + 24, content_y + content_h - 34, rgba(current_theme(app).muted));
     }
 
@@ -1712,6 +1726,12 @@ void settings_action(AppState &app, int action)
             app.control_listening = false;
         } else {
             app.settings_index = (app.settings_index + 1) % 5;
+        }
+    } else if (action == 2 || action == 3) {
+        if (app.settings_index == 2) {
+            app.control_port = action == 2 ? 0 : 1;
+            app.control_option = 0;
+            app.control_listening = false;
         }
     } else if (action == 6) {
         if (app.settings_index == 0) {
@@ -1829,6 +1849,26 @@ SDL_GameController *open_first_controller()
                 return controller;
             }
         }
+    }
+    return nullptr;
+}
+
+SDL_GameController *g_second_controller = nullptr;
+
+SDL_GameController *open_second_controller(SDL_GameController *first)
+{
+    if (!first) return nullptr;
+    SDL_Joystick *first_joystick = SDL_GameControllerGetJoystick(first);
+    SDL_JoystickID first_id = SDL_JoystickInstanceID(first_joystick);
+    for (int i = 0; i < SDL_NumJoysticks(); ++i) {
+        if (!SDL_IsGameController(i)) continue;
+        SDL_Joystick *joystick = SDL_JoystickOpen(i);
+        if (!joystick) continue;
+        SDL_JoystickID id = SDL_JoystickInstanceID(joystick);
+        SDL_JoystickClose(joystick);
+        if (id == first_id) continue;
+        SDL_GameController *second = SDL_GameControllerOpen(i);
+        if (second) return second;
     }
     return nullptr;
 }
@@ -2146,7 +2186,8 @@ void run_static_core(AppState &app, const std::string &rom_path,
     retrou::RplCore core;
     core.setSaveDirectory(system_save_directory(app.library.sd_root));
     core.setController(controller);
-    core.setControlMap(app.control_map);
+    core.setControllers(controller, g_second_controller);
+    core.setControlMaps(app.control_maps);
     std::string error;
 
     TextCache loading_tv;
@@ -2367,6 +2408,8 @@ int main(int argc, char **argv)
     SDL_GameController *controller = open_first_controller();
     boot_log("after open controller");
     bool connected = controller != nullptr;
+    g_second_controller = open_second_controller(controller);
+    boot_log("after open second controller");
 
     TextCache tv_text;
     TextCache drc_text;
@@ -2438,7 +2481,7 @@ int main(int argc, char **argv)
                         app.control_listening = false;
                         app.message = "Remapeo cancelado";
                     } else {
-                        app.control_map[app.control_option] = event.cbutton.button;
+                        app.control_maps[app.control_port][app.control_option] = event.cbutton.button;
                         app.control_listening = false;
                         app.dirty = true;
                         app.message = "Botón asignado";

@@ -118,6 +118,15 @@ int main()
         return real;
     };
 
+    std::map<int, std::string> titleCache;
+    auto getTitle = [&](int romIndex) -> const std::string & {
+        auto it = titleCache.find(romIndex);
+        if (it != titleCache.end()) return it->second;
+        titleCache[romIndex] =
+            text::fitText(library.roms[romIndex].title.c_str(), 15, cardW - 24.0f);
+        return titleCache[romIndex];
+    };
+
     text::prewarm("Biblioteca", 34);
     text::prewarm("FILTRAR Y ORGANIZAR", 16);
     text::prewarm("Buscar", 15);
@@ -150,21 +159,24 @@ int main()
     const Color gold{245, 217, 127, 255};
 
     while (true) {
+        SDL_PumpEvents();
+
         VPADStatus vpad{};
         VPADReadError vpadError = VPAD_READ_NO_SAMPLES;
         VPADRead(VPAD_CHAN_0, &vpad, 1, &vpadError);
         if (vpadError == VPAD_READ_SUCCESS) {
             if ((vpad.hold & VPAD_BUTTON_MINUS) && (vpad.hold & VPAD_BUTTON_PLUS)) {
-                break;
-            }
-            if (inGame) {
-                if (vpad.trigger & VPAD_BUTTON_B) {
+                if (inGame) {
                     core.unload();
                     core.loadStaticCore(nullptr, nullptr, error);
                     core.setSaveDirectory("/vol/external01/retrou/saves/" RETROU_CORE_SYSTEM "/save");
                     core.setControllers(controller, nullptr);
                     inGame = false;
+                } else {
+                    break;
                 }
+            } else if (inGame) {
+                // Buttons reach the core through the SDL controller.
             } else if (sidebarOpen) {
                 if (vpad.trigger & VPAD_BUTTON_B) {
                     sidebarOpen = false;
@@ -252,7 +264,7 @@ int main()
                     drawRoundRect(x, y, cardW, cardH, 12.0f, cardPanel);
                     drawTextureCover(getCover(romIndex), x + 2.0f, y + 2.0f, cardW - 4.0f, coverH - 2.0f);
                     drawRoundRect(x + 2.0f, y + coverH, cardW - 4.0f, cardH - coverH - 2.0f, 10.0f, cardFooter);
-                    text::drawText(text::fitText(library.roms[romIndex].title.c_str(), 15, cardW - 24.0f).c_str(),
+                    text::drawText(getTitle(romIndex).c_str(),
                                    x + 12.0f, y + coverH + 12.0f, 15, white);
                     text::drawText(RETROU_CORE_LABEL, x + 12.0f, y + coverH + 34.0f, 12, muted);
                     if (library.roms[romIndex].favorite) {

@@ -109,17 +109,19 @@ struct AppState {
     bool running = true;
     bool sidebar_open = false;
     bool settings_screen = false;
+    bool keyboard_open = false;
     bool dirty = false;
     bool favorites_only = false;
     int settings_index = 0;
     int theme_index = 0;
+    int keyboard_index = 0;
+    std::string search_query;
     int tooltip_focus = -1;
     int tooltip_shown_focus = -1;
     Uint32 focus_since = 0;
     int sidebar_index = 0;
     int sort_mode = 0;       /* 0 = name, 1 = region */
     int region_filter = 0;   /* 0 = all, 1 = USA, 2 = Europe, 3 = Japan */
-    char name_initial = 0;   /* 0 = all */
     bool pending_launch = false;
     bool pending_rpl = false;
     std::string launch_core;
@@ -614,10 +616,9 @@ void refresh_visible(AppState &app)
         if (app.system != 0 && rom.system != kConsoles[app.system - 1].id) {
             continue;
         }
-        if (app.name_initial != 0 && !rom.title.empty()) {
-            char initial = static_cast<char>(std::toupper(
-                static_cast<unsigned char>(rom.title[0])));
-            if (initial != app.name_initial) {
+        if (!app.search_query.empty()) {
+            std::string title = lower_copy(rom.title);
+            if (title.find(lower_copy(app.search_query)) == std::string::npos) {
                 continue;
             }
         }
@@ -1111,7 +1112,7 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
     draw_text(renderer, cache, small_font, "D-PAD  NAVEGAR     B  VOLVER",
               key_x + 116, key_y + 8, rgba(203, 213, 225));
 
-    std::string plus = "PLUS  MENÚ";
+    std::string plus = "PLUS  MENÃš";
     int plus_w = text_width(small_font, plus) + 26;
     int plus_x = width - margin - plus_w;
     fill_rounded_rect(renderer, plus_x, key_y, plus_w, 30, 10, rgba(245, 217, 127, 38));
@@ -1144,24 +1145,21 @@ void render_sidebar(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_
     draw_text(renderer, cache, small_font, "PLUS / B  CERRAR", panel_x + 20, panel_y + 54,
               rgba(148, 163, 184));
 
-    std::string name_value = app.name_initial == 0
-                                 ? "Todos"
-                                 : std::string(1, app.name_initial);
     std::string sort_value;
     switch (app.sort_mode) {
-        case 1: sort_value = "Región"; break;
-        case 2: sort_value = "Año"; break;
-        case 3: sort_value = "Categoría"; break;
+        case 1: sort_value = "RegiÃ³n"; break;
+        case 2: sort_value = "AÃ±o"; break;
+        case 3: sort_value = "CategorÃ­a"; break;
         case 4: sort_value = "Desarrolladora"; break;
         default: sort_value = "Nombre"; break;
     }
-    const char *regions[] = {"Todas", "USA", "Europa", "Japón"};
+    const char *regions[] = {"Todas", "USA", "Europa", "JapÃ³n"};
     std::string region_value = regions[std::max(0, std::min(3, app.region_filter))];
 
     const std::string labels[] = {
-        "Nombre: " + name_value,
+        std::string("Buscar: ") + (app.search_query.empty() ? "Todos" : app.search_query),
         "Ordenar por: " + sort_value,
-        "Región: " + region_value,
+        "RegiÃ³n: " + region_value,
         std::string("Favoritos: ") + (app.favorites_only ? "Solo" : "Todos"),
     };
 
@@ -1194,14 +1192,8 @@ void sidebar_action(AppState &app, int action)
             break;
         case 6:
             if (app.sidebar_index == 0) {
-                if (app.name_initial == 0) {
-                    app.name_initial = 'A';
-                } else if (app.name_initial >= 'Z') {
-                    app.name_initial = 0;
-                } else {
-                    app.name_initial = static_cast<char>(app.name_initial + 1);
-                }
-                refresh_visible(app);
+                app.keyboard_open = true;
+                app.keyboard_index = 0;
             } else if (app.sidebar_index == 1) {
                 app.sort_mode = (app.sort_mode + 1) % 5;
                 refresh_visible(app);
@@ -1224,7 +1216,7 @@ void draw_unsaved_banner(SDL_Renderer *renderer, TextCache &cache, TTF_Font *fon
 {
     const std::string text = settings_screen
         ? "Hay cambios sin guardar, presione \"+\" para guardarlos"
-        : "Hay cambios sin guardar, diríjase a ajustes para guardarlos";
+        : "Hay cambios sin guardar, dirÃ­jase a ajustes para guardarlos";
     int text_w = text_width(font, text);
     int w = text_w + 32;
     int x = (width - w) / 2;
@@ -1250,7 +1242,7 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
     const int panel_h = height - panel_y - (tv ? 78 : 58);
     draw_glass_panel(renderer, panel_x, panel_y, panel_w, panel_h, 18, 225);
 
-    const char *sections[] = {"PERSONALIZAR", "ASSETS", "CONTROLES", "SONIDO", "VÍDEO"};
+    const char *sections[] = {"PERSONALIZAR", "ASSETS", "CONTROLES", "SONIDO", "VÃDEO"};
     int y = panel_y + 24;
     for (int i = 0; i < 5; ++i) {
         bool selected = i == app.settings_index;
@@ -1278,9 +1270,9 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
 
     const char *hints[] = {
         "Tema, fondos y blur",
-        "Carátulas y backdrops",
+        "CarÃ¡tulas y backdrops",
         "Perfiles y mapeo",
-        "Efectos del menú y volumen",
+        "Efectos del menÃº y volumen",
         "Escalado, filtro y aspecto",
     };
     draw_text(renderer, cache, body_font, hints[app.settings_index],
@@ -1314,6 +1306,75 @@ void settings_action(AppState &app, int action)
     } else if (action == 9) {
         app.settings_screen = false;
     }
+}
+
+void keyboard_action(AppState &app, int action)
+{
+    static const char *keys[] = {
+        "A","B","C","D","E","F","G","H","I","J",
+        "K","L","M","N","O","P","Q","R","S","T",
+        "U","V","W","X","Y","Z","0","1","2","3",
+        "4","5","6","7","8","9"," ","DEL","OK","CANCEL"
+    };
+    const int cols = 10;
+    const int count = 40;
+    if (action == 0) app.keyboard_index = (app.keyboard_index + count - cols) % count;
+    else if (action == 1) app.keyboard_index = (app.keyboard_index + cols) % count;
+    else if (action == 2) app.keyboard_index = (app.keyboard_index + count - 1) % count;
+    else if (action == 3) app.keyboard_index = (app.keyboard_index + 1) % count;
+    else if (action == 9) app.keyboard_open = false;
+    else if (action == 6) {
+        int i = app.keyboard_index;
+        if (i < 37) app.search_query += keys[i];
+        else if (i == 37 && !app.search_query.empty()) app.search_query.pop_back();
+        else if (i == 38) app.keyboard_open = false;
+        else if (i == 39) {
+            app.search_query.clear();
+            app.keyboard_open = false;
+        }
+        refresh_visible(app);
+    }
+}
+
+void render_keyboard(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_font,
+                     TTF_Font *body_font, TTF_Font *small_font, int width, int height,
+                     const AppState &app)
+{
+    fill_rect(renderer, 0, 0, width, height, rgba(0, 0, 0, 210));
+    int panel_w = std::min(width - 40, 760);
+    int panel_x = (width - panel_w) / 2;
+    int panel_y = 30;
+    int panel_h = height - 60;
+    draw_glass_panel(renderer, panel_x, panel_y, panel_w, panel_h, 18, 240);
+    draw_text(renderer, cache, heading_font, "BUSCAR POR NOMBRE",
+              panel_x + 24, panel_y + 20, rgba(current_theme(app).text));
+    std::string query = app.search_query.empty() ? "_" : app.search_query + "_";
+    draw_text(renderer, cache, body_font, query, panel_x + 24, panel_y + 58,
+              rgba(current_theme(app).accent));
+
+    static const char *keys[] = {
+        "A","B","C","D","E","F","G","H","I","J",
+        "K","L","M","N","O","P","Q","R","S","T",
+        "U","V","W","X","Y","Z","0","1","2","3",
+        "4","5","6","7","8","9"," ","DEL","OK","CANCEL"
+    };
+    int cols = 10;
+    int key_w = (panel_w - 48 - (cols - 1) * 8) / cols;
+    int key_h = 34;
+    int start_y = panel_y + 100;
+    for (int i = 0; i < 40; ++i) {
+        int row = i / cols, col = i % cols;
+        int x = panel_x + 24 + col * (key_w + 8);
+        int y = start_y + row * (key_h + 8);
+        bool selected = i == app.keyboard_index;
+        fill_rounded_rect(renderer, x, y, key_w, key_h, 7,
+                          selected ? rgba(current_theme(app).focus, 150)
+                                   : rgba(255, 255, 255, 24));
+        draw_text(renderer, cache, small_font, keys[i], x + 8, y + 9,
+                  rgba(current_theme(app).text));
+    }
+    draw_text(renderer, cache, small_font, "A  SELECCIONAR     B  CERRAR",
+              panel_x + 24, panel_y + panel_h - 28, rgba(current_theme(app).muted));
 }
 
 SDL_Renderer *make_renderer(SDL_Window *window)
@@ -1421,7 +1482,7 @@ void handle_action(AppState &app, int action)
                 rom->favorite = !rom->favorite;
                 save_favorites(app);
                 refresh_visible(app);
-                app.message = rom->favorite ? "Añadido a favoritos" : "Quitado de favoritos";
+                app.message = rom->favorite ? "AÃ±adido a favoritos" : "Quitado de favoritos";
             }
             break;
         case 9: /* back / close sidebar */
@@ -1505,10 +1566,10 @@ void render_core_menu(SDL_Renderer *renderer, TextCache &cache, TTF_Font *headin
     fill_rect(renderer, panel_x, panel_y, panel_w, panel_h, rgba(15, 23, 42, 245));
     outline_rect(renderer, panel_x, panel_y, panel_w, panel_h, rgba(255, 255, 255, 80));
 
-    draw_text(renderer, cache, heading_font, std::string("MENÚ ") + RETROU_APP_NAME,
+    draw_text(renderer, cache, heading_font, std::string("MENÃš ") + RETROU_APP_NAME,
               panel_x + 24, panel_y + 20,
               rgba(255, 255, 255));
-    draw_text(renderer, cache, small_font, "MINUS + PLUS  CERRAR MENÚ     A  SELECCIONAR",
+    draw_text(renderer, cache, small_font, "MINUS + PLUS  CERRAR MENÃš     A  SELECCIONAR",
               panel_x + 24, panel_y + 58, rgba(148, 163, 184));
 
     const char *options[] = {
@@ -1528,9 +1589,9 @@ void render_core_menu(SDL_Renderer *renderer, TextCache &cache, TTF_Font *headin
                   i == selected ? rgba(255, 255, 255) : rgba(203, 213, 225));
     }
 
-    draw_text(renderer, cache, small_font, "Savestates y remapeo: próximamente",
+    draw_text(renderer, cache, small_font, "Savestates y remapeo: prÃ³ximamente",
               panel_x + 24, panel_y + panel_h - 48, rgba(148, 163, 184));
-    draw_text(renderer, cache, small_font, "B  CERRAR MENÚ",
+    draw_text(renderer, cache, small_font, "B  CERRAR MENÃš",
               panel_x + 24, panel_y + panel_h - 26, rgba(148, 163, 184));
 }
 
@@ -1857,6 +1918,37 @@ int main(int argc, char **argv)
     std::string last_message;
     Uint32 message_set_at = 0;
 
+    auto touch_grid = [&](int tx, int ty, int w, int h) {
+        if (app.settings_screen || app.sidebar_open || app.keyboard_open || app.visible.empty()) {
+            return;
+        }
+        const int margin = w >= 1000 ? 28 : 18;
+        const int header_h = w >= 1000 ? 84 : 64;
+        const int footer_h = w >= 1000 ? 62 : 46;
+        const int gap = w >= 1000 ? 14 : 9;
+        const int columns = 5;
+        const int rows = w >= 1000 ? 3 : 2;
+        const int content_x = margin;
+        const int content_y = header_h + 8;
+        const int content_w = w - margin * 2;
+        const int content_h = h - content_y - footer_h - margin;
+        int card_w = (content_w - gap * (columns - 1)) / columns;
+        int card_h = (content_h - gap * (rows - 1)) / rows;
+        if (tx < content_x || ty < content_y) return;
+        int col = (tx - content_x) / (card_w + gap);
+        int row = (ty - content_y) / (card_h + gap);
+        if (col < 0 || col >= columns || row < 0 || row >= rows) return;
+        int index = (app.scroll_row + row) * columns + col;
+        if (index < 0 || index >= static_cast<int>(app.visible.size())) return;
+        if (index == app.game) {
+            handle_action(app, 6);
+        } else {
+            app.game = index;
+            app.tooltip_shown_focus = -1;
+            ui_dirty = true;
+        }
+    };
+
     while (app.running) {
         if (!controller) {
             bool was_connected = connected;
@@ -1885,7 +1977,9 @@ int main(int argc, char **argv)
             }
             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
                 auto dispatch = [&](int action) {
-                    if (app.settings_screen) {
+                    if (app.keyboard_open) {
+                        keyboard_action(app, action);
+                    } else if (app.settings_screen) {
                         settings_action(app, action);
                     } else if (app.sidebar_open) {
                         sidebar_action(app, action);
@@ -1900,7 +1994,8 @@ int main(int argc, char **argv)
                     case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: dispatch(3); break;
                     case SDL_CONTROLLER_BUTTON_A: dispatch(6); break;
                     case SDL_CONTROLLER_BUTTON_B:
-                        if (app.settings_screen) {
+                        if (app.keyboard_open) app.keyboard_open = false;
+                        else if (app.settings_screen) {
                             app.settings_screen = false;
                             app.message.clear();
                         } else {
@@ -1944,7 +2039,9 @@ int main(int argc, char **argv)
             }
             if (event.type == SDL_KEYDOWN) {
                 auto dispatch = [&](int action) {
-                    if (app.settings_screen) {
+                    if (app.keyboard_open) {
+                        keyboard_action(app, action);
+                    } else if (app.settings_screen) {
                         settings_action(app, action);
                     } else if (app.sidebar_open) {
                         sidebar_action(app, action);
@@ -1970,6 +2067,19 @@ int main(int argc, char **argv)
                     case SDLK_ESCAPE: app.running = false; break;
                     default: break;
                 }
+            }
+            if (event.type == SDL_FINGERDOWN) {
+                int w = 1280, h = 720;
+                if (event.tfinger.windowID == SDL_GetWindowID(drc_window)) {
+                    w = 854; h = 480;
+                } else if (event.tfinger.windowID != SDL_GetWindowID(tv_window)) {
+                    continue;
+                }
+                touch_grid(static_cast<int>(event.tfinger.x * w),
+                           static_cast<int>(event.tfinger.y * h), w, h);
+            }
+            if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+                touch_grid(event.button.x, event.button.y, 1280, 720);
             }
         }
 
@@ -2030,6 +2140,10 @@ int main(int argc, char **argv)
                     render_sidebar(tv_renderer, tv_text, heading_font, body_font, small_font,
                                    1280, 720, app);
                 }
+                if (app.keyboard_open) {
+                    render_keyboard(tv_renderer, tv_text, heading_font, body_font, small_font,
+                                    1280, 720, app);
+                }
             }
             SDL_RenderPresent(tv_renderer);
         }
@@ -2045,6 +2159,10 @@ int main(int argc, char **argv)
                 if (app.sidebar_open) {
                     render_sidebar(drc_renderer, drc_text, heading_font, body_font, small_font,
                                    854, 480, app);
+                }
+                if (app.keyboard_open) {
+                    render_keyboard(drc_renderer, drc_text, heading_font, body_font, small_font,
+                                    854, 480, app);
                 }
             }
             SDL_RenderPresent(drc_renderer);

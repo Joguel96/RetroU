@@ -121,6 +121,30 @@ add_static_retrou(retrou_nes nes "NES" "RetroNES U" "${FCEUMM_CORE}")
 add_static_retrou(retrou_snes snes "SNES" "RetroSNES U" "${SNES9X_CORE}")
 add_static_retrou(retrou_gba gba "GBA" "RetroGBA U" "${MGBA_CORE}")
 
+# GX2 renderer smoke test (not part of the default WUHB staging).
+add_executable(retrou_gx2_test EXCLUDE_FROM_ALL
+    src/gx2/gx2_test_main.cpp
+    src/gx2/gx2_renderer.cpp
+)
+target_include_directories(retrou_gx2_test PRIVATE
+    src
+    /opt/devkitpro/wut/include
+    /opt/devkitpro/portlibs/wiiu/include
+    /opt/devkitpro/portlibs/ppc/include
+)
+target_compile_options(retrou_gx2_test PRIVATE -Wall -Wextra)
+target_link_libraries(retrou_gx2_test PRIVATE m)
+wut_create_rpx(retrou_gx2_test)
+wut_create_wuhb(retrou_gx2_test
+    CONTENT    "${CMAKE_CURRENT_SOURCE_DIR}/content"
+    NAME       "RetroU GX2 Test"
+    SHORTNAME  "RetroU GX2 Test"
+    AUTHOR     "joguel96"
+    ICON       "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/nes/icon.png"
+    TVSPLASH   "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/nes/tv-splash.png"
+    DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/nes/drc-splash.png"
+)
+
 add_custom_target(stage_wuhb ALL
     COMMAND "${CMAKE_COMMAND}" -E make_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroNESU"

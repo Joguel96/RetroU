@@ -197,13 +197,22 @@ void drawRect(float x, float y, float w, float h, Color color)
 
 // The following primitives require additional geometry or texture upload and
 // are implemented in the next milestones.
+void drawGradient(float x, float y, float w, float h, Color top, Color bottom)
+{
+    if (!g_ready || !g_inFrame) {
+        return;
+    }
+    pushSolidVertex(x, y, top);
+    pushSolidVertex(x + w, y, top);
+    pushSolidVertex(x + w, y + h, bottom);
+    pushSolidVertex(x, y + h, bottom);
+}
+
+// Rounded rectangles require a triangle-fan geometry for the corners; the
+// solid pipeline currently batches axis-aligned quads, so this lands next.
 void drawRoundRect(float x, float y, float w, float h, float r, Color color)
 {
     (void)x; (void)y; (void)w; (void)h; (void)r; (void)color;
-}
-void drawGradient(float x, float y, float w, float h, Color top, Color bottom)
-{
-    (void)x; (void)y; (void)w; (void)h; (void)top; (void)bottom;
 }
 Texture createTexture(int, int, const void *) { return -1; }
 void destroyTexture(Texture) {}

@@ -50,7 +50,15 @@ void drawGradient(float x, float y, float w, float h, Color top, Color bottom);
 // Creates a texture from RGBA8 pixels (top-left origin). Returns >=0 or -1.
 Texture createTexture(int width, int height, const void *rgba);
 
+// Replaces the pixels of an existing texture (same dimensions, RGBA8).
+void updateTexture(Texture texture, const void *rgba);
+
 void destroyTexture(Texture texture);
+
+// Draws a textured sub-rectangle (u,v in [0,1]) with a color tint. Multiple
+// calls with the same texture are batched into one draw.
+void drawTexturedRect(Texture texture, float x, float y, float w, float h,
+                      float u0, float v0, float u1, float v1, Color tint);
 
 // Draws a texture into a destination rectangle (pixels).
 void drawTexture(Texture texture, float x, float y, float w, float h);

@@ -3,6 +3,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#include <algorithm>
 #include <cstdint>
 #include <map>
 #include <string>
@@ -12,131 +13,129 @@ namespace retrou::gx2::text {
 
 namespace {
 
+constexpr int kAtlasSize = 1024;
+
 FT_Library g_library = nullptr;
 FT_Face g_face = nullptr;
 
-struct StringKey {
-    std::string text;
+Texture g_atlas = -1;
+std::vector<uint8_t> g_atlasPixels; // kAtlasSize * kAtlasSize * 4
+int g_cursorX = 0;
+int g_cursorY = 0;
+int g_rowHeight = 0;
+bool g_atlasDirty = false;
+
+struct GlyphKey {
+    uint32_t codepoint;
     int size;
-    bool operator<(const StringKey &other) const
+    bool operator<(const GlyphKey &other) const
     {
-        if (size != other.size) {
-            return size < other.size;
-        }
-        return text < other.text;
+        if (size != other.size) return size < other.size;
+        return codepoint < other.codepoint;
     }
 };
 
-struct StringSprite {
-    Texture texture = -1;
-    int width = 0;
-    int height = 0;
+struct Glyph {
+    float u0, v0, u1, v1;
+    int width, height;
+    int advance;
+    int left, top;
 };
 
-std::map<StringKey, StringSprite> g_strings;
+std::map<GlyphKey, Glyph> g_glyphs;
 
 bool decodeUtf8(const char *text, uint32_t &out, int &advance)
 {
     const unsigned char *p = reinterpret_cast<const unsigned char *>(text);
-    if (p[0] == 0) {
-        return false;
-    }
+    if (p[0] == 0) return false;
     if (p[0] < 0x80) {
-        out = p[0];
-        advance = 1;
+        out = p[0]; advance = 1;
     } else if ((p[0] & 0xE0) == 0xC0) {
-        out = (p[0] & 0x1F) << 6 | (p[1] & 0x3F);
-        advance = 2;
+        out = (p[0] & 0x1F) << 6 | (p[1] & 0x3F); advance = 2;
     } else if ((p[0] & 0xF0) == 0xE0) {
-        out = (p[0] & 0x0F) << 12 | (p[1] & 0x3F) << 6 | (p[2] & 0x3F);
-        advance = 3;
+        out = (p[0] & 0x0F) << 12 | (p[1] & 0x3F) << 6 | (p[2] & 0x3F); advance = 3;
     } else {
         out = (p[0] & 0x07) << 18 | (p[1] & 0x3F) << 12 |
-              (p[2] & 0x3F) << 6 | (p[3] & 0x3F);
-        advance = 4;
+              (p[2] & 0x3F) << 6 | (p[3] & 0x3F); advance = 4;
     }
     return true;
 }
 
-// Renders a whole string into one RGBA texture (white glyphs + alpha). Drawing
-// a string then costs a single textured quad instead of one draw per glyph,
-// which is what keeps the GX2 frontend at 60 FPS.
-StringSprite renderString(const std::string &text, int size)
+Glyph renderGlyph(uint32_t codepoint, int size)
 {
-    StringSprite sprite;
-    if (!g_face || text.empty() || size <= 0) {
-        return sprite;
+    GlyphKey key{codepoint, size};
+    auto found = g_glyphs.find(key);
+    if (found != g_glyphs.end()) {
+        return found->second;
     }
 
     FT_Set_Pixel_Sizes(g_face, 0, static_cast<FT_UInt>(size));
-    const int ascent = static_cast<int>(g_face->size->metrics.ascender >> 6);
-    const int descent = static_cast<int>(-(g_face->size->metrics.descender >> 6));
-
-    // First pass: total advance width.
-    int width = 0;
-    {
-        const char *cursor = text.c_str();
-        uint32_t codepoint = 0;
-        int advance = 0;
-        while (decodeUtf8(cursor, codepoint, advance)) {
-            cursor += advance;
-            FT_UInt index = FT_Get_Char_Index(g_face, codepoint);
-            if (FT_Load_Glyph(g_face, index, FT_LOAD_DEFAULT) == 0) {
-                width += static_cast<int>(g_face->glyph->advance.x >> 6);
-            }
-        }
-    }
-    if (width <= 0) {
-        return sprite;
+    FT_UInt index = FT_Get_Char_Index(g_face, codepoint);
+    if (FT_Load_Glyph(g_face, index, FT_LOAD_DEFAULT) != 0 ||
+        FT_Render_Glyph(g_face->glyph, FT_RENDER_MODE_NORMAL) != 0) {
+        return Glyph{};
     }
 
-    const int padding = 2;
-    const int height = ascent + descent + padding;
-    std::vector<uint8_t> pixels(static_cast<size_t>(width) * height * 4, 0);
-
-    // Second pass: rasterise and copy each glyph into the string bitmap.
-    const char *cursor = text.c_str();
-    uint32_t codepoint = 0;
-    int advance = 0;
-    int penX = 0;
-    while (decodeUtf8(cursor, codepoint, advance)) {
-        cursor += advance;
-        FT_UInt index = FT_Get_Char_Index(g_face, codepoint);
-        if (FT_Load_Glyph(g_face, index, FT_LOAD_DEFAULT) != 0 ||
-            FT_Render_Glyph(g_face->glyph, FT_RENDER_MODE_NORMAL) != 0) {
-            continue;
-        }
-        const FT_Bitmap &bitmap = g_face->glyph->bitmap;
-        const int gw = static_cast<int>(bitmap.width);
-        const int gh = static_cast<int>(bitmap.rows);
-        const int left = g_face->glyph->bitmap_left;
-        const int top = g_face->glyph->bitmap_top;
-
-        for (int gy = 0; gy < gh; ++gy) {
-            const int dstY = ascent - top + gy;
-            if (dstY < 0 || dstY >= height) {
-                continue;
-            }
-            const unsigned char *src = bitmap.buffer + gy * bitmap.pitch;
-            for (int gx = 0; gx < gw; ++gx) {
-                const int dstX = penX + left + gx;
-                if (dstX < 0 || dstX >= width) {
-                    continue;
-                }
-                uint8_t *pixel = &pixels[(static_cast<size_t>(dstY) * width + dstX) * 4];
-                pixel[0] = 255;
-                pixel[1] = 255;
-                pixel[2] = 255;
-                pixel[3] = src[gx];
-            }
-        }
-        penX += static_cast<int>(g_face->glyph->advance.x >> 6);
+    const FT_Bitmap &bitmap = g_face->glyph->bitmap;
+    const int w = static_cast<int>(bitmap.width);
+    const int h = static_cast<int>(bitmap.rows);
+    if (w <= 0 || h <= 0) {
+        Glyph g{};
+        g.advance = static_cast<int>(g_face->glyph->advance.x >> 6);
+        g.left = g_face->glyph->bitmap_left;
+        g.top = g_face->glyph->bitmap_top;
+        g_glyphs[key] = g;
+        return g;
     }
 
-    sprite.texture = createTexture(width, height, pixels.data());
-    sprite.width = width;
-    sprite.height = height;
-    return sprite;
+    const int pad = 1;
+    if (g_cursorX + w + pad > kAtlasSize) {
+        g_cursorX = 0;
+        g_cursorY += g_rowHeight;
+        g_rowHeight = 0;
+    }
+    if (g_cursorY + h + pad > kAtlasSize) {
+        // Atlas full: degrade gracefully by returning the glyph without a
+        // texture (draws nothing). In practice the atlas is far from full.
+        Glyph g{};
+        g.advance = static_cast<int>(g_face->glyph->advance.x >> 6);
+        g.left = g_face->glyph->bitmap_left;
+        g.top = g_face->glyph->bitmap_top;
+        g_glyphs[key] = g;
+        return g;
+    }
+
+    const int dstX = g_cursorX;
+    const int dstY = g_cursorY;
+    for (int gy = 0; gy < h; ++gy) {
+        const unsigned char *src = bitmap.buffer + gy * bitmap.pitch;
+        for (int gx = 0; gx < w; ++gx) {
+            uint8_t *px = &g_atlasPixels[
+                (static_cast<size_t>(dstY + gy) * kAtlasSize + dstX + gx) * 4];
+            px[0] = 255;
+            px[1] = 255;
+            px[2] = 255;
+            px[3] = src[gx];
+        }
+    }
+
+    Glyph g{};
+    g.u0 = static_cast<float>(dstX) / kAtlasSize;
+    g.v0 = static_cast<float>(dstY) / kAtlasSize;
+    g.u1 = static_cast<float>(dstX + w) / kAtlasSize;
+    g.v1 = static_cast<float>(dstY + h) / kAtlasSize;
+    g.width = w;
+    g.height = h;
+    g.advance = static_cast<int>(g_face->glyph->advance.x >> 6);
+    g.left = g_face->glyph->bitmap_left;
+    g.top = g_face->glyph->bitmap_top;
+
+    g_glyphs[key] = g;
+    g_atlasDirty = true;
+
+    g_cursorX += w + pad;
+    g_rowHeight = std::max(g_rowHeight, h + pad);
+    return g;
 }
 
 } // namespace
@@ -153,16 +152,15 @@ bool loadFont(const unsigned char *data, size_t size)
                            &g_face) != 0) {
         return false;
     }
-    return true;
+    g_atlasPixels.assign(static_cast<size_t>(kAtlasSize) * kAtlasSize * 4, 0);
+    g_atlas = createTexture(kAtlasSize, kAtlasSize, g_atlasPixels.data());
+    return g_atlas >= 0;
 }
 
 int measureText(const char *text, int pixelSize)
 {
-    if (!text || !g_face) {
-        return 0;
-    }
+    if (!text || !g_face) return 0;
     FT_Set_Pixel_Sizes(g_face, 0, static_cast<FT_UInt>(pixelSize));
-
     int width = 0;
     const char *cursor = text;
     uint32_t codepoint = 0;
@@ -179,12 +177,8 @@ int measureText(const char *text, int pixelSize)
 
 std::string fitText(const char *text, int pixelSize, float maxWidth)
 {
-    if (!text) {
-        return {};
-    }
-    if (measureText(text, pixelSize) <= maxWidth) {
-        return text;
-    }
+    if (!text) return {};
+    if (measureText(text, pixelSize) <= maxWidth) return text;
     std::string result = text;
     while (!result.empty() &&
            measureText((result + "...").c_str(), pixelSize) > maxWidth) {
@@ -195,35 +189,46 @@ std::string fitText(const char *text, int pixelSize, float maxWidth)
 
 void prewarm(const char *text, int pixelSize)
 {
-    if (!text || !g_face || text[0] == 0) {
-        return;
+    if (!text || !g_face || text[0] == 0) return;
+    const char *cursor = text;
+    uint32_t codepoint = 0;
+    int advance = 0;
+    while (decodeUtf8(cursor, codepoint, advance)) {
+        cursor += advance;
+        renderGlyph(codepoint, pixelSize);
     }
-    StringKey key{text, pixelSize};
-    if (g_strings.find(key) == g_strings.end()) {
-        g_strings.emplace(key, renderString(text, pixelSize));
+    if (g_atlasDirty && g_atlas >= 0) {
+        updateTexture(g_atlas, g_atlasPixels.data());
+        g_atlasDirty = false;
     }
 }
 
 void drawText(const char *text, float x, float y, int pixelSize, Color color)
 {
-    if (!text || !g_face || text[0] == 0) {
-        return;
+    if (!text || !g_face || text[0] == 0) return;
+
+    float penX = x;
+    const char *cursor = text;
+    uint32_t codepoint = 0;
+    int advance = 0;
+    while (decodeUtf8(cursor, codepoint, advance)) {
+        cursor += advance;
+        Glyph glyph = renderGlyph(codepoint, pixelSize);
+        if (glyph.width > 0 && glyph.height > 0) {
+            drawTexturedRect(g_atlas,
+                             penX + glyph.left,
+                             y + pixelSize - glyph.top,
+                             static_cast<float>(glyph.width),
+                             static_cast<float>(glyph.height),
+                             glyph.u0, glyph.v0, glyph.u1, glyph.v1, color);
+        }
+        penX += glyph.advance;
     }
 
-    StringKey key{text, pixelSize};
-    auto found = g_strings.find(key);
-    if (found == g_strings.end()) {
-        StringSprite sprite = renderString(text, pixelSize);
-        found = g_strings.emplace(key, sprite).first;
+    if (g_atlasDirty && g_atlas >= 0) {
+        updateTexture(g_atlas, g_atlasPixels.data());
+        g_atlasDirty = false;
     }
-
-    const StringSprite &sprite = found->second;
-    if (sprite.texture < 0) {
-        return;
-    }
-    drawTextureTinted(sprite.texture, x, y,
-                      static_cast<float>(sprite.width),
-                      static_cast<float>(sprite.height), color);
 }
 
 } // namespace retrou::gx2::text

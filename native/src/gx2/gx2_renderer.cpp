@@ -452,6 +452,38 @@ void destroyTexture(Texture texture)
     g_textures[index] = nullptr;
 }
 
+void updateTexture(Texture texture, const void *rgba)
+{
+    TextureRecord *record = getTexture(texture);
+    if (!record || !rgba) {
+        return;
+    }
+    GX2Surface &surface = record->texture.surface;
+    const uint8_t *src = static_cast<const uint8_t *>(rgba);
+    for (int row = 0; row < record->height; ++row) {
+        uint32_t *dst = static_cast<uint32_t *>(surface.image) + row * surface.pitch;
+        std::memcpy(dst, src + static_cast<size_t>(row) * record->width * 4,
+                    static_cast<size_t>(record->width) * 4);
+    }
+    DCFlushRange(surface.image, surface.imageSize);
+    GX2Invalidate(GX2_INVALIDATE_MODE_CPU | GX2_INVALIDATE_MODE_TEXTURE,
+                  surface.image, surface.imageSize);
+}
+
+void drawTexturedRect(Texture texture, float x, float y, float w, float h,
+                      float u0, float v0, float u1, float v1, Color tint)
+{
+    if (!g_ready || !g_inFrame || !getTexture(texture)) {
+        return;
+    }
+    pushTexVertex(x, y, u0, v0, tint, texture);
+    pushTexVertex(x + w, y, u1, v0, tint, texture);
+    pushTexVertex(x + w, y + h, u1, v1, tint, texture);
+    pushTexVertex(x, y, u0, v0, tint, texture);
+    pushTexVertex(x + w, y + h, u1, v1, tint, texture);
+    pushTexVertex(x, y + h, u0, v1, tint, texture);
+}
+
 void drawTexture(Texture texture, float x, float y, float w, float h)
 {
     if (!g_ready || !g_inFrame) return;

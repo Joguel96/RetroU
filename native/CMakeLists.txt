@@ -127,6 +127,7 @@ add_executable(retrou_gx2_test EXCLUDE_FROM_ALL
     src/gx2/gx2_renderer.cpp
     src/gx2/gx2_text.cpp
     src/gx2/gx2_image.cpp
+    src/gx2/retrou_data.cpp
     "${FONT_REGULAR_OBJ}"
 )
 set_source_files_properties("${FONT_REGULAR_OBJ}"

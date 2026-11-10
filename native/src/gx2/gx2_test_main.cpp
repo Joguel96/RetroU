@@ -1,10 +1,12 @@
 #include "gx2/gx2_renderer.hpp"
 #include "gx2/gx2_text.hpp"
 #include "gx2/gx2_image.hpp"
+#include "gx2/retrou_data.hpp"
 
 #include <vpad/input.h>
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 // GX2 UI visual test: renders a representative library screen (header,
@@ -83,8 +85,15 @@ int main()
 
     // If the user has a downloaded cover on the SD, use it for the first card
     // to exercise real PNG decoding; otherwise keep the procedural cover.
-    Texture realCover = image::loadFromFile(
-        "/vol/external01/retrou/thumbnails/nes/Castlevania (USA).png");
+    retrou::Library library;
+    library.sd_root = retrou::mountSd();
+    retrou::scanRoms(library, "nes");
+    std::string firstCoverPath;
+    if (!library.roms.empty()) {
+        firstCoverPath = retrou::coverPath(library.sd_root, "nes", library.roms[0].title);
+    }
+    Texture realCover = firstCoverPath.empty()
+        ? -1 : image::loadFromFile(firstCoverPath.c_str());
 
     const Color bgTop{20, 28, 44, 255};
     const Color bgBottom{8, 11, 18, 255};
@@ -176,6 +185,8 @@ int main()
         }
 
         // Footer hints.
+        text::drawText(("ROMs NES: " + std::to_string(library.roms.size())).c_str(),
+                       28.0f, 648.0f, 15, muted);
         text::drawText("A  JUGAR    B  VOLVER    PLUS  FILTROS", 28.0f, 672.0f, 15, muted);
 
         endFrame();

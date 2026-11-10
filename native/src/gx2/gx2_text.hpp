@@ -22,4 +22,9 @@ std::string fitText(const char *text, int pixelSize, float maxWidth);
 // FreeType, cached per (codepoint, pixel size) and drawn as tinted textures.
 void drawText(const char *text, float x, float y, int pixelSize, Color color);
 
+// Creates the cached texture for a string ahead of the render loop. Textures
+// must not be created mid-frame (it invalidates pending draws), so call this
+// for every string the UI will render.
+void prewarm(const char *text, int pixelSize);
+
 } // namespace retrou::gx2::text

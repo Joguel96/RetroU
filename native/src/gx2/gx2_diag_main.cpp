@@ -47,6 +47,10 @@ int main()
         return 1;
     }
 
+    // Pre-create text textures outside the render loop.
+    text::prewarm("Castlevania", 15);
+    text::prewarm("NES", 12);
+
     const Color bg{8, 11, 18, 255};
     const Color accent{245, 217, 127, 255};
     const Color panel{28, 34, 48, 255};

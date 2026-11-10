@@ -193,6 +193,17 @@ std::string fitText(const char *text, int pixelSize, float maxWidth)
     return result + "...";
 }
 
+void prewarm(const char *text, int pixelSize)
+{
+    if (!text || !g_face || text[0] == 0) {
+        return;
+    }
+    StringKey key{text, pixelSize};
+    if (g_strings.find(key) == g_strings.end()) {
+        g_strings.emplace(key, renderString(text, pixelSize));
+    }
+}
+
 void drawText(const char *text, float x, float y, int pixelSize, Color color)
 {
     if (!text || !g_face || text[0] == 0) {

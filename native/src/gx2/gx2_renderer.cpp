@@ -4,10 +4,14 @@
 #include <gx2/clear.h>
 #include <gx2/draw.h>
 #include <gx2/mem.h>
+#include <gx2/sampler.h>
 #include <gx2/shaders.h>
+#include <gx2/surface.h>
 #include <gx2/swap.h>
+#include <gx2/texture.h>
 #include <gx2r/buffer.h>
 #include <gx2r/draw.h>
+#include <gx2r/surface.h>
 
 #include <algorithm>
 #include <cmath>
@@ -18,9 +22,7 @@ namespace retrou::gx2 {
 
 namespace {
 
-// Logical resolution of the single render target (16:9). All UI coordinates
-// are expressed in these units and mapped to normalized device coordinates,
-// so the layout stays the same whether the TV is 720p or 1080p.
+// Logical resolution of the single render target (16:9).
 constexpr float kScreenW = 1280.0f;
 constexpr float kScreenH = 720.0f;
 constexpr float kPi = 3.14159265358979323846f;
@@ -33,9 +35,24 @@ WHBGfxShaderGroup g_textureGroup{};
 
 GX2RBuffer g_posBuffer{};
 GX2RBuffer g_colBuffer{};
-
 std::vector<float> g_solidPos; // 2 floats per vertex
 std::vector<float> g_solidCol; // 4 floats per vertex
+
+GX2RBuffer g_texPosBuffer{};
+GX2RBuffer g_texUVBuffer{};
+GX2RBuffer g_texColBuffer{};
+std::vector<float> g_texPos; // 2 floats per vertex
+std::vector<float> g_texUV;  // 2 floats per vertex
+std::vector<float> g_texCol; // 4 floats per vertex
+
+struct TextureRecord {
+    GX2Texture texture{};
+    int width = 0;
+    int height = 0;
+};
+std::vector<TextureRecord *> g_textures;
+
+GX2Sampler g_sampler{};
 
 bool g_ready = false;
 bool g_inFrame = false;
@@ -143,6 +160,51 @@ void flushSolid()
     g_solidCol.clear();
 }
 
+void pushTexVertex(float x, float y, float u, float v, Color c)
+{
+    const float ndcX = x / (kScreenW * 0.5f) - 1.0f;
+    const float ndcY = 1.0f - y / (kScreenH * 0.5f);
+    g_texPos.push_back(ndcX);
+    g_texPos.push_back(ndcY);
+    g_texUV.push_back(u);
+    g_texUV.push_back(v);
+    g_texCol.push_back(c.r / 255.0f);
+    g_texCol.push_back(c.g / 255.0f);
+    g_texCol.push_back(c.b / 255.0f);
+    g_texCol.push_back(c.a / 255.0f);
+}
+
+void flushTexture(TextureRecord *record)
+{
+    if (!record || g_texPos.empty()) {
+        return;
+    }
+
+    uploadBuffer(g_texPosBuffer, g_texPos);
+    uploadBuffer(g_texUVBuffer, g_texUV);
+    uploadBuffer(g_texColBuffer, g_texCol);
+
+    GX2SetFetchShader(&g_textureGroup.fetchShader);
+    GX2SetVertexShader(g_textureGroup.vertexShader);
+    GX2SetPixelShader(g_textureGroup.pixelShader);
+    GX2SetShaderMode(GX2_SHADER_MODE_UNIFORM_REGISTER);
+
+    GX2RSetAttributeBuffer(&g_texPosBuffer, 0, 2 * sizeof(float), 0);
+    GX2RSetAttributeBuffer(&g_texUVBuffer, 1, 2 * sizeof(float), 0);
+    GX2RSetAttributeBuffer(&g_texColBuffer, 2, 4 * sizeof(float), 0);
+
+    const uint32_t unit = g_textureGroup.pixelShader->samplerVars[0].location;
+    GX2SetPixelTexture(&record->texture, unit);
+    GX2SetPixelSampler(&g_sampler, unit);
+
+    GX2DrawEx(GX2_PRIMITIVE_MODE_TRIANGLES,
+              static_cast<uint32_t>(g_texPos.size() / 2), 0, 1);
+
+    g_texPos.clear();
+    g_texUV.clear();
+    g_texCol.clear();
+}
+
 } // namespace
 
 bool init()
@@ -180,6 +242,9 @@ bool init()
                               GX2_ATTRIB_FORMAT_FLOAT_32_32_32_32);
     WHBGfxInitFetchShader(&g_textureGroup);
 
+    GX2InitSampler(&g_sampler, GX2_TEX_CLAMP_MODE_CLAMP,
+                   GX2_TEX_XY_FILTER_MODE_LINEAR);
+
     g_ready = true;
     return true;
 }
@@ -189,6 +254,11 @@ void shutdown()
     if (!g_ready) {
         return;
     }
+    for (TextureRecord *record : g_textures) {
+        GX2RDestroySurfaceEx(&record->texture.surface, GX2R_RESOURCE_BIND_NONE);
+        delete record;
+    }
+    g_textures.clear();
     WHBGfxFreeShaderGroup(&g_solidGroup);
     WHBGfxFreeShaderGroup(&g_textureGroup);
     if (g_posBuffer.buffer) {
@@ -257,26 +327,144 @@ void drawRoundRect(float x, float y, float w, float h, float radius, Color color
     const float x0 = x, y0 = y, x1 = x + w, y1 = y + h;
     const int segments = 8;
 
-    // Center and the four edge rectangles.
-    pushQuad(x0 + r, y0 + r, x1 - r, y1 - r, color); // center
-    pushQuad(x0 + r, y0, x1 - r, y0 + r, color);     // top
-    pushQuad(x0 + r, y1 - r, x1 - r, y1, color);     // bottom
-    pushQuad(x0, y0 + r, x0 + r, y1 - r, color);     // left
-    pushQuad(x1 - r, y0 + r, x1, y1 - r, color);     // right
+    pushQuad(x0 + r, y0 + r, x1 - r, y1 - r, color);
+    pushQuad(x0 + r, y0, x1 - r, y0 + r, color);
+    pushQuad(x0 + r, y1 - r, x1 - r, y1, color);
+    pushQuad(x0, y0 + r, x0 + r, y1 - r, color);
+    pushQuad(x1 - r, y0 + r, x1, y1 - r, color);
 
-    // Corner arcs sweep 90 degrees each.
-    pushCorner(x0 + r, y0 + r, r, kPi, kPi * 1.5f, color, segments);       // top-left
-    pushCorner(x1 - r, y0 + r, r, kPi * 1.5f, kPi * 2.0f, color, segments); // top-right
-    pushCorner(x1 - r, y1 - r, r, 0.0f, kPi * 0.5f, color, segments);       // bottom-right
-    pushCorner(x0 + r, y1 - r, r, kPi * 0.5f, kPi, color, segments);        // bottom-left
+    pushCorner(x0 + r, y0 + r, r, kPi, kPi * 1.5f, color, segments);
+    pushCorner(x1 - r, y0 + r, r, kPi * 1.5f, kPi * 2.0f, color, segments);
+    pushCorner(x1 - r, y1 - r, r, 0.0f, kPi * 0.5f, color, segments);
+    pushCorner(x0 + r, y1 - r, r, kPi * 0.5f, kPi, color, segments);
 }
 
-// Textures require GX2 surface upload and the texture shader; implemented in
-// the next milestone.
-Texture createTexture(int, int, const void *) { return -1; }
-void destroyTexture(Texture) {}
-void drawTexture(Texture, float, float, float, float) {}
-void drawTextureCover(Texture, float, float, float, float) {}
+Texture createTexture(int width, int height, const void *rgba)
+{
+    if (!g_ready || width <= 0 || height <= 0 || !rgba) {
+        return -1;
+    }
+
+    TextureRecord *record = new TextureRecord();
+    GX2Texture &tex = record->texture;
+    GX2Surface &surface = tex.surface;
+    std::memset(&tex, 0, sizeof(tex));
+
+    surface.dim = GX2_SURFACE_DIM_TEXTURE_2D;
+    surface.width = static_cast<uint32_t>(width);
+    surface.height = static_cast<uint32_t>(height);
+    surface.depth = 1;
+    surface.mipLevels = 1;
+    surface.format = GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8;
+    surface.aa = GX2_AA_MODE1X;
+    surface.use = GX2_SURFACE_USE_TEXTURE;
+    surface.tileMode = GX2_TILE_MODE_LINEAR_ALIGNED;
+    tex.viewNumSlices = 1;
+
+    GX2CalcSurfaceSizeAndAlignment(&surface);
+    GX2RCreateSurface(&surface,
+                      GX2R_RESOURCE_BIND_TEXTURE |
+                      GX2R_RESOURCE_USAGE_CPU_WRITE |
+                      GX2R_RESOURCE_USAGE_GPU_READ);
+    GX2InitTextureRegs(&tex);
+
+    void *image = GX2RLockSurfaceEx(&surface, 0, GX2R_RESOURCE_BIND_NONE);
+    if (image) {
+        const uint8_t *src = static_cast<const uint8_t *>(rgba);
+        for (int row = 0; row < height; ++row) {
+            std::memcpy(static_cast<uint8_t *>(image) + row * surface.pitch,
+                        src + row * width * 4, static_cast<size_t>(width) * 4);
+        }
+        GX2RUnlockSurfaceEx(&surface, 0, GX2R_RESOURCE_BIND_NONE);
+    }
+
+    record->width = width;
+    record->height = height;
+    g_textures.push_back(record);
+    return static_cast<Texture>(g_textures.size());
+}
+
+void destroyTexture(Texture texture)
+{
+    int index = static_cast<int>(texture) - 1;
+    if (index < 0 || index >= static_cast<int>(g_textures.size()) || !g_textures[index]) {
+        return;
+    }
+    TextureRecord *record = g_textures[index];
+    GX2RDestroySurfaceEx(&record->texture.surface, GX2R_RESOURCE_BIND_NONE);
+    delete record;
+    g_textures[index] = nullptr;
+}
+
+TextureRecord *getTexture(Texture texture)
+{
+    int index = static_cast<int>(texture) - 1;
+    if (index < 0 || index >= static_cast<int>(g_textures.size())) {
+        return nullptr;
+    }
+    return g_textures[index];
+}
+
+void drawTexture(Texture texture, float x, float y, float w, float h)
+{
+    if (!g_ready || !g_inFrame) {
+        return;
+    }
+    TextureRecord *record = getTexture(texture);
+    if (!record) {
+        return;
+    }
+
+    flushSolid();
+
+    const Color white{255, 255, 255, 255};
+    pushTexVertex(x, y, 0.0f, 0.0f, white);
+    pushTexVertex(x + w, y, 1.0f, 0.0f, white);
+    pushTexVertex(x + w, y + h, 1.0f, 1.0f, white);
+    pushTexVertex(x, y, 0.0f, 0.0f, white);
+    pushTexVertex(x + w, y + h, 1.0f, 1.0f, white);
+    pushTexVertex(x, y + h, 0.0f, 1.0f, white);
+
+    flushTexture(record);
+}
+
+void drawTextureCover(Texture texture, float x, float y, float w, float h)
+{
+    if (!g_ready || !g_inFrame) {
+        return;
+    }
+    TextureRecord *record = getTexture(texture);
+    if (!record) {
+        return;
+    }
+
+    flushSolid();
+
+    float u0 = 0.0f, v0 = 0.0f, u1 = 1.0f, v1 = 1.0f;
+    const float srcAspect = record->height > 0
+        ? static_cast<float>(record->width) / record->height : 1.0f;
+    const float dstAspect = h > 0.0f ? w / h : 1.0f;
+    if (srcAspect > dstAspect) {
+        const float scale = dstAspect / srcAspect;
+        u0 = (1.0f - scale) * 0.5f;
+        u1 = 1.0f - u0;
+    } else {
+        const float scale = srcAspect / dstAspect;
+        v0 = (1.0f - scale) * 0.5f;
+        v1 = 1.0f - v0;
+    }
+
+    const Color white{255, 255, 255, 255};
+    pushTexVertex(x, y, u0, v0, white);
+    pushTexVertex(x + w, y, u1, v0, white);
+    pushTexVertex(x + w, y + h, u1, v1, white);
+    pushTexVertex(x, y, u0, v0, white);
+    pushTexVertex(x + w, y + h, u1, v1, white);
+    pushTexVertex(x, y + h, u0, v1, white);
+
+    flushTexture(record);
+}
+
 void setScissor(int, int, int, int) {}
 void clearScissor() {}
 

@@ -498,17 +498,6 @@ void load_libretro_metadata(AppState &app)
 
 std::string normalize_text(std::string value)
 {
-    const std::pair<const char *, const char *> pairs[] = {
-        {"á", "á"}, {"é", "é"}, {"í", "í"}, {"ó", "ó"},
-        {"ú", "ú"}, {"ñ", "ñ"}, {"ü", "ü"}, {"Ú", "Ú"},
-        {"", ""},
-    };
-    for (const auto &pair : pairs) {
-        size_t pos;
-        while ((pos = value.find(pair.first)) != std::string::npos) {
-            value.replace(pos, std::strlen(pair.first), pair.second);
-        }
-    }
     return value;
 }
 

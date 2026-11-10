@@ -1,16 +1,18 @@
-# RetroU card prototype (PC)
+# RetroU grid prototype (PC)
 
-Prototipo aislado de **una sola tarjeta**. No forma parte de las WUHB y no
-modifica el build de Wii U.
+Prototipo aislado de la biblioteca. No forma parte de las WUHB y no modifica el
+build de Wii U.
 
 ## Qué demuestra
 
 - Ventana SDL2 de 1280×720.
 - Grilla de **5 columnas** (TV y GamePad comparten la misma lógica).
-- 14 tarjetas de prueba.
-- Foco único, navegación con teclado o D-pad y scroll automático.
-- Virtualización: solo se dibujan las filas visibles.
-- Clic de ratón como sustituto de toque en el GamePad.
+- 14 tarjetas cargadas desde `data/games.json`.
+- Foco único, navegación con teclado, D-pad o clic/toque.
+- Scroll automático y virtualización de filas.
+- `X` alterna favorito y lo persiste en `games.json`.
+- `Y` filtra solo favoritos.
+- El orden por defecto es **ABC**; marcar un favorito no reordena la grilla.
 - Tarjeta de 190×250 con degradado prerenderizado, esquinas redondeadas,
   estrella, badge `Destacado`, título, desarrollador/año y género.
 - Borde de foco azul.
@@ -19,12 +21,27 @@ modifica el build de Wii U.
 La tarjeta no muestra chip de plataforma, divisor interior ni contador de
 ejecuciones: la app es de una sola consola.
 
-Todavía no hay scroll suave animado ni eventos `SDL_Finger` reales; el
-prototipo usa teclado, gamepad y clic.
+`SDL_FINGERDOWN` está conectado al mismo hit-test que el ratón. En PC sin
+pantalla táctil se prueba con clic; en Wii U se usará el toque real del GamePad.
 
-## Tema personalizable (futuro)
+## Favoritos y filtros
 
-Sí es posible. El diseño debe separar un `Theme` de los colores hardcodeados:
+El JSON guarda `favorite` por juego. Al pulsar `X`:
+
+1. se cambia el valor;
+2. se reescribe `data/games.json`;
+3. se reconstruye la lista visible;
+4. el orden ABC se mantiene.
+
+Con `Y` se muestra solo la lista de favoritos. Si no hay ninguno, aparece el
+estado vacío.
+
+El orden “favoritos primero” no está implementado todavía; queda para 5.1 como
+opción de configuración.
+
+## Tema personalizable y fondos (5.1)
+
+El diseño futuro sería:
 
 ```cpp
 struct Theme {
@@ -38,7 +55,10 @@ struct Theme {
     Color accent;
 
     std::string backgroundImage;
-    int backgroundBlur;
+    BackgroundType type;  // Color, Image, Dynamic
+    bool blur;
+    float blurStrength;   // 0.5
+    int dynamicDelayMs;   // 5000
 };
 ```
 
@@ -46,7 +66,8 @@ struct Theme {
 - `focus` controla el borde de la card enfocada.
 - `backgroundTop/Bottom` controlan el fondo.
 - `backgroundImage` permite una imagen propia.
-- `backgroundBlur` permite desenfocar esa imagen.
+- `blur` + `blurStrength` permiten blur estático una sola vez.
+- `Dynamic` cambia al backdrop del juego tras 5 s de foco estable.
 
 El blur no se puede hacer con `backdrop-filter` en SDL2. Se haría **una sola vez**
 al cargar la imagen o al cambiar de tema:
@@ -60,18 +81,44 @@ al cargar la imagen o al cambiar de tema:
 Sería un blur de fondo, no un blur dinámico detrás de cada panel. Hacerlo por
 frame en Wii U sería caro e innecesario para una imagen estática.
 
-`theme.conf` sería compartido entre las apps de consola; cada app podría tener
+`theme.json` sería compartido entre las apps de consola; cada app podría tener
 overrides locales en `config/<consola>/`.
+
+## Carátulas desde Libretro (5.1)
+
+La fuente es la librería de thumbnails de Libretro:
+
+- Repositorio: https://github.com/libretro-thumbnails/libretro-thumbnails
+- Servidor: https://thumbnails.libretro.com/
+
+Ruta típica:
+
+```text
+https://thumbnails.libretro.com/
+  Nintendo%20-%20Super%20Nintendo%20Entertainment%20System/
+  Named_Boxarts/
+  Game%20Name.png
+```
+
+Para 5.1 el plan es:
+
+1. resolver el nombre del juego contra `Named_Boxarts`;
+2. descargar a `sd:/retrou/thumbnails/<consola>/`;
+3. cachear la textura;
+4. usar `Named_Snaps` como posible backdrop dinámico;
+5. permitir fallback al degradado si no existe imagen.
 
 ## Compilar en Windows con MSVC
 
-El prototipo se compiló con MSVC 19.51 y SDL2 2.30.10:
+El prototipo se compiló con MSVC 19.51, SDL2 2.30.10, SDL2_ttf 2.22.0 y
+SDL2_image 2.8.2:
 
 ```bat
 call "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\VsDevCmd.bat" -arch=x64
 cd native\prototype
 
 cl /nologo /std:c++20 /EHsc /MD ^
+  /Ithird_party ^
   /Ithird_party\SDL2\SDL2-2.30.10\include ^
   /Ithird_party\SDL2_ttf\SDL2_ttf-2.22.0\include ^
   /Ithird_party\SDL2_image\SDL2_image-2.8.2\include ^
@@ -91,6 +138,7 @@ SDL2_ttf.dll
 SDL2_image.dll
 assets/icon.png
 content/ui.ttf
+data/games.json
 ```
 
 Ejecutar:
@@ -111,5 +159,5 @@ con el target PC de `native/`.
 
 ## Siguiente paso
 
-Convertir esta tarjeta en `GameGrid`: 6 columnas en TV, 4 en GamePad, foco con
-D-pad, scroll vertical y virtualización de filas.
+5.1: tema configurable, fondos estáticos/dinámicos, blur opcional y descarga de
+carátulas desde Libretro.

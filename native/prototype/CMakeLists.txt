@@ -14,6 +14,7 @@ target_include_directories(card_demo PRIVATE
     "${SDL2_ROOT}/include"
     "${SDL2_TTF_ROOT}/include"
     "${SDL2_IMAGE_ROOT}/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/third_party"
 )
 
 target_link_directories(card_demo PRIVATE
@@ -37,6 +38,8 @@ add_custom_command(TARGET card_demo POST_BUILD
             "${SDL2_IMAGE_ROOT}/lib/x64/SDL2_image.dll" "$<TARGET_FILE_DIR:card_demo>"
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/assets" "$<TARGET_FILE_DIR:card_demo>/assets"
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/data" "$<TARGET_FILE_DIR:card_demo>/data"
     COMMAND "${CMAKE_COMMAND}" -E copy_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/../content" "$<TARGET_FILE_DIR:card_demo>/content"
     COMMENT "Copying SDL2 DLLs, font and prototype assets"

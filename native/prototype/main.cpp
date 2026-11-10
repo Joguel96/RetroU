@@ -1,14 +1,18 @@
-// RetroU PC prototype: 5-column grid, shared focus, scroll and virtualization.
-// The Wii U apps are not touched by this target.
+// RetroU PC prototype: 5-column grid, focus, touch, favorites and JSON.
+// This target is isolated from the Wii U apps.
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
+#include "nlohmann/json.hpp"
+
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
+#include <fstream>
 #include <map>
 #include <string>
 #include <vector>
@@ -33,45 +37,48 @@ constexpr Color kFocus = {77, 163, 255, 255};
 constexpr Color kPanel = {15, 23, 42, 255};
 
 struct Game {
+    std::string id;
     std::string title;
     std::string developer;
     std::string genre;
-    int year;
-    bool featured;
-    bool favorite;
-    Color gradientTop;
-    Color gradientMid;
-    Color gradientBottom;
+    std::string coverPath;
+    std::string backdropPath;
+    int year = 0;
+    bool featured = false;
+    bool favorite = false;
+    Color gradientTop{34, 197, 94, 255};
+    Color gradientMid{245, 158, 11, 255};
+    Color gradientBottom{147, 51, 234, 255};
 };
 
-const std::vector<Game> kGames = {
-    {"Super Mario World", "Nintendo EAD", "Plataformas", 1990, true, true,
+const std::vector<Game> kFallbackGames = {
+    {"smw", "Super Mario World", "Nintendo EAD", "Plataformas", "", "", 1990, true, true,
      {34, 197, 94, 255}, {245, 158, 11, 255}, {147, 51, 234, 255}},
-    {"Super Metroid", "Nintendo R&D1", "Aventura", 1994, false, true,
+    {"metroid", "Super Metroid", "Nintendo R&D1", "Aventura", "", "", 1994, false, true,
      {15, 118, 110, 255}, {59, 130, 246, 255}, {76, 29, 149, 255}},
-    {"The Legend of Zelda", "Nintendo EAD", "Aventura", 1991, true, false,
+    {"zelda", "The Legend of Zelda", "Nintendo EAD", "Aventura", "", "", 1991, true, false,
      {22, 163, 74, 255}, {234, 179, 8, 255}, {180, 83, 9, 255}},
-    {"Chrono Trigger", "Square", "RPG", 1995, true, false,
+    {"chrono", "Chrono Trigger", "Square", "RPG", "", "", 1995, true, false,
      {120, 53, 15, 255}, {217, 119, 6, 255}, {69, 26, 3, 255}},
-    {"Donkey Kong Country", "Rare", "Plataformas", 1994, false, false,
+    {"dkc", "Donkey Kong Country", "Rare", "Plataformas", "", "", 1994, false, false,
      {13, 148, 136, 255}, {245, 158, 11, 255}, {124, 45, 18, 255}},
-    {"Mega Man X", "Capcom", "Acción", 1993, false, true,
+    {"megamanx", "Mega Man X", "Capcom", "Acción", "", "", 1993, false, true,
      {30, 64, 175, 255}, {59, 130, 246, 255}, {88, 28, 135, 255}},
-    {"Final Fantasy VI", "Square", "RPG", 1994, false, false,
+    {"ff6", "Final Fantasy VI", "Square", "RPG", "", "", 1994, false, false,
      {76, 29, 149, 255}, {147, 51, 234, 255}, {30, 27, 75, 255}},
-    {"EarthBound", "Ape / HAL", "RPG", 1994, false, false,
+    {"earthbound", "EarthBound", "Ape / HAL", "RPG", "", "", 1994, false, false,
      {190, 24, 93, 255}, {244, 114, 182, 255}, {88, 28, 135, 255}},
-    {"F-Zero", "Nintendo EAD", "Carreras", 1990, false, false,
+    {"fzero", "F-Zero", "Nintendo EAD", "Carreras", "", "", 1990, false, false,
      {30, 58, 138, 255}, {14, 165, 233, 255}, {15, 23, 42, 255}},
-    {"Star Fox", "Nintendo EAD", "Shooter", 1993, false, false,
+    {"starfox", "Star Fox", "Nintendo EAD", "Shooter", "", "", 1993, false, false,
      {15, 23, 42, 255}, {71, 85, 105, 255}, {148, 163, 184, 255}},
-    {"Kirby Super Star", "HAL Laboratory", "Plataformas", 1996, false, true,
+    {"kirby", "Kirby Super Star", "HAL Laboratory", "Plataformas", "", "", 1996, false, true,
      {219, 39, 119, 255}, {251, 146, 60, 255}, {126, 34, 206, 255}},
-    {"Street Fighter II", "Capcom", "Lucha", 1992, false, false,
+    {"sf2", "Street Fighter II", "Capcom", "Lucha", "", "", 1992, false, false,
      {153, 27, 27, 255}, {239, 68, 68, 255}, {69, 10, 10, 255}},
-    {"Pilotwings", "Nintendo EAD", "Simulación", 1990, false, false,
+    {"pilotwings", "Pilotwings", "Nintendo EAD", "Simulación", "", "", 1990, false, false,
      {14, 116, 144, 255}, {34, 197, 94, 255}, {15, 23, 42, 255}},
-    {"ActRaiser", "Quintet", "Acción", 1990, false, false,
+    {"actraiser", "ActRaiser", "Quintet", "Acción", "", "", 1990, false, false,
      {88, 28, 135, 255}, {192, 38, 211, 255}, {30, 27, 75, 255}},
 };
 
@@ -92,10 +99,88 @@ Layout makeLayout(int width, int height)
     l.cardW = std::min(kCardW, (width - l.margin * 2 - l.gap * (kColumns - 1)) / kColumns);
     l.cardH = l.cardW * kCardH / kCardW;
     l.top = 92;
-    int bottom = 58;
-    int available = height - l.top - bottom;
+    int available = height - l.top - 58;
     l.visibleRows = std::max(1, (available + l.gap) / (l.cardH + l.gap));
     return l;
+}
+
+Color colorFromJson(const nlohmann::json &j, const char *key, Color fallback)
+{
+    if (!j.contains(key) || !j[key].is_string()) return fallback;
+    std::string s = j[key].get<std::string>();
+    if (s.size() != 7 || s[0] != '#') return fallback;
+    auto hex = [](char c) -> int {
+        if (c >= '0' && c <= '9') return c - '0';
+        if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+        if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+        return 0;
+    };
+    return {static_cast<uint8_t>(hex(s[1]) * 16 + hex(s[2])),
+            static_cast<uint8_t>(hex(s[3]) * 16 + hex(s[4])),
+            static_cast<uint8_t>(hex(s[5]) * 16 + hex(s[6])), 255};
+}
+
+std::string colorToJson(Color c)
+{
+    char buffer[8];
+    std::snprintf(buffer, sizeof(buffer), "#%02x%02x%02x", c.r, c.g, c.b);
+    return buffer;
+}
+
+std::vector<Game> loadGames()
+{
+    std::ifstream in("data/games.json");
+    if (!in) return kFallbackGames;
+
+    try {
+        nlohmann::json root;
+        in >> root;
+        std::vector<Game> games;
+        for (const auto &item : root.at("games")) {
+            Game g;
+            g.id = item.value("id", "");
+            g.title = item.value("title", "");
+            g.developer = item.value("developer", "");
+            g.genre = item.value("genre", "");
+            g.coverPath = item.value("coverPath", "");
+            g.backdropPath = item.value("backdropPath", "");
+            g.year = item.value("year", 0);
+            g.featured = item.value("featured", false);
+            g.favorite = item.value("favorite", false);
+            g.gradientTop = colorFromJson(item, "gradientTop", g.gradientTop);
+            g.gradientMid = colorFromJson(item, "gradientMid", g.gradientMid);
+            g.gradientBottom = colorFromJson(item, "gradientBottom", g.gradientBottom);
+            if (!g.id.empty() && !g.title.empty()) games.push_back(g);
+        }
+        return games;
+    } catch (const std::exception &e) {
+        std::fprintf(stderr, "games.json: %s\n", e.what());
+        return kFallbackGames;
+    }
+}
+
+void saveGames(const std::vector<Game> &games)
+{
+    nlohmann::json root;
+    root["games"] = nlohmann::json::array();
+    for (const Game &g : games) {
+        nlohmann::json item;
+        item["id"] = g.id;
+        item["title"] = g.title;
+        item["developer"] = g.developer;
+        item["genre"] = g.genre;
+        item["coverPath"] = g.coverPath;
+        item["backdropPath"] = g.backdropPath;
+        item["year"] = g.year;
+        item["featured"] = g.featured;
+        item["favorite"] = g.favorite;
+        item["gradientTop"] = colorToJson(g.gradientTop);
+        item["gradientMid"] = colorToJson(g.gradientMid);
+        item["gradientBottom"] = colorToJson(g.gradientBottom);
+        root["games"].push_back(item);
+    }
+    std::ofstream out("data/games.json", std::ios::trunc);
+    if (out) out << root.dump(2) << "\n";
 }
 
 void setColor(SDL_Renderer *r, Color c)
@@ -178,7 +263,7 @@ public:
 
     int draw(const std::string &text, int size, Color color, int x, int y)
     {
-        char key[256];
+        char key[320];
         std::snprintf(key, sizeof(key), "%d:%u:%u:%u:%s", size, color.r, color.g, color.b,
                       text.c_str());
         SDL_Texture *texture = nullptr;
@@ -295,9 +380,7 @@ void drawCard(SDL_Renderer *r, TextCache &text, GradientCache &gradients,
     int radius = std::max(10, w / 16);
 
     fillRoundRect(r, x - 5, y - 5, w + 10, h + 10, radius + 4, Color{0, 0, 0, 95});
-    if (focused) {
-        fillRoundRect(r, x - 3, y - 3, w + 6, h + 6, radius + 3, kFocus);
-    }
+    if (focused) fillRoundRect(r, x - 3, y - 3, w + 6, h + 6, radius + 3, kFocus);
     fillRoundRect(r, x, y, w, h, radius, kPanel);
 
     SDL_Texture *gradient = gradients.get(game, w - 2, coverH - 1, radius);
@@ -313,9 +396,7 @@ void drawCard(SDL_Renderer *r, TextCache &text, GradientCache &gradients,
         SDL_RenderCopy(r, icon, nullptr, &dst);
     }
 
-    if (game.favorite) {
-        drawStar(r, x + w - 24, y + 22, 11, 4, kGold);
-    }
+    if (game.favorite) drawStar(r, x + w - 24, y + 22, 11, 4, kGold);
 
     if (game.featured) {
         fillRoundRect(r, x + 10, y + coverH - 28, 78, 18, 6, Color{15, 23, 42, 170});
@@ -331,6 +412,17 @@ void drawCard(SDL_Renderer *r, TextCache &text, GradientCache &gradients,
     text.draw(game.developer + " · " + std::to_string(game.year), 12, kMuted,
               x + pad, y + coverH + 38);
     text.draw(game.genre, 12, Color{203, 213, 225, 255}, x + pad, y + coverH + 68);
+}
+
+bool gameTitleLess(const Game &a, const Game &b)
+{
+    std::string aa = a.title;
+    std::string bb = b.title;
+    std::transform(aa.begin(), aa.end(), aa.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    std::transform(bb.begin(), bb.end(), bb.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    return aa < bb;
 }
 
 } // namespace
@@ -363,6 +455,56 @@ int main(int, char **)
     GradientCache gradients(renderer);
     SDL_Texture *icon = IMG_LoadTexture(renderer, "assets/icon.png");
 
+    std::vector<Game> games = loadGames();
+    std::vector<int> visible;
+    bool favoritesOnly = false;
+    int focus = 0;
+    int scrollRow = 0;
+    std::string status = "Listo";
+
+    auto rebuildVisible = [&]() {
+        visible.clear();
+        for (int i = 0; i < static_cast<int>(games.size()); ++i) {
+            if (!favoritesOnly || games[i].favorite) visible.push_back(i);
+        }
+        std::sort(visible.begin(), visible.end(),
+                  [&](int a, int b) { return gameTitleLess(games[a], games[b]); });
+        if (visible.empty()) {
+            focus = 0;
+            scrollRow = 0;
+        } else {
+            focus = std::max(0, std::min(focus, static_cast<int>(visible.size()) - 1));
+        }
+    };
+
+    auto ensureVisible = [&]() {
+        int row = focus / kColumns;
+        int rows = static_cast<int>((visible.size() + kColumns - 1) / kColumns);
+        Layout layout = makeLayout(kWindowW, kWindowH);
+        if (row < scrollRow) scrollRow = row;
+        if (row >= scrollRow + layout.visibleRows) scrollRow = row - layout.visibleRows + 1;
+        scrollRow = std::max(0, std::min(scrollRow, std::max(0, rows - layout.visibleRows)));
+    };
+
+    auto launch = [&]() {
+        if (!visible.empty()) {
+            status = "Jugando: " + games[visible[focus]].title;
+        }
+    };
+
+    auto toggleFavorite = [&]() {
+        if (visible.empty()) return;
+        Game &g = games[visible[focus]];
+        g.favorite = !g.favorite;
+        status = g.favorite ? "Favorito agregado" : "Favorito quitado";
+        saveGames(games);
+        rebuildVisible();
+        ensureVisible();
+    };
+
+    rebuildVisible();
+    ensureVisible();
+
     SDL_GameController *controller = nullptr;
     for (int i = 0; i < SDL_NumJoysticks(); ++i) {
         if (SDL_IsGameController(i)) {
@@ -371,41 +513,41 @@ int main(int, char **)
         }
     }
 
-    Layout layout = makeLayout(kWindowW, kWindowH);
-    int focus = 0;
-    int scrollRow = 0;
     bool running = true;
-
-    auto ensureVisible = [&]() {
-        int row = focus / kColumns;
-        int rows = static_cast<int>(kGames.size()) / kColumns + 1;
-        if (row < scrollRow) scrollRow = row;
-        if (row >= scrollRow + layout.visibleRows) {
-            scrollRow = row - layout.visibleRows + 1;
-        }
-        scrollRow = std::max(0, std::min(scrollRow, std::max(0, rows - layout.visibleRows)));
-    };
-
     while (running) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) running = false;
+
             if (event.type == SDL_KEYDOWN) {
                 switch (event.key.keysym.sym) {
                     case SDLK_LEFT:
-                        focus = std::max(0, focus - 1);
+                        if (!visible.empty()) focus = std::max(0, focus - 1);
                         ensureVisible();
                         break;
                     case SDLK_RIGHT:
-                        focus = std::min(static_cast<int>(kGames.size()) - 1, focus + 1);
+                        if (!visible.empty()) focus = std::min(static_cast<int>(visible.size()) - 1, focus + 1);
                         ensureVisible();
                         break;
                     case SDLK_UP:
-                        focus = std::max(0, focus - kColumns);
+                        if (!visible.empty()) focus = std::max(0, focus - kColumns);
                         ensureVisible();
                         break;
                     case SDLK_DOWN:
-                        focus = std::min(static_cast<int>(kGames.size()) - 1, focus + kColumns);
+                        if (!visible.empty()) focus = std::min(static_cast<int>(visible.size()) - 1, focus + kColumns);
+                        ensureVisible();
+                        break;
+                    case SDLK_a:
+                    case SDLK_RETURN:
+                        launch();
+                        break;
+                    case SDLK_x:
+                        toggleFavorite();
+                        break;
+                    case SDLK_y:
+                        favoritesOnly = !favoritesOnly;
+                        status = favoritesOnly ? "Filtro: solo favoritos" : "Filtro: todos";
+                        rebuildVisible();
                         ensureVisible();
                         break;
                     case SDLK_ESCAPE:
@@ -415,42 +557,81 @@ int main(int, char **)
                         break;
                 }
             }
+
             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
                 switch (event.cbutton.button) {
                     case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
-                        focus = std::max(0, focus - 1);
+                        if (!visible.empty()) focus = std::max(0, focus - 1);
                         ensureVisible();
                         break;
                     case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
-                        focus = std::min(static_cast<int>(kGames.size()) - 1, focus + 1);
+                        if (!visible.empty()) focus = std::min(static_cast<int>(visible.size()) - 1, focus + 1);
                         ensureVisible();
                         break;
                     case SDL_CONTROLLER_BUTTON_DPAD_UP:
-                        focus = std::max(0, focus - kColumns);
+                        if (!visible.empty()) focus = std::max(0, focus - kColumns);
                         ensureVisible();
                         break;
                     case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
-                        focus = std::min(static_cast<int>(kGames.size()) - 1, focus + kColumns);
+                        if (!visible.empty()) focus = std::min(static_cast<int>(visible.size()) - 1, focus + kColumns);
+                        ensureVisible();
+                        break;
+                    case SDL_CONTROLLER_BUTTON_A:
+                        launch();
+                        break;
+                    case SDL_CONTROLLER_BUTTON_X:
+                        toggleFavorite();
+                        break;
+                    case SDL_CONTROLLER_BUTTON_Y:
+                        favoritesOnly = !favoritesOnly;
+                        status = favoritesOnly ? "Filtro: solo favoritos" : "Filtro: todos";
+                        rebuildVisible();
                         ensureVisible();
                         break;
                     default:
                         break;
                 }
             }
+
             if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+                Layout layout = makeLayout(kWindowW, kWindowH);
                 int col = (event.button.x - layout.margin) / (layout.cardW + layout.gap);
                 int row = (event.button.y - layout.top) / (layout.cardH + layout.gap);
                 if (col >= 0 && col < kColumns) {
                     int index = (scrollRow + row) * kColumns + col;
-                    if (index >= 0 && index < static_cast<int>(kGames.size())) {
-                        focus = index;
-                        ensureVisible();
+                    if (index >= 0 && index < static_cast<int>(visible.size())) {
+                        if (index == focus) {
+                            launch();
+                        } else {
+                            focus = index;
+                            ensureVisible();
+                        }
+                    }
+                }
+            }
+
+            if (event.type == SDL_FINGERDOWN) {
+                Layout layout = makeLayout(kWindowW, kWindowH);
+                int px = static_cast<int>(event.tfinger.x * kWindowW);
+                int py = static_cast<int>(event.tfinger.y * kWindowH);
+                int col = (px - layout.margin) / (layout.cardW + layout.gap);
+                int row = (py - layout.top) / (layout.cardH + layout.gap);
+                if (col >= 0 && col < kColumns) {
+                    int index = (scrollRow + row) * kColumns + col;
+                    if (index >= 0 && index < static_cast<int>(visible.size())) {
+                        if (index == focus) {
+                            launch();
+                        } else {
+                            focus = index;
+                            ensureVisible();
+                        }
                     }
                 }
             }
         }
 
-        // Background.
+        Layout layout = makeLayout(kWindowW, kWindowH);
+
         for (int y = 0; y < kWindowH; y += 8) {
             float t = static_cast<float>(y) / kWindowH;
             fillRect(renderer, 0, y, kWindowW, 8,
@@ -459,32 +640,33 @@ int main(int, char **)
                            static_cast<uint8_t>(24 + 12 * t), 255});
         }
 
-        // Header.
         text.draw("RetroSNES U", 30, kText, 40, 22);
-        text.draw(std::to_string(kGames.size()) + " juegos", 13, kMuted, 42, 60);
-        text.draw("5 COLUMNAS", 12, kMuted, kWindowW - 150, 30);
+        text.draw(std::to_string(visible.size()) + " juegos", 13, kMuted, 42, 60);
+        std::string filterLabel = favoritesOnly ? "FAVORITOS: SOLO" : "FAVORITOS: TODOS";
+        text.draw(filterLabel, 12, favoritesOnly ? kGold : kMuted, kWindowW - 190, 30);
 
-        // Virtualized rows: only the visible rows are drawn.
         int first = scrollRow;
-        int last = std::min(static_cast<int>((kGames.size() + kColumns - 1) / kColumns),
+        int last = std::min(static_cast<int>((visible.size() + kColumns - 1) / kColumns),
                             scrollRow + layout.visibleRows);
         for (int row = first; row < last; ++row) {
             for (int col = 0; col < kColumns; ++col) {
                 int index = row * kColumns + col;
-                if (index >= static_cast<int>(kGames.size())) break;
+                if (index >= static_cast<int>(visible.size())) break;
                 int x = layout.margin + col * (layout.cardW + layout.gap);
                 int y = layout.top + (row - scrollRow) * (layout.cardH + layout.gap);
-                drawCard(renderer, text, gradients, icon, kGames[index], x, y,
+                drawCard(renderer, text, gradients, icon, games[visible[index]], x, y,
                          layout.cardW, layout.cardH, index == focus);
             }
         }
 
-        // Footer.
+        if (visible.empty()) {
+            text.draw("No hay juegos con este filtro", 20, kMuted, kWindowW / 2 - 150, kWindowH / 2);
+        }
+
         fillRect(renderer, 0, kWindowH - 52, kWindowW, 52, Color{7, 12, 22, 230});
         fillRect(renderer, 0, kWindowH - 52, kWindowW, 1, Color{255, 255, 255, 26});
-        text.draw("D-PAD  NAVEGAR", 12, kMuted, 40, kWindowH - 32);
-        text.draw("A  JUGAR      X  FAVORITO", 12, kMuted, 210, kWindowH - 32);
-        text.draw("PLUS  MENÚ", 12, kGold, kWindowW - 130, kWindowH - 32);
+        text.draw("D-PAD  NAVEGAR     A  JUGAR     X  FAVORITO     Y  FILTRO", 12, kMuted, 40, kWindowH - 32);
+        text.draw(status, 12, kGold, kWindowW - 260, kWindowH - 32);
 
         SDL_RenderPresent(renderer);
         SDL_Delay(16);

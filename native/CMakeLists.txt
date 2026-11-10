@@ -91,6 +91,7 @@ endfunction()
 function(add_static_retrou target system label app_name core)
     add_executable(${target}
         src/main.cpp
+        src/wpad_input.cpp
         src/rpl_core.cpp
         src/rpl_loader.cpp
         ${RETRO_COMMON_SOURCES}

@@ -4,6 +4,8 @@
 #include <curl/curl.h>
 
 #include "rpl_core.hpp"
+#include "wpad_input.hpp"
+#include <padscore/wpad.h>
 #include <whb/sdcard.h>
 #include <sysapp/launch.h>
 
@@ -164,6 +166,27 @@ struct AppState {
 
 SDL_GameController *g_game_port[2] = {nullptr, nullptr};
 std::vector<SDL_GameController *> g_controllers;
+std::vector<int> g_wpad_channels;
+int g_wpad_port[2] = {-1, -1};
+
+int controller_device_count()
+{
+    return static_cast<int>(g_controllers.size() + g_wpad_channels.size());
+}
+
+std::string controller_device_name(int index)
+{
+    if (index < 0) return "Sin mando";
+    if (index < static_cast<int>(g_controllers.size())) {
+        const char *name = SDL_GameControllerName(g_controllers[index]);
+        return name ? name : "Mando";
+    }
+    int wpad = index - static_cast<int>(g_controllers.size());
+    if (wpad < static_cast<int>(g_wpad_channels.size())) {
+        return "Wii U Pro Controller (canal " + std::to_string(g_wpad_channels[wpad]) + ")";
+    }
+    return "Sin mando";
+}
 void select_game_controllers(const AppState &app);
 
 SDL_Color rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255)
@@ -1728,12 +1751,7 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
         draw_text(renderer, cache, body_font,
                   app.control_port == 0 ? "CONTROLLER 1" : "CONTROLLER 2",
                   content_x + 24, content_y + 148, rgba(current_theme(app).accent));
-        std::string device = "Sin mando";
-        int index = app.controller_port[app.control_port];
-        if (index >= 0 && index < static_cast<int>(g_controllers.size())) {
-            const char *name = SDL_GameControllerName(g_controllers[index]);
-            device = name ? name : "Mando";
-        }
+        std::string device = controller_device_name(app.controller_port[app.control_port]);
         draw_text(renderer, cache, small_font, "Mando: " + device,
                   content_x + 24, content_y + 170, rgba(current_theme(app).text));
         int y = content_y + 194;
@@ -1848,9 +1866,9 @@ void settings_action(AppState &app, int action)
             app.dirty = true;
         }
     } else if (action == 8) {
-        if (app.settings_index == 2 && !g_controllers.empty()) {
+        if (app.settings_index == 2 && controller_device_count() > 0) {
             app.controller_port[app.control_port] =
-                (app.controller_port[app.control_port] + 1) % g_controllers.size();
+                (app.controller_port[app.control_port] + 1) % controller_device_count();
             select_game_controllers(app);
             app.dirty = true;
             app.message = "Mando del juego cambiado";
@@ -1965,6 +1983,9 @@ void open_all_controllers()
         SDL_GameController *controller = SDL_GameControllerOpen(i);
         if (controller) g_controllers.push_back(controller);
     }
+    wpad_input_init();
+    wpad_input_poll();
+    g_wpad_channels = wpad_input_channels();
 }
 
 SDL_GameController *menu_controller()
@@ -1982,8 +2003,15 @@ void select_game_controllers(const AppState &app)
 {
     for (int port = 0; port < 2; ++port) {
         int index = app.controller_port[port];
-        g_game_port[port] = (index >= 0 && index < static_cast<int>(g_controllers.size()))
-                                ? g_controllers[index] : nullptr;
+        if (index >= 0 && index < static_cast<int>(g_controllers.size())) {
+            g_game_port[port] = g_controllers[index];
+            g_wpad_port[port] = -1;
+        } else {
+            g_game_port[port] = nullptr;
+            int wpad = index - static_cast<int>(g_controllers.size());
+            g_wpad_port[port] = (wpad >= 0 && wpad < static_cast<int>(g_wpad_channels.size()))
+                                    ? g_wpad_channels[wpad] : -1;
+        }
     }
 }
 
@@ -2301,6 +2329,7 @@ void run_static_core(AppState &app, const std::string &rom_path,
     core.setSaveDirectory(system_save_directory(app.library.sd_root));
     core.setController(controller);
     core.setControllers(g_game_port[0], g_game_port[1]);
+    core.setWpadPorts(g_wpad_port[0], g_wpad_port[1]);
     core.setControlMaps(app.control_maps);
     core.setVideoOptions(app.video_aspect, app.video_scale, app.video_filter);
     core.setAudioOptions(app.audio_volume, app.audio_latency);
@@ -2569,6 +2598,24 @@ int main(int argc, char **argv)
     boot_log("before main loop");
 
     while (app.running) {
+        wpad_input_poll();
+        static uint32_t last_wpad_buttons = 0;
+        if (g_wpad_port[0] >= 0) {
+            WpadSnapshot pad = wpad_input_state(g_wpad_port[0]);
+            uint32_t pressed = pad.buttons & ~last_wpad_buttons;
+            last_wpad_buttons = pad.buttons;
+            if (pressed) {
+                if (pressed & WPAD_PRO_BUTTON_UP) { app.game = std::max(0, app.game - 5); ui_dirty = true; }
+                if (pressed & WPAD_PRO_BUTTON_DOWN) { app.game = std::min(static_cast<int>(app.visible.size()) - 1, app.game + 5); ui_dirty = true; }
+                if (pressed & WPAD_PRO_BUTTON_LEFT) { app.game = std::max(0, app.game - 1); ui_dirty = true; }
+                if (pressed & WPAD_PRO_BUTTON_RIGHT) { app.game = std::min(static_cast<int>(app.visible.size()) - 1, app.game + 1); ui_dirty = true; }
+                if (pressed & WPAD_PRO_BUTTON_A) handle_action(app, 6);
+                if (pressed & WPAD_PRO_BUTTON_PLUS) { app.sidebar_open = !app.sidebar_open; ui_dirty = true; }
+                if (pressed & WPAD_PRO_BUTTON_B) { app.settings_screen = false; app.sidebar_open = false; ui_dirty = true; }
+            }
+        } else {
+            last_wpad_buttons = 0;
+        }
         if (!controller) {
             bool was_connected = connected;
             open_all_controllers();

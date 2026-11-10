@@ -1,4 +1,6 @@
 #include "rpl_core.hpp"
+#include "wpad_input.hpp"
+#include <padscore/wpad.h>
 
 #include <cstdio>
 #include <cstring>
@@ -221,6 +223,7 @@ void RplCore::inputPollCallback()
 
 void RplCore::pollInput()
 {
+    wpad_input_poll();
     for (int port = 0; port < 2; ++port) {
         uint16_t state = 0;
         SDL_GameController *controller = controllers_[port];
@@ -249,6 +252,23 @@ void RplCore::pollInput()
             if (lx > deadzone) state |= 1u << RETRO_DEVICE_ID_JOYPAD_RIGHT;
             if (ly < -deadzone) state |= 1u << RETRO_DEVICE_ID_JOYPAD_UP;
             if (ly > deadzone) state |= 1u << RETRO_DEVICE_ID_JOYPAD_DOWN;
+        }
+        if (wpad_ports_[port] >= 0) {
+            WpadSnapshot pad = wpad_input_state(wpad_ports_[port]);
+            if (pad.connected) {
+                if (pad.buttons & WPAD_PRO_BUTTON_A) state |= 1u << RETRO_DEVICE_ID_JOYPAD_A;
+                if (pad.buttons & WPAD_PRO_BUTTON_B) state |= 1u << RETRO_DEVICE_ID_JOYPAD_B;
+                if (pad.buttons & WPAD_PRO_BUTTON_X) state |= 1u << RETRO_DEVICE_ID_JOYPAD_X;
+                if (pad.buttons & WPAD_PRO_BUTTON_Y) state |= 1u << RETRO_DEVICE_ID_JOYPAD_Y;
+                if (pad.buttons & WPAD_PRO_BUTTON_L) state |= 1u << RETRO_DEVICE_ID_JOYPAD_L;
+                if (pad.buttons & WPAD_PRO_BUTTON_R) state |= 1u << RETRO_DEVICE_ID_JOYPAD_R;
+                if (pad.buttons & WPAD_PRO_BUTTON_PLUS) state |= 1u << RETRO_DEVICE_ID_JOYPAD_START;
+                if (pad.buttons & WPAD_PRO_BUTTON_MINUS) state |= 1u << RETRO_DEVICE_ID_JOYPAD_SELECT;
+                if (pad.buttons & WPAD_PRO_BUTTON_UP) state |= 1u << RETRO_DEVICE_ID_JOYPAD_UP;
+                if (pad.buttons & WPAD_PRO_BUTTON_DOWN) state |= 1u << RETRO_DEVICE_ID_JOYPAD_DOWN;
+                if (pad.buttons & WPAD_PRO_BUTTON_LEFT) state |= 1u << RETRO_DEVICE_ID_JOYPAD_LEFT;
+                if (pad.buttons & WPAD_PRO_BUTTON_RIGHT) state |= 1u << RETRO_DEVICE_ID_JOYPAD_RIGHT;
+            }
         }
         input_states_[port] = state;
         if (port == 0) input_state_ = state;

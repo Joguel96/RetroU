@@ -31,6 +31,7 @@ public:
     }
     void setControlProfile(int profile) { control_profile_ = profile; }
     void setControlMaps(const std::array<std::array<int, 8>, 2> &maps) { control_maps_ = maps; }
+    void setWpadPorts(int first, int second) { wpad_ports_[0] = first; wpad_ports_[1] = second; }
     void setVideoOptions(int aspect, int scale, int filter) {
         video_aspect_ = aspect;
         video_scale_ = scale;
@@ -100,6 +101,7 @@ private:
     int video_aspect_ = 0;
     int video_scale_ = 0;
     int video_filter_ = 0;
+    int wpad_ports_[2] = {-1, -1};
     SDL_GameController *controller_ = nullptr;
     std::array<SDL_GameController *, 2> controllers_ = {nullptr, nullptr};
     uint16_t input_state_ = 0;

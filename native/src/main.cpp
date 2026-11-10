@@ -56,6 +56,27 @@ const ConsoleDef kConsoles[] = {
 
 const int kConsoleCount = static_cast<int>(sizeof(kConsoles) / sizeof(kConsoles[0]));
 
+struct ThemePreset {
+    const char *id;
+    const char *name;
+    uint32_t backgroundTop;
+    uint32_t backgroundBottom;
+    uint32_t panel;
+    uint32_t focus;
+    uint32_t accent;
+    uint32_t text;
+    uint32_t muted;
+};
+
+const ThemePreset kThemes[] = {
+    {"gray",  "Gris",       0x242A30, 0x15191D, 0x2C333B, 0xD8DDE2, 0xAEB7C0, 0xF1F5F9, 0x94A3B8},
+    {"blue",  "Azul RetroU",0x080D18, 0x03060D, 0x0F172A, 0x4DA3FF, 0xF5D97F, 0xF8FAFC, 0x94A3B8},
+    {"green", "Verde/Teal", 0x0B1F1C, 0x07110F, 0x102A25, 0x2DD4BF, 0x5EEAD4, 0xF0FDFA, 0x99F6E4},
+    {"gold",  "Dorado OoT", 0x11160D, 0x070A05, 0x1C2414, 0xD4AF37, 0xE7C85A, 0xFEFCE8, 0xC4B47A},
+    {"pink",  "Rosa",       0x1B0F1A, 0x0D060C, 0x2A1426, 0xF472B6, 0xFB7185, 0xFDF2F8, 0xF9A8D4},
+};
+const int kThemeCount = static_cast<int>(sizeof(kThemes) / sizeof(kThemes[0]));
+
 struct RomEntry {
     std::string title;
     std::string path;
@@ -90,6 +111,7 @@ struct AppState {
     bool dirty = false;
     bool favorites_only = false;
     int settings_index = 0;
+    int theme_index = 0;
     int sidebar_index = 0;
     int sort_mode = 0;       /* 0 = name, 1 = region */
     int region_filter = 0;   /* 0 = all, 1 = USA, 2 = Europe, 3 = Japan */
@@ -352,6 +374,40 @@ void save_system_config(const AppState &app)
     out << "sort=" << (app.sort_mode == 1 ? "region" : "name") << "\n";
 }
 
+void load_theme(AppState &app)
+{
+    std::string path = join_path(join_path(app.library.sd_root, "retrou"), "config/theme.conf");
+    std::ifstream in(path);
+    std::string line;
+    while (std::getline(in, line)) {
+        if (line.rfind("theme=", 0) != 0) continue;
+        std::string id = line.substr(6);
+        for (int i = 0; i < kThemeCount; ++i) {
+            if (id == kThemes[i].id) {
+                app.theme_index = i;
+                return;
+            }
+        }
+    }
+}
+
+void save_theme(const AppState &app)
+{
+    std::string path = join_path(join_path(app.library.sd_root, "retrou"), "config/theme.conf");
+    std::ofstream out(path, std::ios::trunc);
+    if (out) out << "theme=" << kThemes[app.theme_index].id << "\n";
+}
+
+const ThemePreset &current_theme(const AppState &app)
+{
+    return kThemes[std::max(0, std::min(kThemeCount - 1, app.theme_index))];
+}
+
+uint32_t theme_color(uint32_t color, uint8_t alpha = 255)
+{
+    return (color & 0x00FFFFFF) | (static_cast<uint32_t>(alpha) << 24);
+}
+
 void load_favorites(AppState &app)
 {
     std::ifstream in(join_path(system_config_dir(app.library.sd_root), "favorites.conf"));
@@ -390,7 +446,7 @@ void ensure_system_dirs(const std::string &sd_root)
 
     mkdir(join_path(join_path(retro, "config"), "system").c_str(), 0777);
     write_default_file(join_path(join_path(retro, "config"), "theme.conf"),
-                       "theme=retroui\nstyle=crystal\n");
+                       "theme=gray\nstyle=crystal\n");
     std::string dir = join_path(join_path(retro, "config"), system);
     write_default_file(join_path(dir, system + ".conf"),
                        "sort=name\n");
@@ -710,7 +766,8 @@ void draw_glass_panel(SDL_Renderer *renderer, int x, int y, int w, int h, int ra
     outline_rounded_rect(renderer, x, y, w, h, radius, rgba(255, 255, 255, 62));
 }
 
-void draw_background(SDL_Renderer *renderer, int width, int height, uint32_t accent)
+void draw_background(SDL_Renderer *renderer, int width, int height, uint32_t accent,
+                     uint32_t top_color = 0x080D18, uint32_t bottom_color = 0x03060D)
 {
     /* A handful of bands instead of one draw call per scanline. The old
      * 720+ lines per screen per frame were the main cost on Wii U. */
@@ -719,9 +776,12 @@ void draw_background(SDL_Renderer *renderer, int width, int height, uint32_t acc
         int y0 = band * height / bands;
         int y1 = (band + 1) * height / bands;
         float t = static_cast<float>(band) / static_cast<float>(bands - 1);
-        uint8_t r = static_cast<uint8_t>(8 + 8 * t);
-        uint8_t g = static_cast<uint8_t>(13 + 8 * t);
-        uint8_t b = static_cast<uint8_t>(24 + 14 * t);
+        uint8_t r = static_cast<uint8_t>(((top_color >> 16) & 0xFF) * (1.0f - t) +
+                                         ((bottom_color >> 16) & 0xFF) * t);
+        uint8_t g = static_cast<uint8_t>(((top_color >> 8) & 0xFF) * (1.0f - t) +
+                                         ((bottom_color >> 8) & 0xFF) * t);
+        uint8_t b = static_cast<uint8_t>((top_color & 0xFF) * (1.0f - t) +
+                                         (bottom_color & 0xFF) * t);
         fill_rect(renderer, 0, y0, width, y1 - y0, rgba(r, g, b));
     }
 
@@ -822,8 +882,9 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
     const int columns = 5;
     const int rows = tv ? 3 : 2;
 
-    const uint32_t accent = app.system == 0 ? 0xF5D97F : kConsoles[app.system - 1].color;
-    draw_background(renderer, width, height, accent);
+    const uint32_t accent = current_theme(app).accent;
+    draw_background(renderer, width, height, accent,
+                    current_theme(app).backgroundTop, current_theme(app).backgroundBottom);
     draw_header(renderer, cache, title_font, small_font, width, height, tv, connected);
 
     const int content_x = margin;
@@ -1069,7 +1130,8 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
                      AppState &app, int width, int height, bool tv, bool connected)
 {
     const int margin = tv ? 28 : 18;
-    draw_background(renderer, width, height, 0x7A8794);
+    draw_background(renderer, width, height, current_theme(app).accent,
+                    current_theme(app).backgroundTop, current_theme(app).backgroundBottom);
     draw_header(renderer, cache, title_font, small_font, width, height, tv, connected);
 
     const int panel_x = margin;
@@ -1134,8 +1196,13 @@ void settings_action(AppState &app, int action)
     } else if (action == 1) {
         app.settings_index = (app.settings_index + 1) % 5;
     } else if (action == 6) {
+        if (app.settings_index == 0) {
+            app.theme_index = (app.theme_index + 1) % kThemeCount;
+            app.message = std::string("Tema: ") + current_theme(app).name;
+        } else {
+            app.message = "Cambio temporal: pulsa + para guardar";
+        }
         app.dirty = true;
-        app.message = "Cambio temporal: pulsa + para guardar";
     } else if (action == 9) {
         app.settings_screen = false;
     }
@@ -1666,6 +1733,7 @@ int main(int argc, char **argv)
 #endif
     rebuild_indexes(app);
     load_system_config(app);
+    load_theme(app);
     load_favorites(app);
     refresh_visible(app);
     if (app.library.roms.empty()) {
@@ -1756,6 +1824,7 @@ int main(int argc, char **argv)
                     case SDL_CONTROLLER_BUTTON_START:
                         if (app.settings_screen) {
                             app.dirty = false;
+                            save_theme(app);
                             app.message = "Cambios guardados";
                         } else {
                             app.sidebar_open = !app.sidebar_open;

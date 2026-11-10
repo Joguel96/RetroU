@@ -709,32 +709,7 @@ SDL_Texture *cover_for(SDL_Renderer *renderer, const RomEntry &game)
         if (it != g_covers.end() && it->second) return it->second;
         struct stat info;
         if (stat(path.c_str(), &info) != 0) continue;
-        SDL_Surface *loaded = IMG_Load(path.c_str());
-        if (!loaded) continue;
-        SDL_Surface *surface = SDL_ConvertSurfaceFormat(loaded, SDL_PIXELFORMAT_ARGB8888, 0);
-        SDL_FreeSurface(loaded);
-        if (!surface) continue;
-        SDL_LockSurface(surface);
-        int radius = std::min(24, std::min(surface->w, surface->h) / 8);
-        for (int py = 0; py < surface->h; ++py) {
-            for (int px = 0; px < surface->w; ++px) {
-                int cx = -1, cy = -1;
-                if (px < radius && py < radius) { cx = radius; cy = radius; }
-                else if (px >= surface->w - radius && py < radius) {
-                    cx = surface->w - radius - 1; cy = radius;
-                }
-                if (cx >= 0) {
-                    int dx = px - cx, dy = py - cy;
-                    if (dx * dx + dy * dy > radius * radius) {
-                        *reinterpret_cast<uint32_t *>(
-                            static_cast<uint8_t *>(surface->pixels) + py * surface->pitch + px * 4) = 0;
-                    }
-                }
-            }
-        }
-        SDL_UnlockSurface(surface);
-        SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-        SDL_FreeSurface(surface);
+        SDL_Texture *texture = IMG_LoadTexture(renderer, path.c_str());
         g_covers[key] = texture;
         if (texture) return texture;    }
     return nullptr;

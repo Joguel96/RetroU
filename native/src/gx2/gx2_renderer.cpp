@@ -285,6 +285,7 @@ void beginFrame(Color clear)
 
     // Enable straight alpha blending for every draw in this frame.
     GX2SetColorControl(GX2_LOGIC_OP_COPY, 0xFF, FALSE, TRUE);
+    GX2SetDepthOnlyControl(FALSE, FALSE, GX2_COMPARE_FUNC_ALWAYS);
     GX2SetBlendControl(GX2_RENDER_TARGET_0,
                        GX2_BLEND_MODE_SRC_ALPHA,
                        GX2_BLEND_MODE_INV_SRC_ALPHA,

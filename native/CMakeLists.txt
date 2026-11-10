@@ -197,53 +197,63 @@ wut_create_wuhb(retrou_gx2_diag
     DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/nes/drc-splash.png"
 )
 
-# GX2 core integration test (NES): library + static core + GX2 frame present.
-add_executable(retrou_nes_gx2 EXCLUDE_FROM_ALL
-    src/gx2/gx2_core_test_main.cpp
-    src/gx2/gx2_renderer.cpp
-    src/gx2/gx2_text.cpp
-    src/gx2/gx2_image.cpp
-    src/gx2/retrou_data.cpp
-    src/wpad_input.cpp
-    src/rpl_core.cpp
-    src/rpl_loader.cpp
-    ${RETRO_COMMON_SOURCES}
-    "${FONT_REGULAR_OBJ}"
-)
-set_source_files_properties("${FONT_REGULAR_OBJ}"
-    PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
-target_include_directories(retrou_nes_gx2 PRIVATE
-    src
-    "${LIBRETRO_COMMON}/include"
-    /opt/devkitpro/wut/include
-    /opt/devkitpro/portlibs/wiiu/include
-    /opt/devkitpro/portlibs/wiiu/include/SDL2
-    /opt/devkitpro/portlibs/ppc/include
-    /opt/devkitpro/portlibs/ppc/include/freetype2
-)
-target_compile_definitions(retrou_nes_gx2 PRIVATE RETROU_STATIC_CORE=1)
-target_compile_options(retrou_nes_gx2 PRIVATE -Wall -Wextra)
-target_link_libraries(retrou_nes_gx2 PRIVATE
-    "${FCEUMM_CORE}"
-    m
-    z
-    SDL2
-    freetype
-    png
-    bz2
-    brotlidec
-    brotlicommon
-)
-wut_create_rpx(retrou_nes_gx2)
-wut_create_wuhb(retrou_nes_gx2
-    CONTENT    "${CMAKE_CURRENT_SOURCE_DIR}/content"
-    NAME       "RetroU GX2 NES"
-    SHORTNAME  "RetroU GX2 NES"
-    AUTHOR     "joguel96"
-    ICON       "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/nes/icon.png"
-    TVSPLASH   "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/nes/tv-splash.png"
-    DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/nes/drc-splash.png"
-)
+# GX2 frontend per console: library UI + static core + GX2 frame present.
+function(add_gx2_retrou target system label app_name core)
+    add_executable(${target} EXCLUDE_FROM_ALL
+        src/gx2/gx2_core_test_main.cpp
+        src/gx2/gx2_renderer.cpp
+        src/gx2/gx2_text.cpp
+        src/gx2/gx2_image.cpp
+        src/gx2/retrou_data.cpp
+        src/wpad_input.cpp
+        src/rpl_core.cpp
+        src/rpl_loader.cpp
+        ${RETRO_COMMON_SOURCES}
+        "${FONT_REGULAR_OBJ}"
+    )
+    set_source_files_properties("${FONT_REGULAR_OBJ}"
+        PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
+    target_include_directories(${target} PRIVATE
+        src
+        "${LIBRETRO_COMMON}/include"
+        /opt/devkitpro/wut/include
+        /opt/devkitpro/portlibs/wiiu/include
+        /opt/devkitpro/portlibs/wiiu/include/SDL2
+        /opt/devkitpro/portlibs/ppc/include
+        /opt/devkitpro/portlibs/ppc/include/freetype2
+    )
+    target_compile_definitions(${target} PRIVATE
+        RETROU_STATIC_CORE=1
+        RETROU_CORE_SYSTEM="${system}"
+        RETROU_CORE_LABEL="${label}"
+    )
+    target_compile_options(${target} PRIVATE -Wall -Wextra)
+    target_link_libraries(${target} PRIVATE
+        "${core}"
+        m
+        z
+        SDL2
+        freetype
+        png
+        bz2
+        brotlidec
+        brotlicommon
+    )
+    wut_create_rpx(${target})
+    wut_create_wuhb(${target}
+        CONTENT    "${CMAKE_CURRENT_SOURCE_DIR}/content"
+        NAME       "${app_name}"
+        SHORTNAME  "${app_name}"
+        AUTHOR     "joguel96"
+        ICON       "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/${system}/icon.png"
+        TVSPLASH   "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/${system}/tv-splash.png"
+        DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/${system}/drc-splash.png"
+    )
+endfunction()
+
+add_gx2_retrou(retrou_nes_gx2 nes "NES" "RetroU GX2 NES" "${FCEUMM_CORE}")
+add_gx2_retrou(retrou_snes_gx2 snes "SNES" "RetroU GX2 SNES" "${SNES9X_CORE}")
+add_gx2_retrou(retrou_gba_gx2 gba "GBA" "RetroU GX2 GBA" "${MGBA_CORE}")
 
 add_custom_target(stage_wuhb ALL
     COMMAND "${CMAKE_COMMAND}" -E make_directory

@@ -22,6 +22,13 @@ extern const unsigned char _binary_ui_ttf_end[];
 using namespace retrou;
 using namespace retrou::gx2;
 
+#ifndef RETROU_CORE_SYSTEM
+#define RETROU_CORE_SYSTEM "nes"
+#endif
+#ifndef RETROU_CORE_LABEL
+#define RETROU_CORE_LABEL "NES"
+#endif
+
 static SDL_GameController *openGameController()
 {
     for (int i = 0; i < SDL_NumJoysticks(); ++i) {
@@ -64,7 +71,7 @@ int main()
 
     Library library;
     library.sd_root = mountSd();
-    scanRoms(library, "nes");
+    scanRoms(library, RETROU_CORE_SYSTEM);
 
     const int maxCards = 10;
     const int count = std::min(maxCards, static_cast<int>(library.roms.size()));
@@ -81,7 +88,7 @@ int main()
     // Covers: real PNG when present, otherwise a procedural gradient.
     std::vector<Texture> covers(count);
     for (int i = 0; i < count; ++i) {
-        std::string cp = coverPath(library.sd_root, "nes", library.roms[i].title);
+        std::string cp = coverPath(library.sd_root, RETROU_CORE_SYSTEM, library.roms[i].title);
         Texture real = image::loadFromFile(cp.c_str());
         if (real >= 0) {
             covers[i] = real;
@@ -97,11 +104,11 @@ int main()
     for (int i = 0; i < count; ++i) {
         titles[i] = text::fitText(library.roms[i].title.c_str(), 15, cardW - 24.0f);
         text::prewarm(titles[i].c_str(), 15);
-        text::prewarm("NES", 12);
+        text::prewarm(RETROU_CORE_LABEL, 12);
     }
     text::prewarm("Biblioteca", 34);
     text::prewarm("FILTRAR Y ORGANIZAR", 16);
-    text::prewarm("Sin ROMs en sd:/retrou/roms/nes/", 24);
+    text::prewarm("Sin ROMs en sd:/retrou/roms/" RETROU_CORE_SYSTEM "/", 24);
     text::prewarm("A  JUGAR    B  VOLVER    MINUS+PLUS  SALIR", 15);
 
     RplCore core;
@@ -109,7 +116,7 @@ int main()
     if (!core.loadStaticCore(nullptr, nullptr, error)) {
         return 1;
     }
-    core.setSaveDirectory("/vol/external01/retrou/saves/nes/save");
+    core.setSaveDirectory("/vol/external01/retrou/saves/" RETROU_CORE_SYSTEM "/save");
     SDL_GameController *controller = openGameController();
     core.setControllers(controller, nullptr);
 
@@ -137,7 +144,7 @@ int main()
                 if (vpad.trigger & VPAD_BUTTON_B) {
                     core.unload();
                     core.loadStaticCore(nullptr, nullptr, error);
-                    core.setSaveDirectory("/vol/external01/retrou/saves/nes/save");
+                    core.setSaveDirectory("/vol/external01/retrou/saves/" RETROU_CORE_SYSTEM "/save");
                     core.setControllers(controller, nullptr);
                     inGame = false;
                 }
@@ -177,7 +184,7 @@ int main()
             text::drawText("FILTRAR Y ORGANIZAR", 44.0f, 106.0f, 16, muted);
 
             if (count == 0) {
-                text::drawText("Sin ROMs en sd:/retrou/roms/nes/", 100.0f, 340.0f, 24, white);
+                text::drawText("Sin ROMs en sd:/retrou/roms/" RETROU_CORE_SYSTEM "/", 100.0f, 340.0f, 24, white);
             } else {
                 for (int i = 0; i < count; ++i) {
                     const int col = i % columns, row = i / columns;
@@ -190,7 +197,7 @@ int main()
                     drawTextureCover(covers[i], x + 2.0f, y + 2.0f, cardW - 4.0f, coverH - 2.0f);
                     drawRoundRect(x + 2.0f, y + coverH, cardW - 4.0f, cardH - coverH - 2.0f, 10.0f, cardFooter);
                     text::drawText(titles[i].c_str(), x + 12.0f, y + coverH + 12.0f, 15, white);
-                    text::drawText("NES", x + 12.0f, y + coverH + 34.0f, 12, muted);
+                    text::drawText(RETROU_CORE_LABEL, x + 12.0f, y + coverH + 34.0f, 12, muted);
                 }
             }
             text::drawText("A  JUGAR    B  VOLVER    MINUS+PLUS  SALIR",

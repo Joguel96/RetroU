@@ -1025,79 +1025,59 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
             const RomEntry &game = *games[index];
             bool selected = index == app.game;
 
-            uint8_t r = static_cast<uint8_t>((game.color >> 16) & 0xFF);
-            uint8_t g = static_cast<uint8_t>((game.color >> 8) & 0xFF);
-            uint8_t b = static_cast<uint8_t>(game.color & 0xFF);
+            const ConsoleDef *console = console_by_id(game.system);
+            int cover_h = static_cast<int>(card_h * 0.62f);
+            int radius = std::max(10, card_w / 16);
 
+            fill_rounded_rect(renderer, x - 5, y - 5, card_w + 10, card_h + 10, radius + 4,
+                              rgba(0, 0, 0, 95));
             if (selected) {
-                fill_rounded_rect(renderer, x - 3, y - 3, card_w + 6, card_h + 6, 15,
-                                  rgba(r, g, b, 95));
+                fill_rounded_rect(renderer, x - 3, y - 3, card_w + 6, card_h + 6, radius + 3,
+                                  rgba(theme.focus));
             }
+            fill_rounded_rect(renderer, x, y, card_w, card_h, radius, rgba(theme.panel, 225));
 
-            fill_rounded_rect(renderer, x, y, card_w, card_h, 12, rgba(theme.panel, 215));
-            int cover_h = static_cast<int>(card_h * 0.60f);
-            if (selected) {
-                fill_rounded_rect(renderer, x + 2, y + 2, card_w - 4, cover_h - 2, 10,
-                                  rgba(r, g, b, 235));
-            } else {
-                fill_rounded_rect(renderer, x + 2, y + 2, card_w - 4, cover_h - 2, 10,
-                                  rgba(r, g, b, 205));
-            }
-            fill_rounded_rect(renderer, x + 2, y + 2, card_w - 4, cover_h / 2, 10,
-                              rgba(255, 255, 255, 18));
-            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 42);
-            for (int py = y + 12; py < y + cover_h - 8; py += 14) {
-                for (int px = x + 12; px < x + card_w - 8; px += 14) {
-                    SDL_RenderDrawPoint(renderer, px, py);
-                }
-            }
             SDL_Texture *cover = cover_for(renderer, game);
             if (cover) {
                 SDL_Rect dst{x + 2, y + 2, card_w - 4, cover_h - 2};
                 SDL_RenderCopy(renderer, cover, nullptr, &dst);
-            }
-            fill_rounded_rect(renderer, x + 2, y + cover_h, card_w - 4,
-                              card_h - cover_h - 2, 10, rgba(theme.backgroundBottom, 225));
-            outline_rounded_rect(renderer, x, y, card_w, card_h, 12,
-                                 selected ? rgba(theme.focus)
-                                          : rgba(255, 255, 255, 44));
-            if (selected) {
-                outline_rounded_rect(renderer, x - 3, y - 3, card_w + 6, card_h + 6, 15,
-                                     rgba(theme.focus, 150));
+            } else {
+                uint8_t r = static_cast<uint8_t>((game.color >> 16) & 0xFF);
+                uint8_t g = static_cast<uint8_t>((game.color >> 8) & 0xFF);
+                uint8_t b = static_cast<uint8_t>(game.color & 0xFF);
+                fill_rounded_rect(renderer, x + 2, y + 2, card_w - 4, cover_h - 2, radius - 2,
+                                  rgba(r, g, b, selected ? 235 : 205));
+                fill_rounded_rect(renderer, x + 2, y + 2, card_w - 4, cover_h / 2, radius - 2,
+                                  rgba(255, 255, 255, 18));
+                std::string initials = game.title.substr(0, 2);
+                std::transform(initials.begin(), initials.end(), initials.begin(),
+                               [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+                draw_text_center(renderer, cache, title_font, initials, x + card_w / 2,
+                                 y + cover_h / 2 - 28, rgba(255, 255, 255, 225));
             }
 
-            const ConsoleDef *console = console_by_id(game.system);
-            std::string badge = console ? console->name : game.system;
-            int badge_w = text_width(small_font, badge) + 16;
-            fill_rounded_rect(renderer, x + 8, y + 8, badge_w, 22, 8,
-                              rgba(8, 14, 24, 150));
-            outline_rounded_rect(renderer, x + 8, y + 8, badge_w, 22, 8,
-                                 rgba(255, 255, 255, 55));
-            draw_text(renderer, cache, small_font, badge, x + 16, y + 13,
-                      rgba(241, 245, 249));
-
-            std::string initials = game.title.substr(0, 2);
-            std::transform(initials.begin(), initials.end(), initials.begin(),
-                           [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
-            if (!cover) {
-                draw_text_center(renderer, cache, title_font, initials,
-                                 x + card_w / 2, y + cover_h / 2 - 28,
-                                 rgba(255, 255, 255, 225));
-            }
             if (game.favorite) {
                 draw_star(renderer, x + card_w - 24, y + 22, 11, 4, rgba(theme.accent));
             }
 
+            fill_rounded_rect(renderer, x + 2, y + cover_h, card_w - 4,
+                              card_h - cover_h - 2, radius - 2,
+                              rgba(theme.backgroundBottom, 235));
+            outline_rounded_rect(renderer, x, y, card_w, card_h, radius,
+                                 selected ? rgba(theme.focus) : rgba(255, 255, 255, 44));
+            if (selected) {
+                outline_rounded_rect(renderer, x - 3, y - 3, card_w + 6, card_h + 6, radius + 3,
+                                     rgba(theme.focus, 150));
+            }
+
             int text_y = y + cover_h + 10;
-            std::string title = fit_text(body_font, game.title, card_w - 20);
-            draw_text(renderer, cache, body_font, title, x + 10, text_y,
-                      rgba(theme.text));
+            std::string title = fit_text(body_font, game.title, card_w - 28);
+            draw_text(renderer, cache, body_font, title, x + 14, text_y, rgba(theme.text));
             int year = title_year(game.title);
             std::string meta = console ? console->name : game.system;
-            if (year > 0) meta += "  ·  " + std::to_string(year);
-            draw_text(renderer, cache, small_font, meta, x + 10,
-                      text_y + (tv ? 25 : 20), rgba(theme.muted));
+            if (year > 0) meta += " · " + std::to_string(year);
+            draw_text(renderer, cache, small_font, meta, x + 14,
+                      text_y + (tv ? 24 : 19), rgba(theme.muted));
         }
     }
 

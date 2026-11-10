@@ -763,26 +763,27 @@ SDL_Texture *cover_for(SDL_Renderer *renderer, const RomEntry &game)
         SDL_Surface *surface = SDL_ConvertSurfaceFormat(loaded, SDL_PIXELFORMAT_ARGB8888, 0);
         SDL_FreeSurface(loaded);
         if (!surface) continue;
-        const int radius = 16;
-        if (surface->w > radius * 2 && surface->h > radius) {
+        const int radius = 20;
+        if (surface->w > radius * 2 && surface->h > radius * 2) {
             SDL_LockSurface(surface);
             for (int py = 0; py < radius; ++py) {
                 for (int px = 0; px < radius; ++px) {
                     int dx = radius - px;
                     int dy = radius - py;
                     if (dx * dx + dy * dy <= radius * radius) continue;
-                    uint32_t *left = reinterpret_cast<uint32_t *>(
-                        static_cast<uint8_t *>(surface->pixels) + py * surface->pitch + px * 4);
-                    uint32_t *right = reinterpret_cast<uint32_t *>(
-                        static_cast<uint8_t *>(surface->pixels) + py * surface->pitch +
-                        (surface->w - 1 - px) * 4);
-                    *left = 0;
-                    *right = 0;
+                    int ys[2] = {py, surface->h - 1 - py};
+                    int xs[2] = {px, surface->w - 1 - px};
+                    for (int y : ys) for (int x : xs) {
+                        uint32_t *pixel = reinterpret_cast<uint32_t *>(
+                            static_cast<uint8_t *>(surface->pixels) + y * surface->pitch + x * 4);
+                        *pixel = 0;
+                    }
                 }
             }
             SDL_UnlockSurface(surface);
         }
         SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
         SDL_FreeSurface(surface);
         g_covers[key] = texture;
         if (texture) return texture;    }
@@ -1699,7 +1700,8 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
         draw_text(renderer, cache, small_font, "Mando: " + device,
                   content_x + 24, content_y + 170, rgba(current_theme(app).text));
         int y = content_y + 194;
-        for (int i = 0; i < 8; ++i) {
+        int first = std::max(0, app.control_option - 5);
+        for (int i = first; i < std::min(8, first + 6); ++i) {
             bool selected = i == app.control_option;
             if (selected) {
                 fill_rounded_rect(renderer, content_x + 18, y - 4, content_w - 60, 26, 6,

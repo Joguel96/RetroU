@@ -1,0 +1,22 @@
+{
+  "background": {
+    "type": "dynamic",
+    "colorTop": "#080d18",
+    "colorBottom": "#03060d",
+    "image": "assets/background.png",
+    "blur": true,
+    "blurStrength": 0.5,
+    "dynamicDelayMs": 5000
+  },
+  "panel": {
+    "color": "#0b1220",
+    "alpha": 0.86
+  },
+  "focus": "#4da3ff",
+  "accent": "#f5d97f",
+  "text": "#f8fafc",
+  "muted": "#94a3b8",
+  "sort": {
+    "favoritesFirst": false
+  }
+}

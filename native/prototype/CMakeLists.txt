@@ -27,6 +27,7 @@ target_link_libraries(card_demo PRIVATE
     SDL2.lib
     SDL2_ttf.lib
     SDL2_image.lib
+    urlmon.lib
 )
 
 add_custom_command(TARGET card_demo POST_BUILD

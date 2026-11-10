@@ -36,12 +36,23 @@ El JSON guarda `favorite` por juego. Al pulsar `X`:
 Con `Y` se muestra solo la lista de favoritos. Si no hay ninguno, aparece el
 estado vacío.
 
-El orden “favoritos primero” no está implementado todavía; queda para 5.1 como
-opción de configuración.
+El orden “favoritos primero” está disponible con `O`, pero el valor inicial
+viene de `data/theme.json`:
 
-## Tema personalizable y fondos (5.1)
+```json
+"sort": { "favoritesFirst": false }
+```
 
-El diseño futuro sería:
+Con `favoritesFirst=false` se mantiene ABC. Con `true` se pone primero el grupo
+de favoritos y luego ABC.
+
+## Tema y fondos (5.1)
+
+El tema se carga desde:
+
+```text
+native/prototype/data/theme.json
+```
 
 ```cpp
 struct Theme {
@@ -55,43 +66,47 @@ struct Theme {
     Color accent;
 
     std::string backgroundImage;
-    BackgroundType type;  // Color, Image, Dynamic
+    std::string backgroundType; // color | image | dynamic
     bool blur;
-    float blurStrength;   // 0.5
-    int dynamicDelayMs;   // 5000
+    float blurStrength;         // 0.5
+    int dynamicDelayMs;         // 5000
+    bool favoritesFirst;
 };
 ```
 
-- `panel` + `panelAlpha` controlan el recuadro translúcido.
-- `focus` controla el borde de la card enfocada.
-- `backgroundTop/Bottom` controlan el fondo.
-- `backgroundImage` permite una imagen propia.
-- `blur` + `blurStrength` permiten blur estático una sola vez.
-- `Dynamic` cambia al backdrop del juego tras 5 s de foco estable.
+Teclas del prototipo:
 
-El blur no se puede hacer con `backdrop-filter` en SDL2. Se haría **una sola vez**
-al cargar la imagen o al cambiar de tema:
+- `B`: activa/desactiva el blur.
+- `T`: cambia `color → image → dynamic`.
+- `O`: alterna favoritos primero.
+- `D`: descarga carátulas de Libretro.
+
+El blur se calcula una vez:
 
 1. cargar la imagen con `SDL2_image`;
-2. reducirla a 1/4 o 1/8;
-3. aplicar un box blur o un blur separable;
-4. volver a escalarla;
-5. guardar la textura resultante en `AssetCache`.
+2. reducirla a 640×360;
+3. box blur separable con radio `blurStrength * 12`;
+4. crear textura y cachearla.
 
-Sería un blur de fondo, no un blur dinámico detrás de cada panel. Hacerlo por
-frame en Wii U sería caro e innecesario para una imagen estática.
+No se aplica blur por frame.
 
-`theme.json` sería compartido entre las apps de consola; cada app podría tener
-overrides locales en `config/<consola>/`.
+Con `backgroundType: "dynamic"`:
 
-## Carátulas desde Libretro (5.1)
+- el foco inicia un temporizador de 5 s;
+- si el foco no cambió, se usa `backdropPath` del juego;
+- si no existe, se usa `coverPath` o el fondo del tema;
+- hay crossfade de 500 ms.
 
-La fuente es la librería de thumbnails de Libretro:
+`data/backdrops/` contiene imágenes de prueba para demostrar el cambio dinámico.
+
+## Carátulas desde Libretro
+
+Fuente:
 
 - Repositorio: https://github.com/libretro-thumbnails/libretro-thumbnails
 - Servidor: https://thumbnails.libretro.com/
 
-Ruta típica:
+Ruta usada por el prototipo:
 
 ```text
 https://thumbnails.libretro.com/
@@ -100,13 +115,19 @@ https://thumbnails.libretro.com/
   Game%20Name.png
 ```
 
-Para 5.1 el plan es:
+`D` intenta el título solo y variantes ` (USA)`, ` (Europe)`, ` (Japan)` y
+` (World)`, y guarda en:
 
-1. resolver el nombre del juego contra `Named_Boxarts`;
-2. descargar a `sd:/retrou/thumbnails/<consola>/`;
-3. cachear la textura;
-4. usar `Named_Snaps` como posible backdrop dinámico;
-5. permitir fallback al degradado si no existe imagen.
+```text
+data/thumbnails/<id>.png
+```
+
+La descarga usa `URLDownloadToFileA` en Windows. En Wii U se sustituirá por el
+cliente HTTP correspondiente y la ruta será:
+
+```text
+sd:/retrou/thumbnails/<consola>/
+```
 
 ## Compilar en Windows con MSVC
 
@@ -127,7 +148,7 @@ cl /nologo /std:c++20 /EHsc /MD ^
   /LIBPATH:third_party\SDL2\SDL2-2.30.10\lib\x64 ^
   /LIBPATH:third_party\SDL2_ttf\SDL2_ttf-2.22.0\lib\x64 ^
   /LIBPATH:third_party\SDL2_image\SDL2_image-2.8.2\lib\x64 ^
-  SDL2.lib SDL2_ttf.lib SDL2_image.lib
+  SDL2.lib SDL2_ttf.lib SDL2_image.lib urlmon.lib
 ```
 
 Copiar junto al `.exe`:
@@ -137,8 +158,11 @@ SDL2.dll
 SDL2_ttf.dll
 SDL2_image.dll
 assets/icon.png
+assets/background.png
 content/ui.ttf
 data/games.json
+data/theme.json
+data/backdrops/
 ```
 
 Ejecutar:
@@ -159,5 +183,6 @@ con el target PC de `native/`.
 
 ## Siguiente paso
 
-5.1: tema configurable, fondos estáticos/dinámicos, blur opcional y descarga de
-carátulas desde Libretro.
+Integrar el prototipo en `native/src/ui` y `native/src/gfx`, compartiendo el
+código con el target PC de `native/`. Después, llevar el mismo tema y la misma
+grilla a las apps Wii U.

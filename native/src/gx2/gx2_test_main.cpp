@@ -128,6 +128,20 @@ int main()
 
     int focused = 0;
 
+    // Prefer real ROM titles/metadata when the SD has NES ROMs, otherwise
+    // fall back to the hardcoded sample list so the grid always has content.
+    std::vector<std::string> cardTitles(10);
+    std::vector<std::string> cardMetas(10);
+    for (int i = 0; i < 10; ++i) {
+        if (i < static_cast<int>(library.roms.size())) {
+            cardTitles[i] = library.roms[i].title;
+            cardMetas[i] = "NES";
+        } else {
+            cardTitles[i] = kGames[i].title;
+            cardMetas[i] = kGames[i].meta;
+        }
+    }
+
     while (true) {
         // GamePad input: move the focused card with the D-pad.
         VPADStatus vpad{};
@@ -179,9 +193,9 @@ int main()
             drawRoundRect(x + 2.0f, y + coverH, cardW - 4.0f, cardH - coverH - 2.0f, 10.0f,
                           cardFooter);
 
-            text::drawText(text::fitText(kGames[i].title, 15, cardW - 24.0f).c_str(),
+            text::drawText(text::fitText(cardTitles[i].c_str(), 15, cardW - 24.0f).c_str(),
                            x + 12.0f, y + coverH + 12.0f, 15, white);
-            text::drawText(kGames[i].meta, x + 12.0f, y + coverH + 34.0f, 12, muted);
+            text::drawText(cardMetas[i].c_str(), x + 12.0f, y + coverH + 34.0f, 12, muted);
         }
 
         // Footer hints.

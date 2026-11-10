@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -87,6 +88,7 @@ struct AppState {
     int sidebar_index = 0;
     int sort_mode = 0;       /* 0 = name, 1 = region */
     int region_filter = 0;   /* 0 = all, 1 = USA, 2 = Europe, 3 = Japan */
+    int grid_columns = 5;    /* 3..6 */
     char name_initial = 0;   /* 0 = all */
     bool pending_launch = false;
     bool pending_rpl = false;
@@ -338,6 +340,8 @@ void load_system_config(AppState &app)
             app.name_initial = initial >= 'A' && initial <= 'Z'
                                    ? static_cast<char>(initial)
                                    : 0;
+        } else if (key == "columns") {
+            app.grid_columns = std::max(3, std::min(6, std::atoi(value.c_str())));
         }
     }
 }
@@ -353,6 +357,7 @@ void save_system_config(const AppState &app)
     out << "sort=" << (app.sort_mode == 1 ? "region" : "name") << "\n";
     out << "region=" << app.region_filter << "\n";
     out << "initial=" << static_cast<int>(app.name_initial) << "\n";
+    out << "columns=" << app.grid_columns << "\n";
 }
 
 void ensure_system_dirs(const std::string &sd_root)
@@ -372,7 +377,7 @@ void ensure_system_dirs(const std::string &sd_root)
                        "theme=retroui\nstyle=crystal\n");
     std::string dir = join_path(join_path(retro, "config"), system);
     write_default_file(join_path(dir, system + ".conf"),
-                       "sort=name\nregion=0\ninitial=0\n");
+                       "sort=name\nregion=0\ninitial=0\ncolumns=5\n");
     write_default_file(join_path(dir, "control-map.conf"),
                        "a=0\nb=1\nx=2\ny=3\nl=4\nr=5\nstart=6\nselect=7\n");
     write_default_file(join_path(dir, "video.conf"),
@@ -613,6 +618,43 @@ void outline_rect(SDL_Renderer *renderer, int x, int y, int w, int h, SDL_Color 
     SDL_RenderDrawRect(renderer, &rect);
 }
 
+void fill_ellipse(SDL_Renderer *renderer, int cx, int cy, int rx, int ry, SDL_Color color)
+{
+    if (rx <= 0 || ry <= 0) {
+        return;
+    }
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+    for (int y = -ry; y <= ry; ++y) {
+        float t = 1.0f - static_cast<float>(y * y) / static_cast<float>(ry * ry);
+        int span = static_cast<int>(rx * std::sqrt(std::max(0.0f, t)));
+        SDL_RenderDrawLine(renderer, cx - span, cy + y, cx + span, cy + y);
+    }
+}
+
+void fill_rounded_rect(SDL_Renderer *renderer, int x, int y, int w, int h, int radius,
+                       SDL_Color color)
+{
+    if (w <= 0 || h <= 0) {
+        return;
+    }
+    radius = std::max(0, std::min(radius, std::min(w, h) / 2));
+    fill_rect(renderer, x + radius, y, w - radius * 2, h, color);
+    fill_rect(renderer, x, y + radius, radius, h - radius * 2, color);
+    fill_rect(renderer, x + w - radius, y + radius, radius, h - radius * 2, color);
+    fill_ellipse(renderer, x + radius, y + radius, radius, radius, color);
+    fill_ellipse(renderer, x + w - radius - 1, y + radius, radius, radius, color);
+    fill_ellipse(renderer, x + radius, y + h - radius - 1, radius, radius, color);
+    fill_ellipse(renderer, x + w - radius - 1, y + h - radius - 1, radius, radius, color);
+}
+
+void outline_rounded_rect(SDL_Renderer *renderer, int x, int y, int w, int h, int radius,
+                          SDL_Color color)
+{
+    outline_rect(renderer, x + radius, y, w - radius * 2, h, color);
+    outline_rect(renderer, x, y + radius, w, h - radius * 2, color);
+}
+
 void draw_background(SDL_Renderer *renderer, int width, int height, uint32_t accent)
 {
     /* A handful of bands instead of one draw call per scanline. The old
@@ -628,10 +670,33 @@ void draw_background(SDL_Renderer *renderer, int width, int height, uint32_t acc
         fill_rect(renderer, 0, y0, width, y1 - y0, rgba(r, g, b));
     }
 
-    fill_rect(renderer, 0, 0, width, 2,
-              rgba(static_cast<uint8_t>((accent >> 16) & 0xFF),
-                   static_cast<uint8_t>((accent >> 8) & 0xFF),
-                   static_cast<uint8_t>(accent & 0xFF), 180));
+    uint8_t ar = static_cast<uint8_t>((accent >> 16) & 0xFF);
+    uint8_t ag = static_cast<uint8_t>((accent >> 8) & 0xFF);
+    uint8_t ab = static_cast<uint8_t>(accent & 0xFF);
+
+    /* Same cinematic language as RetroUI: an accent halo, a cool counter-halo,
+     * a faint dot grid and a deep vignette. */
+    fill_ellipse(renderer, static_cast<int>(width * 0.78f),
+                 static_cast<int>(height * 0.12f),
+                 static_cast<int>(width * 0.42f),
+                 static_cast<int>(height * 0.48f), rgba(ar, ag, ab, 34));
+    fill_ellipse(renderer, static_cast<int>(width * 0.12f),
+                 static_cast<int>(height * 0.82f),
+                 static_cast<int>(width * 0.36f),
+                 static_cast<int>(height * 0.42f), rgba(45, 88, 140, 26));
+
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 16);
+    for (int y = 30; y < height; y += 26) {
+        for (int x = 18; x < width; x += 26) {
+            SDL_RenderDrawPoint(renderer, x, y);
+        }
+    }
+
+    fill_rect(renderer, 0, 0, width, 2, rgba(ar, ag, ab, 190));
+    fill_rect(renderer, 0, height - 2, width, 2, rgba(0, 0, 0, 180));
+    fill_rect(renderer, 0, 0, width, 90, rgba(0, 0, 0, 70));
+    fill_rect(renderer, 0, height - 100, width, 100, rgba(0, 0, 0, 100));
 }
 
 void draw_header(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_font,
@@ -639,13 +704,25 @@ void draw_header(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_font,
 {
     (void)height;
     int margin = tv ? 28 : 18;
-    draw_text(renderer, cache, title_font, RETROU_APP_NAME, margin, tv ? 16 : 10, rgba(255, 255, 255));
-    draw_text(renderer, cache, body_font, "GLASS OS  /  WII U", margin, tv ? 56 : 44, rgba(148, 163, 184));
+    int bar_h = tv ? 70 : 54;
+    fill_rounded_rect(renderer, margin - 10, tv ? 10 : 6, width - (margin - 10) * 2, bar_h,
+                      tv ? 18 : 14, rgba(12, 19, 31, 165));
+    outline_rounded_rect(renderer, margin - 10, tv ? 10 : 6, width - (margin - 10) * 2, bar_h,
+                         tv ? 18 : 14, rgba(255, 255, 255, 34));
+
+    draw_text(renderer, cache, title_font, RETROU_APP_NAME, margin, tv ? 18 : 10,
+              rgba(255, 255, 255));
+    draw_text(renderer, cache, body_font,
+              std::string("BIBLIOTECA  /  ") + RETROU_CORE_LABEL,
+              margin, tv ? 48 : 38, rgba(148, 163, 184));
 
     std::string status = connected ? "WII U GAMEPAD" : "CONECTA UN MANDO";
     int status_width = text_width(body_font, status);
-    fill_rect(renderer, width - margin - status_width - 24, tv ? 22 : 14,
-              status_width + 24, 28, rgba(255, 255, 255, 18));
+    int pill_w = status_width + 24;
+    fill_rounded_rect(renderer, width - margin - pill_w, tv ? 22 : 14, pill_w, 28,
+                      14, rgba(255, 255, 255, 18));
+    outline_rounded_rect(renderer, width - margin - pill_w, tv ? 22 : 14, pill_w, 28,
+                         14, rgba(255, 255, 255, 34));
     draw_text(renderer, cache, body_font, status, width - margin - status_width - 12,
               tv ? 27 : 19, rgba(226, 232, 240));
 }
@@ -686,7 +763,7 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
     const int header_h = tv ? 84 : 64;
     const int footer_h = tv ? 62 : 46;
     const int gap = tv ? 14 : 9;
-    const int columns = tv ? 5 : 3;
+    const int columns = std::max(3, std::min(6, app.grid_columns));
     const int rows = tv ? 3 : 2;
 
     const uint32_t accent = app.system == 0 ? 0xF5D97F : kConsoles[app.system - 1].color;
@@ -733,38 +810,87 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
             uint8_t g = static_cast<uint8_t>((game.color >> 8) & 0xFF);
             uint8_t b = static_cast<uint8_t>(game.color & 0xFF);
 
-            fill_rect(renderer, x, y, card_w, card_h, rgba(15, 23, 42, 190));
-            fill_rect(renderer, x + 1, y + 1, card_w - 2, static_cast<int>(card_h * 0.56f),
-                      rgba(r, g, b, selected ? 210 : 160));
-            outline_rect(renderer, x, y, card_w, card_h,
-                         selected ? rgba(255, 255, 255, 230) : rgba(255, 255, 255, 36));
+            if (selected) {
+                fill_rounded_rect(renderer, x - 3, y - 3, card_w + 6, card_h + 6, 15,
+                                  rgba(r, g, b, 95));
+            }
+
+            fill_rounded_rect(renderer, x, y, card_w, card_h, 12, rgba(13, 20, 33, 215));
+            int cover_h = static_cast<int>(card_h * 0.60f);
+            for (int band = 0; band < 5; ++band) {
+                int by = y + band * cover_h / 5;
+                int bh = (band + 1) * cover_h / 5 - band * cover_h / 5;
+                float t = static_cast<float>(band) / 4.0f;
+                fill_rect(renderer, x + 2, by, card_w - 4, bh,
+                          rgba(static_cast<uint8_t>(r * (0.55f + t * 0.45f)),
+                               static_cast<uint8_t>(g * (0.55f + t * 0.45f)),
+                               static_cast<uint8_t>(b * (0.55f + t * 0.45f)),
+                               selected ? 235 : 205));
+            }
+            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 42);
+            for (int py = y + 12; py < y + cover_h - 8; py += 14) {
+                for (int px = x + 12; px < x + card_w - 8; px += 14) {
+                    SDL_RenderDrawPoint(renderer, px, py);
+                }
+            }
+            fill_rect(renderer, x + 2, y + cover_h, card_w - 4, card_h - cover_h - 2,
+                      rgba(8, 14, 24, 225));
+            outline_rounded_rect(renderer, x, y, card_w, card_h, 12,
+                                 selected ? rgba(255, 255, 255, 235)
+                                          : rgba(255, 255, 255, 44));
+            if (selected) {
+                outline_rounded_rect(renderer, x - 3, y - 3, card_w + 6, card_h + 6, 15,
+                                     rgba(255, 255, 255, 130));
+            }
 
             const ConsoleDef *console = console_by_id(game.system);
-            draw_text(renderer, cache, small_font, console ? console->name : game.system,
-                      x + 10, y + 10, rgba(255, 255, 255, 220));
+            std::string badge = console ? console->name : game.system;
+            int badge_w = text_width(small_font, badge) + 16;
+            fill_rounded_rect(renderer, x + 8, y + 8, badge_w, 22, 8,
+                              rgba(8, 14, 24, 150));
+            outline_rounded_rect(renderer, x + 8, y + 8, badge_w, 22, 8,
+                                 rgba(255, 255, 255, 55));
+            draw_text(renderer, cache, small_font, badge, x + 16, y + 13,
+                      rgba(241, 245, 249));
 
             std::string initials = game.title.substr(0, 2);
             std::transform(initials.begin(), initials.end(), initials.begin(),
                            [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
             draw_text_center(renderer, cache, title_font, initials,
-                             x + card_w / 2, y + static_cast<int>(card_h * 0.20f),
-                             rgba(255, 255, 255, 210));
+                             x + card_w / 2, y + cover_h / 2 - 28,
+                             rgba(255, 255, 255, 225));
 
+            int text_y = y + cover_h + 10;
             std::string title = fit_text(body_font, game.title, card_w - 20);
-            draw_text(renderer, cache, body_font, title, x + 10,
-                      y + static_cast<int>(card_h * 0.64f), rgba(241, 245, 249));
-            draw_text(renderer, cache, small_font, "ROM", x + 10,
-                      y + static_cast<int>(card_h * 0.80f), rgba(148, 163, 184));
+            draw_text(renderer, cache, body_font, title, x + 10, text_y,
+                      rgba(248, 250, 252));
+            std::string meta = "ROM  ·  " + std::to_string(index + 1);
+            draw_text(renderer, cache, small_font, meta, x + 10,
+                      text_y + (tv ? 25 : 20), rgba(148, 163, 184));
         }
     }
 
     /* Footer */
     int footer_y = height - footer_h;
-    fill_rect(renderer, 0, footer_y, width, footer_h, rgba(8, 13, 24, 210));
+    fill_rect(renderer, 0, footer_y, width, footer_h, rgba(7, 12, 22, 225));
     outline_rect(renderer, 0, footer_y, width, 1, rgba(255, 255, 255, 30));
-    draw_text(renderer, cache, small_font,
-              "D-PAD  NAVEGAR     A  JUGAR     B  VOLVER     PLUS  MENÚ",
-              margin, footer_y + (footer_h - 18) / 2, rgba(203, 213, 225));
+
+    int key_x = margin;
+    int key_y = footer_y + (footer_h - 30) / 2;
+    fill_rounded_rect(renderer, key_x, key_y, 92, 30, 10, rgba(255, 255, 255, 225));
+    draw_text(renderer, cache, small_font, "A  JUGAR", key_x + 13, key_y + 8,
+              rgba(12, 19, 31));
+    draw_text(renderer, cache, small_font, "D-PAD  NAVEGAR     B  VOLVER",
+              key_x + 116, key_y + 8, rgba(203, 213, 225));
+
+    std::string plus = "PLUS  MENÚ";
+    int plus_w = text_width(small_font, plus) + 26;
+    int plus_x = width - margin - plus_w;
+    fill_rounded_rect(renderer, plus_x, key_y, plus_w, 30, 10, rgba(245, 217, 127, 38));
+    outline_rounded_rect(renderer, plus_x, key_y, plus_w, 30, 10, rgba(245, 217, 127, 150));
+    draw_text(renderer, cache, small_font, plus, plus_x + 13, key_y + 8,
+              rgba(255, 246, 212));
 
     if (!app.message.empty()) {
         int message_w = text_width(small_font, app.message) + 28;
@@ -788,8 +914,10 @@ void render_sidebar(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_
     int panel_y = 24;
     int panel_h = height - 48;
 
-    fill_rect(renderer, panel_x, panel_y, panel_w, panel_h, rgba(15, 23, 42, 245));
-    outline_rect(renderer, panel_x, panel_y, panel_w, panel_h, rgba(255, 255, 255, 80));
+    fill_rounded_rect(renderer, panel_x, panel_y, panel_w, panel_h, 18,
+                      rgba(10, 17, 29, 242));
+    outline_rounded_rect(renderer, panel_x, panel_y, panel_w, panel_h, 18,
+                         rgba(255, 255, 255, 78));
 
     draw_text(renderer, cache, heading_font, std::string("MENÚ ") + RETROU_APP_NAME,
               panel_x + 20, panel_y + 20,
@@ -808,28 +936,29 @@ void render_sidebar(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_
         "Nombre: " + name_value,
         "Ordenar por: " + sort_value,
         "Región: " + region_value,
+        "Columnas: " + std::to_string(app.grid_columns),
         "Controles",
         "Ajustes",
     };
 
     int y = panel_y + 92;
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 6; ++i) {
         if (i == app.sidebar_index) {
-            fill_rect(renderer, panel_x + 12, y - 9, panel_w - 24, 44,
-                      rgba(245, 217, 127, 42));
-            outline_rect(renderer, panel_x + 12, y - 9, panel_w - 24, 44,
-                         rgba(245, 217, 127, 150));
+            fill_rounded_rect(renderer, panel_x + 12, y - 9, panel_w - 24, 44, 10,
+                              rgba(245, 217, 127, 42));
+            outline_rounded_rect(renderer, panel_x + 12, y - 9, panel_w - 24, 44, 10,
+                                 rgba(245, 217, 127, 150));
         }
         draw_text(renderer, cache, body_font, labels[i], panel_x + 26, y,
                   i == app.sidebar_index ? rgba(255, 255, 255) : rgba(203, 213, 225));
-        y += 56;
+        y += 52;
     }
 
     draw_text(renderer, cache, small_font,
-              "Nombre filtra por inicial. Controles/Ajustes se guardan",
+              "Columnas: 3–6. Nombre filtra por inicial.",
               panel_x + 20, panel_y + panel_h - 52, rgba(148, 163, 184));
     draw_text(renderer, cache, small_font,
-              "en config/<consola>/",
+              "Los ajustes se guardan en config/<consola>/",
               panel_x + 20, panel_y + panel_h - 30, rgba(148, 163, 184));
 }
 
@@ -837,10 +966,10 @@ void sidebar_action(AppState &app, int action)
 {
     switch (action) {
         case 0:
-            app.sidebar_index = (app.sidebar_index + 4) % 5;
+            app.sidebar_index = (app.sidebar_index + 5) % 6;
             break;
         case 1:
-            app.sidebar_index = (app.sidebar_index + 1) % 5;
+            app.sidebar_index = (app.sidebar_index + 1) % 6;
             break;
         case 9:
             app.sidebar_open = false;
@@ -862,11 +991,14 @@ void sidebar_action(AppState &app, int action)
                 app.region_filter = (app.region_filter + 1) % 4;
                 refresh_visible(app);
             } else if (app.sidebar_index == 3) {
+                app.grid_columns = app.grid_columns >= 6 ? 3 : app.grid_columns + 1;
+                app.message = "Columnas: " + std::to_string(app.grid_columns);
+            } else if (app.sidebar_index == 4) {
                 app.message = "Mapeo de controles: próxima fase";
             } else {
                 app.message = "Ajustes de vídeo: próxima fase";
             }
-            if (app.sidebar_index <= 2) {
+            if (app.sidebar_index <= 3) {
                 save_system_config(app);
             }
             break;

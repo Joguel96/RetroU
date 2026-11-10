@@ -45,6 +45,7 @@ Cada app crea sus carpetas y archivos de configuración si no existen.
 - Muestra solo la grilla de juegos, sin barra de consolas.
 - **A** carga la ROM con el core integrado.
 - **Plus** abre el sidebar con filtros, controles y ajustes.
+- En el sidebar se puede cambiar la grilla entre 3 y 6 columnas.
 - **Minus + Plus** abre el menú superpuesto durante el core.
 - El render de la UI es bajo demanda: solo repinta cuando hay entrada o cambia
   el estado, no a 60 FPS constante.

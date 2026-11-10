@@ -182,6 +182,7 @@ No extender el RPL sin petición explícita. Si se retoma, hacerlo en su rama.
 - No hay barra lateral de consolas ni vista de ajustes separada.
 - Solo la grilla de juegos a pantalla completa.
 - `Plus` abre el sidebar superpuesto con filtros, controles y ajustes.
+- El sidebar permite elegir entre 3 y 6 columnas de juegos.
 - `Minus + Plus` abre el menú superpuesto durante el core.
 - El menú de juego pausa el core.
 - El render de la UI es bajo demanda (`ui_dirty`), no a 60 FPS constantes.

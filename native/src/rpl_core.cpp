@@ -150,8 +150,7 @@ void RplCore::queueAudio(const int16_t *data, size_t frames)
     }
 
     /* Keep latency bounded if the frontend falls behind. */
-    const uint32_t max_bytes = static_cast<uint32_t>(sample_rate_) * 4u *
-                               (audio_latency_ == 0 ? 1u : audio_latency_ == 2 ? 8u : 4u) / 4u;
+    const uint32_t max_bytes = static_cast<uint32_t>(sample_rate_) * 4u * 3u;
     if (SDL_GetQueuedAudioSize(audio_device_) > max_bytes) {
         SDL_ClearQueuedAudio(audio_device_);
     }
@@ -190,7 +189,7 @@ void RplCore::startAudio()
     want.freq = sample_rate_;
     want.format = AUDIO_S16SYS;
     want.channels = 2;
-    want.samples = 1024;
+    want.samples = audio_latency_ == 0 ? 512 : audio_latency_ == 2 ? 2048 : 1024;
     want.callback = nullptr;
 
     audio_device_ = SDL_OpenAudioDevice(nullptr, 0, &want, &have, 0);

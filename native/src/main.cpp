@@ -2072,8 +2072,6 @@ int main(int argc, char **argv)
                 int w = 1280, h = 720;
                 if (event.tfinger.windowID == SDL_GetWindowID(drc_window)) {
                     w = 854; h = 480;
-                } else if (event.tfinger.windowID != SDL_GetWindowID(tv_window)) {
-                    continue;
                 }
                 touch_grid(static_cast<int>(event.tfinger.x * w),
                            static_cast<int>(event.tfinger.y * h), w, h);

@@ -6,6 +6,7 @@
 #include "rpl_loader.hpp"
 
 #include <cstdint>
+#include <array>
 #include <string>
 #include <vector>
 
@@ -25,6 +26,7 @@ public:
     void setSaveDirectory(const std::string &path) { save_directory_ = path; }
     void setController(SDL_GameController *controller) { controller_ = controller; }
     void setControlProfile(int profile) { control_profile_ = profile; }
+    void setControlMap(const std::array<int, 8> &map) { control_map_ = map; }
     void startAudio();
     void stopAudio();
 
@@ -83,6 +85,14 @@ private:
     SDL_GameController *controller_ = nullptr;
     uint16_t input_state_ = 0;
     int control_profile_ = 0;
+    std::array<int, 8> control_map_ = {SDL_CONTROLLER_BUTTON_A,
+                                       SDL_CONTROLLER_BUTTON_B,
+                                       SDL_CONTROLLER_BUTTON_X,
+                                       SDL_CONTROLLER_BUTTON_Y,
+                                       SDL_CONTROLLER_BUTTON_LEFTSHOULDER,
+                                       SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,
+                                       SDL_CONTROLLER_BUTTON_START,
+                                       SDL_CONTROLLER_BUTTON_BACK};
 
     ApiVersionFn api_version_ = nullptr;
     InitFn init_ = nullptr;

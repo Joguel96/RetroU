@@ -21,6 +21,7 @@
 #include <fstream>
 #include <map>
 #include <string>
+#include <array>
 #include <thread>
 #include <vector>
 
@@ -125,6 +126,16 @@ struct AppState {
     int settings_index = 0;
     int theme_index = 0;
     int control_profile = 0;
+    std::array<int, 8> control_map = {SDL_CONTROLLER_BUTTON_A,
+                                     SDL_CONTROLLER_BUTTON_B,
+                                     SDL_CONTROLLER_BUTTON_X,
+                                     SDL_CONTROLLER_BUTTON_Y,
+                                     SDL_CONTROLLER_BUTTON_LEFTSHOULDER,
+                                     SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,
+                                     SDL_CONTROLLER_BUTTON_START,
+                                     SDL_CONTROLLER_BUTTON_BACK};
+    int control_option = 0;
+    bool control_listening = false;
     bool assets_downloading = false;
     int keyboard_index = 0;
     std::string search_query;
@@ -550,9 +561,19 @@ void load_control_config(AppState &app)
     std::ifstream in(join_path(system_config_dir(app.library.sd_root), "control-map.conf"));
     std::string line;
     while (std::getline(in, line)) {
-        if (line.rfind("profile=", 0) == 0) {
-            app.control_profile = std::max(0, std::min(2, std::atoi(line.substr(8).c_str())));
+        size_t eq = line.find('=');
+        if (eq == std::string::npos) continue;
+        std::string key = line.substr(0, eq);
+        int value = std::atoi(line.substr(eq + 1).c_str());
+        const char *keys[] = {"a", "b", "x", "y", "l", "r", "start", "select"};
+        for (int i = 0; i < 8; ++i) {
+            if (key == keys[i]) app.control_map[i] = value;
         }
+    }
+    if (app.control_map[4] == 4 && app.control_map[5] == 5 && app.control_map[7] == 7) {
+        app.control_map[4] = SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
+        app.control_map[5] = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
+        app.control_map[7] = SDL_CONTROLLER_BUTTON_BACK;
     }
 }
 
@@ -561,8 +582,10 @@ void save_control_config(const AppState &app)
     std::string path = join_path(system_config_dir(app.library.sd_root), "control-map.conf");
     std::ofstream out(path, std::ios::trunc);
     if (!out) return;
-    out << "profile=" << app.control_profile << "\n";
-    out << "a=0\nb=1\nx=2\ny=3\nl=4\nr=5\nstart=6\nselect=7\n";
+    const char *keys[] = {"a", "b", "x", "y", "l", "r", "start", "select"};
+    for (int i = 0; i < 8; ++i) {
+        out << keys[i] << "=" << app.control_map[i] << "\n";
+    }
 }
 
 void load_favorites(AppState &app)
@@ -608,7 +631,7 @@ void ensure_system_dirs(const std::string &sd_root)
     write_default_file(join_path(dir, system + ".conf"),
                        "sort=name\n");
     write_default_file(join_path(dir, "control-map.conf"),
-                       "a=0\nb=1\nx=2\ny=3\nl=4\nr=5\nstart=6\nselect=7\n");
+                       "a=0\nb=1\nx=2\ny=3\nl=9\nr=10\nstart=6\nselect=4\n");
     write_default_file(join_path(dir, "video.conf"),
                        "scale=integer\naspect=core\nfilter=linear\n");
 }
@@ -1645,12 +1668,25 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
                   "Se descargan automáticamente desde Libretro.",
                   content_x + 24, content_y + 204, rgba(current_theme(app).muted));
     } else if (app.settings_index == 2) {
-        const char *profiles[] = {"Estándar", "Intercambiar A/B", "Intercambiar X/Y"};
-        draw_text(renderer, cache, body_font,
-                  std::string("Perfil: ") + profiles[std::max(0, std::min(2, app.control_profile))],
-                  content_x + 24, content_y + 148, rgba(current_theme(app).accent));
-        draw_text(renderer, cache, small_font, "A  CAMBIAR PERFIL",
-                  content_x + 24, content_y + 176, rgba(current_theme(app).muted));
+        const char *actionNames[] = {"A", "B", "X", "Y", "L", "R", "START", "SELECT"};
+        int y = content_y + 148;
+        for (int i = 0; i < 8; ++i) {
+            bool selected = i == app.control_option;
+            if (selected) {
+                fill_rounded_rect(renderer, content_x + 18, y - 4, content_w - 60, 26, 6,
+                                  rgba(current_theme(app).accent, 40));
+            }
+            const char *mappedName = SDL_GameControllerGetStringForButton(
+                static_cast<SDL_GameControllerButton>(app.control_map[i]));
+            std::string value = mappedName ? mappedName : "?";
+            if (app.control_listening && selected) value = "PULSA UN BOTÓN";
+            draw_text(renderer, cache, small_font,
+                      std::string(actionNames[i]) + "  →  " + value,
+                      content_x + 28, y, rgba(current_theme(app).text));
+            y += 28;
+        }
+        draw_text(renderer, cache, small_font, "A  REMAPEAR     B  CANCELAR",
+                  content_x + 24, content_y + content_h - 34, rgba(current_theme(app).muted));
     }
 
     draw_text(renderer, cache, small_font, "A  MODIFICAR     B / L  VOLVER     +  GUARDAR",
@@ -1664,9 +1700,19 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
 void settings_action(AppState &app, int action)
 {
     if (action == 0) {
-        app.settings_index = (app.settings_index + 4) % 5;
+        if (app.settings_index == 2) {
+            app.control_option = (app.control_option + 7) % 8;
+            app.control_listening = false;
+        } else {
+            app.settings_index = (app.settings_index + 4) % 5;
+        }
     } else if (action == 1) {
-        app.settings_index = (app.settings_index + 1) % 5;
+        if (app.settings_index == 2) {
+            app.control_option = (app.control_option + 1) % 8;
+            app.control_listening = false;
+        } else {
+            app.settings_index = (app.settings_index + 1) % 5;
+        }
     } else if (action == 6) {
         if (app.settings_index == 0) {
             app.theme_index = (app.theme_index + 1) % kThemeCount;
@@ -1685,9 +1731,8 @@ void settings_action(AppState &app, int action)
                 app.message = "Descarga de assets en curso";
             }
         } else if (app.settings_index == 2) {
-            app.control_profile = (app.control_profile + 1) % 3;
-            app.dirty = true;
-            app.message = "Perfil de control cambiado";
+            app.control_listening = true;
+            app.message = "Pulsa el botón físico para asignar";
         } else {
             app.dirty = true;
             app.message = "Cambio temporal: pulsa + para guardar";
@@ -2101,7 +2146,7 @@ void run_static_core(AppState &app, const std::string &rom_path,
     retrou::RplCore core;
     core.setSaveDirectory(system_save_directory(app.library.sd_root));
     core.setController(controller);
-    core.setControlProfile(app.control_profile);
+    core.setControlMap(app.control_map);
     std::string error;
 
     TextCache loading_tv;
@@ -2388,6 +2433,19 @@ int main(int argc, char **argv)
                 }
             }
             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
+                if (app.control_listening && app.settings_screen) {
+                    if (event.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
+                        app.control_listening = false;
+                        app.message = "Remapeo cancelado";
+                    } else {
+                        app.control_map[app.control_option] = event.cbutton.button;
+                        app.control_listening = false;
+                        app.dirty = true;
+                        app.message = "Botón asignado";
+                    }
+                    ui_dirty = true;
+                    continue;
+                }
                 auto dispatch = [&](int action) {
                     if (app.keyboard_open) {
                         keyboard_action(app, action);
@@ -2406,7 +2464,8 @@ int main(int argc, char **argv)
                     case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: dispatch(3); break;
                     case SDL_CONTROLLER_BUTTON_A: dispatch(6); break;
                     case SDL_CONTROLLER_BUTTON_B:
-                        if (app.keyboard_open) app.keyboard_open = false;
+                        if (app.control_listening) app.control_listening = false;
+                        else if (app.keyboard_open) app.keyboard_open = false;
                         else if (app.settings_screen) {
                             app.settings_screen = false;
                             app.message.clear();

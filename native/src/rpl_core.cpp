@@ -218,26 +218,14 @@ void RplCore::pollInput()
             return SDL_GameControllerGetButton(controller_, button) != 0;
         };
 
-        if (control_profile_ == 1) {
-            if (pressed(SDL_CONTROLLER_BUTTON_B)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_A;
-            if (pressed(SDL_CONTROLLER_BUTTON_A)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_B;
-            if (pressed(SDL_CONTROLLER_BUTTON_X)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_X;
-            if (pressed(SDL_CONTROLLER_BUTTON_Y)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_Y;
-        } else if (control_profile_ == 2) {
-            if (pressed(SDL_CONTROLLER_BUTTON_A)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_A;
-            if (pressed(SDL_CONTROLLER_BUTTON_B)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_B;
-            if (pressed(SDL_CONTROLLER_BUTTON_Y)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_X;
-            if (pressed(SDL_CONTROLLER_BUTTON_X)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_Y;
-        } else {
-            if (pressed(SDL_CONTROLLER_BUTTON_A)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_A;
-            if (pressed(SDL_CONTROLLER_BUTTON_B)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_B;
-            if (pressed(SDL_CONTROLLER_BUTTON_X)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_X;
-            if (pressed(SDL_CONTROLLER_BUTTON_Y)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_Y;
-        }
-        if (pressed(SDL_CONTROLLER_BUTTON_BACK)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_SELECT;
-        if (pressed(SDL_CONTROLLER_BUTTON_START)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_START;
-        if (pressed(SDL_CONTROLLER_BUTTON_LEFTSHOULDER)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_L;
-        if (pressed(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_R;
+        if (pressed(static_cast<SDL_GameControllerButton>(control_map_[0]))) state |= 1u << RETRO_DEVICE_ID_JOYPAD_A;
+        if (pressed(static_cast<SDL_GameControllerButton>(control_map_[1]))) state |= 1u << RETRO_DEVICE_ID_JOYPAD_B;
+        if (pressed(static_cast<SDL_GameControllerButton>(control_map_[2]))) state |= 1u << RETRO_DEVICE_ID_JOYPAD_X;
+        if (pressed(static_cast<SDL_GameControllerButton>(control_map_[3]))) state |= 1u << RETRO_DEVICE_ID_JOYPAD_Y;
+        if (pressed(static_cast<SDL_GameControllerButton>(control_map_[6]))) state |= 1u << RETRO_DEVICE_ID_JOYPAD_START;
+        if (pressed(static_cast<SDL_GameControllerButton>(control_map_[7]))) state |= 1u << RETRO_DEVICE_ID_JOYPAD_SELECT;
+        if (pressed(static_cast<SDL_GameControllerButton>(control_map_[4]))) state |= 1u << RETRO_DEVICE_ID_JOYPAD_L;
+        if (pressed(static_cast<SDL_GameControllerButton>(control_map_[5]))) state |= 1u << RETRO_DEVICE_ID_JOYPAD_R;
         if (pressed(SDL_CONTROLLER_BUTTON_DPAD_UP)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_UP;
         if (pressed(SDL_CONTROLLER_BUTTON_DPAD_DOWN)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_DOWN;
         if (pressed(SDL_CONTROLLER_BUTTON_DPAD_LEFT)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_LEFT;

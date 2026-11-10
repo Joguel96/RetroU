@@ -2283,16 +2283,20 @@ int main(int argc, char **argv)
     load_libretro_metadata(app);
     boot_log("after libretro_metadata");
     load_metadata(app);
+    boot_log("after load_metadata");
     refresh_visible(app);
+    boot_log("after refresh_visible");
     if (app.library.roms.empty()) {
         app.message = "Copia ROMs a sd:/retrou/roms/<consola>/";
     }
 
     SDL_GameController *controller = open_first_controller();
+    boot_log("after open controller");
     bool connected = controller != nullptr;
 
     TextCache tv_text;
     TextCache drc_text;
+    boot_log("after text caches");
     bool ui_dirty = true;
     std::string last_message;
     Uint32 message_set_at = 0;

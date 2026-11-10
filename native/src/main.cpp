@@ -1330,16 +1330,16 @@ void handle_action(AppState &app, int action)
 
     switch (action) {
         case 0: /* up */
-            move_selection(app, 0, -1, 4, static_cast<int>(games.size()));
+            move_selection(app, 0, -1, 5, static_cast<int>(games.size()));
             break;
         case 1: /* down */
-            move_selection(app, 0, 1, 4, static_cast<int>(games.size()));
+            move_selection(app, 0, 1, 5, static_cast<int>(games.size()));
             break;
         case 2: /* left */
-            move_selection(app, -1, 0, 4, static_cast<int>(games.size()));
+            move_selection(app, -1, 0, 5, static_cast<int>(games.size()));
             break;
         case 3: /* right */
-            move_selection(app, 1, 0, 4, static_cast<int>(games.size()));
+            move_selection(app, 1, 0, 5, static_cast<int>(games.size()));
             break;
         case 4: /* system previous */
         case 5: /* system next */

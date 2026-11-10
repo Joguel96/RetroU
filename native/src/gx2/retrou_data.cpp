@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <fstream>
 
 namespace retrou {
 
@@ -119,6 +120,38 @@ std::string coverPath(const std::string &sdRoot, const std::string &system,
     }
     return joinPath(joinPath(joinPath(sdRoot, "retrou"), "thumbnails"), system) +
            "/" + safe + ".png";
+}
+
+std::string favoritesPath(const std::string &sdRoot, const std::string &system)
+{
+    return joinPath(joinPath(joinPath(sdRoot, "retrou"), "config"), system) +
+           "/favorites.conf";
+}
+
+void loadFavorites(Library &library, const std::string &system)
+{
+    std::ifstream in(favoritesPath(library.sd_root, system));
+    std::string path;
+    while (std::getline(in, path)) {
+        for (RomEntry &rom : library.roms) {
+            if (rom.path == path) {
+                rom.favorite = true;
+            }
+        }
+    }
+}
+
+void saveFavorites(const Library &library, const std::string &system)
+{
+    std::ofstream out(favoritesPath(library.sd_root, system), std::ios::trunc);
+    if (!out) {
+        return;
+    }
+    for (const RomEntry &rom : library.roms) {
+        if (rom.favorite) {
+            out << rom.path << "\n";
+        }
+    }
 }
 
 } // namespace retrou

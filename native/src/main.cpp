@@ -1368,6 +1368,20 @@ void draw_unsaved_banner(SDL_Renderer *renderer, TextCache &cache, TTF_Font *fon
     draw_text(renderer, cache, font, text, x + 16, y + 7, rgba(255, 246, 212));
 }
 
+int count_files(const std::string &path)
+{
+    DIR *dir = opendir(path.c_str());
+    if (!dir) return 0;
+    int count = 0;
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != nullptr) {
+        std::string name = entry->d_name;
+        if (name.size() > 4 && name.substr(name.size() - 4) == ".png") ++count;
+    }
+    closedir(dir);
+    return count;
+}
+
 void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_font,
                      TTF_Font *heading_font, TTF_Font *body_font, TTF_Font *small_font,
                      AppState &app, int width, int height, bool tv, bool connected)
@@ -1419,6 +1433,28 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
     };
     draw_text(renderer, cache, body_font, hints[app.settings_index],
               content_x + 24, content_y + 108, rgba(203, 213, 225));
+    if (app.settings_index == 0) {
+        draw_text(renderer, cache, body_font,
+                  std::string("Tema actual: ") + current_theme(app).name,
+                  content_x + 24, content_y + 148, rgba(current_theme(app).accent));
+        draw_text(renderer, cache, small_font, "A  CAMBIAR TEMA",
+                  content_x + 24, content_y + 176, rgba(current_theme(app).muted));
+    } else if (app.settings_index == 1) {
+        std::string base = join_path(join_path(app.library.sd_root, "retrou"), "thumbnails");
+        std::string system = current_system_id();
+        int covers = count_files(join_path(base, system));
+        int backdrops = count_files(join_path(join_path(join_path(app.library.sd_root, "retrou"),
+                                                        "backdrops"), system));
+        draw_text(renderer, cache, body_font,
+                  "Carátulas: " + std::to_string(covers),
+                  content_x + 24, content_y + 148, rgba(current_theme(app).text));
+        draw_text(renderer, cache, body_font,
+                  "Backdrops: " + std::to_string(backdrops),
+                  content_x + 24, content_y + 176, rgba(current_theme(app).text));
+        draw_text(renderer, cache, small_font,
+                  "Se descargan automáticamente desde Libretro.",
+                  content_x + 24, content_y + 204, rgba(current_theme(app).muted));
+    }
     draw_text(renderer, cache, small_font, "A  MODIFICAR     B / L  VOLVER     +  GUARDAR",
               content_x + 24, content_y + content_h - 34, rgba(148, 163, 184));
 
@@ -1440,11 +1476,14 @@ void settings_action(AppState &app, int action)
     } else if (action == 6) {
         if (app.settings_index == 0) {
             app.theme_index = (app.theme_index + 1) % kThemeCount;
+            app.dirty = true;
             app.message = std::string("Tema: ") + current_theme(app).name;
+        } else if (app.settings_index == 1) {
+            app.message = "Assets administrados automáticamente";
         } else {
+            app.dirty = true;
             app.message = "Cambio temporal: pulsa + para guardar";
         }
-        app.dirty = true;
     } else if (action == 9) {
         app.settings_screen = false;
     }

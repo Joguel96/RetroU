@@ -2213,11 +2213,19 @@ int main(int argc, char **argv)
     (void)argc;
     (void)argv;
 
+    auto boot_log = [](const char *stage) {
+        std::ofstream out("/vol/external01/retrou/boot.log", std::ios::app);
+        if (out) out << stage << "\n";
+    };
+    boot_log("main start");
+
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS) != 0) {
+        boot_log("SDL_Init failed");
         return 1;
     }
+    boot_log("SDL_Init ok");
     SDL_GameControllerEventState(SDL_ENABLE);
 
     SDL_Window *tv_window = SDL_CreateWindow(
@@ -2231,9 +2239,11 @@ int main(int argc, char **argv)
     SDL_Renderer *drc_renderer = drc_window ? make_renderer(drc_window) : nullptr;
 
     if (!tv_renderer && !drc_renderer) {
+        boot_log("no renderers");
         SDL_Quit();
         return 1;
     }
+    boot_log("windows/renderers ok");
 
     if (TTF_Init() != 0) {
         SDL_Quit();
@@ -2246,6 +2256,7 @@ int main(int argc, char **argv)
     TTF_Font *small_font = open_font(false, 13);
 
     if (!title_font || !heading_font || !body_font || !small_font) {
+        boot_log("font load failed");
         if (title_font) TTF_CloseFont(title_font);
         if (heading_font) TTF_CloseFont(heading_font);
         if (body_font) TTF_CloseFont(body_font);
@@ -2256,8 +2267,11 @@ int main(int argc, char **argv)
     }
 
     AppState app;
+    boot_log("before load_library");
     app.library = load_library();
+    boot_log("after load_library");
     ensure_system_dirs(app.library.sd_root);
+    boot_log("after ensure_dirs");
 #if defined(RETROU_CORE_SYSTEM)
     app.system = console_index_by_id(RETROU_CORE_SYSTEM);
 #endif
@@ -2267,6 +2281,7 @@ int main(int argc, char **argv)
     load_control_config(app);
     load_favorites(app);
     load_libretro_metadata(app);
+    boot_log("after libretro_metadata");
     load_metadata(app);
     refresh_visible(app);
     if (app.library.roms.empty()) {
@@ -2312,10 +2327,10 @@ int main(int argc, char **argv)
             handle_action(app, 6);
         }
     };
+    boot_log("before main loop");
 
     while (app.running) {
-        if (!controller) {
-            bool was_connected = connected;
+        if (!controller) {            bool was_connected = connected;
             controller = open_first_controller();
             connected = controller != nullptr;
             if (was_connected != connected) {

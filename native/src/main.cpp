@@ -553,7 +553,7 @@ int title_year(const std::string &title)
     return 0;
 }
 
-std::map<std::string, SDL_Texture *> g_covers;
+std::map<std::pair<SDL_Renderer *, std::string>, SDL_Texture *> g_covers;
 
 SDL_Texture *cover_for(SDL_Renderer *renderer, const RomEntry &game)
 {
@@ -570,12 +570,13 @@ SDL_Texture *cover_for(SDL_Renderer *renderer, const RomEntry &game)
         "/vol/external01/retrou/thumbnails/" + upper + "/" + safe + ".png",
     };
     for (const std::string &path : paths) {
-        auto it = g_covers.find(path);
+        auto key = std::make_pair(renderer, path);
+        auto it = g_covers.find(key);
         if (it != g_covers.end() && it->second) return it->second;
         struct stat info;
         if (stat(path.c_str(), &info) != 0) continue;
         SDL_Texture *texture = IMG_LoadTexture(renderer, path.c_str());
-        g_covers[path] = texture;
+        g_covers[key] = texture;
         if (texture) return texture;
     }
     return nullptr;
@@ -1074,10 +1075,10 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
             std::string title = fit_text(body_font, game.title, card_w - 28);
             draw_text(renderer, cache, body_font, title, x + 14, text_y, rgba(theme.text));
             int year = title_year(game.title);
-            std::string meta = console ? console->name : game.system;
-            if (year > 0) meta += " · " + std::to_string(year);
-            draw_text(renderer, cache, small_font, meta, x + 14,
-                      text_y + (tv ? 24 : 19), rgba(theme.muted));
+            if (year > 0) {
+                draw_text(renderer, cache, small_font, std::to_string(year), x + 14,
+                          text_y + (tv ? 24 : 19), rgba(theme.muted));
+            }
         }
     }
 
@@ -1087,7 +1088,7 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
         const std::string full = app.visible[std::max(0, std::min(app.game,
             static_cast<int>(app.visible.size()) - 1))]->title;
         std::string shown = fit_text(body_font, full, width - 120);
-        if (shown != full && SDL_GetTicks() - app.focus_since >= 5000) {
+        if (SDL_GetTicks() - app.focus_since >= 5000) {
             int tip_w = text_width(body_font, shown) + 30;
             int tip_x = (width - tip_w) / 2;
             int tip_y = footer_y - 44;

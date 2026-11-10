@@ -163,7 +163,8 @@ int main()
             drawRoundRect(x + 2.0f, y + coverH, cardW - 4.0f, cardH - coverH - 2.0f, 10.0f,
                           cardFooter);
 
-            text::drawText(kGames[i].title, x + 12.0f, y + coverH + 12.0f, 15, white);
+            text::drawText(text::fitText(kGames[i].title, 15, cardW - 24.0f).c_str(),
+                           x + 12.0f, y + coverH + 12.0f, 15, white);
             text::drawText(kGames[i].meta, x + 12.0f, y + coverH + 34.0f, 12, muted);
         }
 

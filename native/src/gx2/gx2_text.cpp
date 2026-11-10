@@ -108,8 +108,44 @@ bool loadFont(const unsigned char *data, size_t size)
     return true;
 }
 
-void drawText(const char *text, float x, float y, int pixelSize, Color color)
+int measureText(const char *text, int pixelSize)
 {
+    if (!text || !g_face) {
+        return 0;
+    }
+    FT_Set_Pixel_Sizes(g_face, 0, static_cast<FT_UInt>(pixelSize));
+
+    int width = 0;
+    const char *cursor = text;
+    uint32_t codepoint = 0;
+    int advance = 0;
+    while (decodeUtf8(cursor, codepoint, advance)) {
+        cursor += advance;
+        FT_UInt index = FT_Get_Char_Index(g_face, codepoint);
+        if (FT_Load_Glyph(g_face, index, FT_LOAD_DEFAULT) == 0) {
+            width += static_cast<int>(g_face->glyph->advance.x >> 6);
+        }
+    }
+    return width;
+}
+
+std::string fitText(const char *text, int pixelSize, float maxWidth)
+{
+    if (!text) {
+        return {};
+    }
+    if (measureText(text, pixelSize) <= maxWidth) {
+        return text;
+    }
+    std::string result = text;
+    while (!result.empty() &&
+           measureText((result + "...").c_str(), pixelSize) > maxWidth) {
+        result.pop_back();
+    }
+    return result + "...";
+}
+
+void drawText(const char *text, float x, float y, int pixelSize, Color color){
     if (!text || !g_face) {
         return;
     }

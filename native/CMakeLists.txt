@@ -160,6 +160,30 @@ wut_create_wuhb(retrou_gx2_test
     DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/nes/drc-splash.png"
 )
 
+# Minimal GX2 clear/present diagnostic.
+add_executable(retrou_gx2_diag EXCLUDE_FROM_ALL
+    src/gx2/gx2_diag_main.cpp
+    src/gx2/gx2_renderer.cpp
+)
+target_include_directories(retrou_gx2_diag PRIVATE
+    src
+    /opt/devkitpro/wut/include
+    /opt/devkitpro/portlibs/wiiu/include
+    /opt/devkitpro/portlibs/ppc/include
+)
+target_compile_options(retrou_gx2_diag PRIVATE -Wall -Wextra)
+target_link_libraries(retrou_gx2_diag PRIVATE m)
+wut_create_rpx(retrou_gx2_diag)
+wut_create_wuhb(retrou_gx2_diag
+    CONTENT    "${CMAKE_CURRENT_SOURCE_DIR}/content"
+    NAME       "RetroU GX2 Diag"
+    SHORTNAME  "RetroU GX2 Diag"
+    AUTHOR     "joguel96"
+    ICON       "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/nes/icon.png"
+    TVSPLASH   "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/nes/tv-splash.png"
+    DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/nes/drc-splash.png"
+)
+
 add_custom_target(stage_wuhb ALL
     COMMAND "${CMAKE_COMMAND}" -E make_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroNESU"

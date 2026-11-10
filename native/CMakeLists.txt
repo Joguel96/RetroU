@@ -70,6 +70,10 @@ function(configure_retrou target)
         SDL2_ttf
         SDL2_image
         webp
+        curl
+        mbedtls
+        mbedx509
+        mbedcrypto
         freetype
         harfbuzz
         png

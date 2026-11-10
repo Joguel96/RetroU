@@ -1,6 +1,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
+#include <curl/curl.h>
 
 #include "rpl_core.hpp"
 #include <whb/sdcard.h>
@@ -20,6 +21,7 @@
 #include <fstream>
 #include <map>
 #include <string>
+#include <thread>
 #include <vector>
 
 #ifndef RETROU_APP_NAME
@@ -619,8 +621,96 @@ SDL_Texture *cover_for(SDL_Renderer *renderer, const RomEntry &game)
     return nullptr;
 }
 
-void draw_star(SDL_Renderer *renderer, int cx, int cy, int outer, int inner, SDL_Color color)
+std::string libretroSystemFolder(const std::string &system)
 {
+    if (system == "nes") return "Nintendo - Nintendo Entertainment System";
+    if (system == "snes") return "Nintendo - Super Nintendo Entertainment System";
+    if (system == "gba") return "Nintendo - Game Boy Advance";
+    return "";
+}
+
+std::string urlEncode(const std::string &value)
+{
+    std::string out;
+    for (unsigned char c : value) {
+        if (std::isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
+            out.push_back(static_cast<char>(c));
+        } else {
+            char hex[4];
+            std::snprintf(hex, sizeof(hex), "%%%02X", c);
+            out += hex;
+        }
+    }
+    return out;
+}
+
+std::string libretroName(std::string title)
+{
+    for (char &c : title) {
+        if (std::string("&*/:`<>?\\|\"").find(c) != std::string::npos) c = '_';
+    }
+    return title;
+}
+
+size_t curlWriteFile(void *ptr, size_t size, size_t nmemb, void *userdata)
+{
+    return std::fwrite(ptr, size, nmemb, static_cast<FILE *>(userdata));
+}
+
+bool download_if_missing(const RomEntry &game, const char *kind)
+{
+    std::string folder = libretroSystemFolder(game.system);
+    if (folder.empty()) return false;
+    std::string dir = "/vol/external01/retrou/" + std::string(kind) + "/" + game.system;
+    mkdir(("/vol/external01/retrou/" + std::string(kind)).c_str(), 0777);
+    mkdir(dir.c_str(), 0777);
+    std::string safe = libretroName(game.title);
+    std::string dst = dir + "/" + safe + ".png";
+    struct stat info;
+    if (stat(dst.c_str(), &info) == 0) return true;
+
+    const char *type = std::string(kind) == "thumbnails" ? "Named_Boxarts" : "Named_Snaps";
+    std::string base = "https://thumbnails.libretro.com/" + urlEncode(folder) + "/" + type + "/";
+    const char *suffixes[] = {"", " (USA)", " (Europe)", " (Japan)", " (World)"};
+    for (const char *suffix : suffixes) {
+        std::string url = base + urlEncode(safe + suffix) + ".png";
+        FILE *fp = std::fopen(dst.c_str(), "wb");
+        if (!fp) return false;
+        CURL *curl = curl_easy_init();
+        bool ok = false;
+        if (curl) {
+            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+            curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+            curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
+            curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);
+            curl_easy_setopt(curl, CURLOPT_TIMEOUT, 30L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteFile);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+            ok = curl_easy_perform(curl) == CURLE_OK;
+            curl_easy_cleanup(curl);
+        }
+        std::fclose(fp);
+        if (ok) return true;
+        std::remove(dst.c_str());
+    }
+    return false;
+}
+
+void download_assets_thread(std::vector<RomEntry> games)
+{
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    for (const RomEntry &game : games) {
+        if (game.system == "nes" || game.system == "snes" || game.system == "gba") {
+            download_if_missing(game, "thumbnails");
+            download_if_missing(game, "backdrops");
+        }
+    }
+    curl_global_cleanup();
+}
+
+void draw_star(SDL_Renderer *renderer, int cx, int cy, int outer, int inner, SDL_Color color){
     SDL_Vertex vertices[12]{};
     vertices[0].position = {static_cast<float>(cx), static_cast<float>(cy)};
     vertices[0].color = color;
@@ -1958,6 +2048,13 @@ int main(int argc, char **argv)
     load_favorites(app);
     load_metadata(app);
     refresh_visible(app);
+    {
+        std::vector<RomEntry> assets;
+        for (const RomEntry &rom : app.library.roms) {
+            if (rom.system == current_system_id()) assets.push_back(rom);
+        }
+        std::thread(download_assets_thread, assets).detach();
+    }
     if (app.library.roms.empty()) {
         app.message = "Copia ROMs a sd:/retrou/roms/<consola>/";
     }

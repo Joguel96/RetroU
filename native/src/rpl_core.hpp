@@ -23,6 +23,14 @@ public:
     bool loadGame(const std::string &rom_path, std::string &error);
     void runFrame();
     void present(SDL_Renderer *renderer, int width, int height) const;
+    // Frame access for a GX2 frontend: the core exposes the last rendered
+    // frame so the renderer can upload it as a texture (see uploadFrame).
+    bool hasFrame() const { return frame_data_ != nullptr && frame_width_ > 0; }
+    const void *frameData() const { return frame_data_; }
+    uint32_t frameWidth() const { return frame_width_; }
+    uint32_t frameHeight() const { return frame_height_; }
+    size_t framePitch() const { return frame_pitch_; }
+    uint32_t pixelFormat() const { return pixel_format_; }
     void setSaveDirectory(const std::string &path) { save_directory_ = path; }
     void setController(SDL_GameController *controller) { controllers_[0] = controller; }
     void setControllers(SDL_GameController *first, SDL_GameController *second) {

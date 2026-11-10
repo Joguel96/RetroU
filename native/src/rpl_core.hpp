@@ -24,6 +24,7 @@ public:
     void present(SDL_Renderer *renderer, int width, int height) const;
     void setSaveDirectory(const std::string &path) { save_directory_ = path; }
     void setController(SDL_GameController *controller) { controller_ = controller; }
+    void setControlProfile(int profile) { control_profile_ = profile; }
     void startAudio();
     void stopAudio();
 
@@ -81,6 +82,7 @@ private:
     int sample_rate_ = 44100;
     SDL_GameController *controller_ = nullptr;
     uint16_t input_state_ = 0;
+    int control_profile_ = 0;
 
     ApiVersionFn api_version_ = nullptr;
     InitFn init_ = nullptr;

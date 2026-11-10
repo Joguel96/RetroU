@@ -124,6 +124,7 @@ struct AppState {
     bool favorites_only = false;
     int settings_index = 0;
     int theme_index = 0;
+    int control_profile = 0;
     int keyboard_index = 0;
     std::string search_query;
     int tooltip_focus = -1;
@@ -497,9 +498,9 @@ void load_libretro_metadata(AppState &app)
 std::string normalize_text(std::string value)
 {
     const std::pair<const char *, const char *> pairs[] = {
-        {"Ã¡", "á"}, {"Ã©", "é"}, {"Ã­", "í"}, {"Ã³", "ó"},
-        {"Ãº", "ú"}, {"Ã±", "ñ"}, {"Ã¼", "ü"}, {"Ãš", "Ú"},
-        {"Ã", ""},
+        {"á", "á"}, {"é", "é"}, {"í", "í"}, {"ó", "ó"},
+        {"ú", "ú"}, {"ñ", "ñ"}, {"ü", "ü"}, {"Ú", "Ú"},
+        {"", ""},
     };
     for (const auto &pair : pairs) {
         size_t pos;
@@ -533,6 +534,26 @@ void load_metadata(AppState &app)
             break;
         }
     }
+}
+
+void load_control_config(AppState &app)
+{
+    std::ifstream in(join_path(system_config_dir(app.library.sd_root), "control-map.conf"));
+    std::string line;
+    while (std::getline(in, line)) {
+        if (line.rfind("profile=", 0) == 0) {
+            app.control_profile = std::max(0, std::min(2, std::atoi(line.substr(8).c_str())));
+        }
+    }
+}
+
+void save_control_config(const AppState &app)
+{
+    std::string path = join_path(system_config_dir(app.library.sd_root), "control-map.conf");
+    std::ofstream out(path, std::ios::trunc);
+    if (!out) return;
+    out << "profile=" << app.control_profile << "\n";
+    out << "a=0\nb=1\nx=2\ny=3\nl=4\nr=5\nstart=6\nselect=7\n";
 }
 
 void load_favorites(AppState &app)
@@ -1614,7 +1635,15 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
         draw_text(renderer, cache, small_font,
                   "Se descargan automáticamente desde Libretro.",
                   content_x + 24, content_y + 204, rgba(current_theme(app).muted));
+    } else if (app.settings_index == 2) {
+        const char *profiles[] = {"Estándar", "Intercambiar A/B", "Intercambiar X/Y"};
+        draw_text(renderer, cache, body_font,
+                  std::string("Perfil: ") + profiles[std::max(0, std::min(2, app.control_profile))],
+                  content_x + 24, content_y + 148, rgba(current_theme(app).accent));
+        draw_text(renderer, cache, small_font, "A  CAMBIAR PERFIL",
+                  content_x + 24, content_y + 176, rgba(current_theme(app).muted));
     }
+
     draw_text(renderer, cache, small_font, "A  MODIFICAR     B / L  VOLVER     +  GUARDAR",
               content_x + 24, content_y + content_h - 34, rgba(148, 163, 184));
 
@@ -1640,6 +1669,10 @@ void settings_action(AppState &app, int action)
             app.message = std::string("Tema: ") + current_theme(app).name;
         } else if (app.settings_index == 1) {
             app.message = "Assets administrados automáticamente";
+        } else if (app.settings_index == 2) {
+            app.control_profile = (app.control_profile + 1) % 3;
+            app.dirty = true;
+            app.message = "Perfil de control cambiado";
         } else {
             app.dirty = true;
             app.message = "Cambio temporal: pulsa + para guardar";
@@ -2053,6 +2086,7 @@ void run_static_core(AppState &app, const std::string &rom_path,
     retrou::RplCore core;
     core.setSaveDirectory(system_save_directory(app.library.sd_root));
     core.setController(controller);
+    core.setControlProfile(app.control_profile);
     std::string error;
 
     TextCache loading_tv;
@@ -2244,6 +2278,7 @@ int main(int argc, char **argv)
     rebuild_indexes(app);
     load_system_config(app);
     load_theme(app);
+    load_control_config(app);
     load_favorites(app);
     load_libretro_metadata(app);
     load_metadata(app);
@@ -2378,6 +2413,7 @@ int main(int argc, char **argv)
                         if (app.settings_screen) {
                             app.dirty = false;
                             save_theme(app);
+                            save_control_config(app);
                             app.message = "Cambios guardados";
                         } else {
                             app.sidebar_open = !app.sidebar_open;

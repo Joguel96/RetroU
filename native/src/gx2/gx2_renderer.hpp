@@ -53,6 +53,13 @@ Texture createTexture(int width, int height, const void *rgba);
 // Replaces the pixels of an existing texture (same dimensions, RGBA8).
 void updateTexture(Texture texture, const void *rgba);
 
+// Uploads a libretro frame into a texture. `rgb565` selects RGB565 input,
+// otherwise XRGB8888 (4 bytes per pixel). Creates the texture when
+// `existing < 0`, otherwise updates it in place. Returns the texture handle
+// (or -1 on failure). `pitch` is the source row stride in bytes.
+Texture uploadFrame(Texture existing, const void *data, int width, int height,
+                    int pitch, bool rgb565);
+
 void destroyTexture(Texture texture);
 
 // Draws a textured sub-rectangle (u,v in [0,1]) with a color tint. Multiple

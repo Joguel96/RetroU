@@ -64,6 +64,19 @@ int main()
                               10, 14, 24);
     }
 
+    // Synthetic RGB565 frame to validate uploadFrame (the core frame path).
+    std::vector<uint16_t> framePixels(256 * 144);
+    for (int y = 0; y < 144; ++y) {
+        for (int x = 0; x < 256; ++x) {
+            const uint16_t r5 = static_cast<uint16_t>(x >> 3);
+            const uint16_t g6 = static_cast<uint16_t>((y * 2) >> 2);
+            const uint16_t b5 = 16;
+            framePixels[y * 256 + x] =
+                static_cast<uint16_t>((r5 << 11) | (g6 << 5) | b5);
+        }
+    }
+    Texture frame = uploadFrame(-1, framePixels.data(), 256, 144, 256 * 2, true);
+
     const int columns = 5;
     const int rows = 2;
     const float gridX = 344.0f;
@@ -98,6 +111,11 @@ int main()
                            Color{255, 255, 255, 255});
             text::drawText("NES", x + 12.0f, y + coverH + 34.0f, 12,
                            Color{148, 163, 184, 255});
+        }
+
+        // Synthetic core frame (RGB565) to verify the frame upload path.
+        if (frame >= 0) {
+            drawTexture(frame, 344.0f, 656.0f, 400.0f, 60.0f);
         }
 
         endFrame();

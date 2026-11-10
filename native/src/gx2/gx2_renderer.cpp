@@ -470,6 +470,44 @@ void updateTexture(Texture texture, const void *rgba)
                   surface.image, surface.imageSize);
 }
 
+Texture uploadFrame(Texture existing, const void *data, int width, int height,
+                    int pitch, bool rgb565)
+{
+    if (width <= 0 || height <= 0 || !data) {
+        return -1;
+    }
+    std::vector<uint8_t> rgba(static_cast<size_t>(width) * height * 4);
+    const uint8_t *src = static_cast<const uint8_t *>(data);
+    for (int y = 0; y < height; ++y) {
+        const uint8_t *row = src + static_cast<size_t>(y) * pitch;
+        for (int x = 0; x < width; ++x) {
+            uint8_t *dst = &rgba[(static_cast<size_t>(y) * width + x) * 4];
+            if (rgb565) {
+                const uint16_t px = reinterpret_cast<const uint16_t *>(row)[x];
+                uint8_t r = static_cast<uint8_t>((px >> 11) & 0x1F);
+                uint8_t g = static_cast<uint8_t>((px >> 5) & 0x3F);
+                uint8_t b = static_cast<uint8_t>(px & 0x1F);
+                dst[0] = static_cast<uint8_t>((r << 3) | (r >> 2));
+                dst[1] = static_cast<uint8_t>((g << 2) | (g >> 4));
+                dst[2] = static_cast<uint8_t>((b << 3) | (b >> 2));
+                dst[3] = 255;
+            } else {
+                // XRGB8888: assume bytes are R,G,B,X (the common libretro layout
+                // for the static cores). Verified against hardware if needed.
+                dst[0] = row[x * 4 + 0];
+                dst[1] = row[x * 4 + 1];
+                dst[2] = row[x * 4 + 2];
+                dst[3] = 255;
+            }
+        }
+    }
+    if (existing >= 0 && getTexture(existing)) {
+        updateTexture(existing, rgba.data());
+        return existing;
+    }
+    return createTexture(width, height, rgba.data());
+}
+
 void drawTexturedRect(Texture texture, float x, float y, float w, float h,
                       float u0, float v0, float u1, float v1, Color tint)
 {

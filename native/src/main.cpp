@@ -365,7 +365,11 @@ void load_system_config(AppState &app)
         std::string key = line.substr(0, eq);
         std::string value = line.substr(eq + 1);
         if (key == "sort") {
-            app.sort_mode = value == "region" ? 1 : 0;
+            if (value == "region") app.sort_mode = 1;
+            else if (value == "year") app.sort_mode = 2;
+            else if (value == "category") app.sort_mode = 3;
+            else if (value == "developer") app.sort_mode = 4;
+            else app.sort_mode = 0;
         }
     }
 }
@@ -378,7 +382,8 @@ void save_system_config(const AppState &app)
     if (!out) {
         return;
     }
-    out << "sort=" << (app.sort_mode == 1 ? "region" : "name") << "\n";
+    static const char *sort_ids[] = {"name", "region", "year", "category", "developer"};
+    out << "sort=" << sort_ids[std::max(0, std::min(4, app.sort_mode))] << "\n";
 }
 
 void load_theme(AppState &app)
@@ -529,6 +534,22 @@ int title_region(const std::string &title)
     return 0;
 }
 
+int title_year(const std::string &title)
+{
+    size_t open = title.find('(');
+    while (open != std::string::npos) {
+        if (open + 4 < title.size() &&
+            std::isdigit(static_cast<unsigned char>(title[open + 1])) &&
+            std::isdigit(static_cast<unsigned char>(title[open + 2])) &&
+            std::isdigit(static_cast<unsigned char>(title[open + 3])) &&
+            std::isdigit(static_cast<unsigned char>(title[open + 4]))) {
+            return std::atoi(title.substr(open + 1, 4).c_str());
+        }
+        open = title.find('(', open + 1);
+    }
+    return 0;
+}
+
 void refresh_visible(AppState &app)
 {
     app.visible.clear();
@@ -558,7 +579,21 @@ void refresh_visible(AppState &app)
                       int ra = title_region(a->title);
                       int rb = title_region(b->title);
                       if (ra != rb) {
+                          if (ra == 0) return false;
+                          if (rb == 0) return true;
                           return ra < rb;
+                      }
+                      return lower_copy(a->title) < lower_copy(b->title);
+                  });
+    } else if (app.sort_mode == 2) {
+        std::sort(app.visible.begin(), app.visible.end(),
+                  [](const RomEntry *a, const RomEntry *b) {
+                      int ya = title_year(a->title);
+                      int yb = title_year(b->title);
+                      if (ya != yb) {
+                          if (ya == 0) return false;
+                          if (yb == 0) return true;
+                          return ya < yb;
                       }
                       return lower_copy(a->title) < lower_copy(b->title);
                   });
@@ -1001,7 +1036,18 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
 
     /* Footer */
     int footer_y = height - footer_h;
-    fill_rect(renderer, 0, footer_y, width, footer_h, rgba(7, 12, 22, 225));
+    if (!app.visible.empty()) {
+        const std::string full = app.visible[std::max(0, std::min(app.game,
+            static_cast<int>(app.visible.size()) - 1))]->title;
+        std::string shown = fit_text(body_font, full, width - 120);
+        int tip_w = text_width(body_font, shown) + 30;
+        int tip_x = (width - tip_w) / 2;
+        int tip_y = footer_y - 44;
+        fill_rounded_rect(renderer, tip_x, tip_y, tip_w, 32, 10, rgba(theme.panel, 235));
+        outline_rounded_rect(renderer, tip_x, tip_y, tip_w, 32, 10, rgba(theme.focus, 150));
+        draw_text(renderer, cache, body_font, shown, tip_x + 15, tip_y + 7, rgba(theme.text));
+    }
+    fill_rect(renderer, 0, footer_y, width, footer_h, rgba(theme.backgroundBottom, 235));
     outline_rect(renderer, 0, footer_y, width, 1, rgba(255, 255, 255, 30));
 
     int key_x = margin;
@@ -1037,7 +1083,7 @@ void render_sidebar(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_
     int panel_h = height - 48;
 
     fill_rounded_rect(renderer, panel_x, panel_y, panel_w, panel_h, 18,
-                      rgba(15, 23, 42, 245));
+                      rgba(current_theme(app).panel, 245));
     draw_glass_panel(renderer, panel_x, panel_y, panel_w, panel_h, 18, 225);
 
     draw_text(renderer, cache, heading_font, std::string("MENÚ ") + RETROU_APP_NAME,
@@ -1049,7 +1095,14 @@ void render_sidebar(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_
     std::string name_value = app.name_initial == 0
                                  ? "Todos"
                                  : std::string(1, app.name_initial);
-    std::string sort_value = app.sort_mode == 0 ? "Nombre" : "Región";
+    std::string sort_value;
+    switch (app.sort_mode) {
+        case 1: sort_value = "Región"; break;
+        case 2: sort_value = "Año"; break;
+        case 3: sort_value = "Categoría"; break;
+        case 4: sort_value = "Desarrolladora"; break;
+        default: sort_value = "Nombre"; break;
+    }
     const char *regions[] = {"Todas", "USA", "Europa", "Japón"};
     std::string region_value = regions[std::max(0, std::min(3, app.region_filter))];
 
@@ -1064,12 +1117,13 @@ void render_sidebar(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_
     for (int i = 0; i < 4; ++i) {
         if (i == app.sidebar_index) {
             fill_rounded_rect(renderer, panel_x + 12, y - 9, panel_w - 24, 44, 10,
-                              rgba(245, 217, 127, 42));
+                              rgba(current_theme(app).accent, 42));
             outline_rounded_rect(renderer, panel_x + 12, y - 9, panel_w - 24, 44, 10,
-                                 rgba(245, 217, 127, 150));
+                                 rgba(current_theme(app).accent, 150));
         }
         draw_text(renderer, cache, body_font, labels[i], panel_x + 26, y,
-                  i == app.sidebar_index ? rgba(255, 255, 255) : rgba(203, 213, 225));
+                  i == app.sidebar_index ? rgba(current_theme(app).text)
+                                         : rgba(current_theme(app).muted));
         y += 52;
     }
 
@@ -1104,7 +1158,7 @@ void sidebar_action(AppState &app, int action)
                 }
                 refresh_visible(app);
             } else if (app.sidebar_index == 1) {
-                app.sort_mode = (app.sort_mode + 1) % 2;
+                app.sort_mode = (app.sort_mode + 1) % 5;
                 refresh_visible(app);
                 save_system_config(app);
             } else if (app.sidebar_index == 2) {
@@ -1159,12 +1213,12 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
         bool selected = i == app.settings_index;
         if (selected) {
             fill_rounded_rect(renderer, panel_x + 10, y - 8, panel_w - 20, 38, 9,
-                              rgba(255, 255, 255, 24));
+                              rgba(current_theme(app).accent, 30));
             outline_rounded_rect(renderer, panel_x + 10, y - 8, panel_w - 20, 38, 9,
-                                 rgba(255, 255, 255, 80));
+                                 rgba(current_theme(app).accent, 140));
         }
         draw_text(renderer, cache, body_font, sections[i], panel_x + 22, y,
-                  selected ? rgba(255, 255, 255) : rgba(203, 213, 225));
+                  selected ? rgba(current_theme(app).text) : rgba(current_theme(app).muted));
         y += 48;
     }
 
@@ -1814,7 +1868,7 @@ int main(int argc, char **argv)
                     case SDL_CONTROLLER_BUTTON_Y: dispatch(8); break;
                     case SDL_CONTROLLER_BUTTON_BACK:
                         if (!app.settings_screen && !app.sidebar_open) {
-                            app.sort_mode = (app.sort_mode + 1) % 2;
+                            app.sort_mode = (app.sort_mode + 1) % 5;
                             refresh_visible(app);
                             save_system_config(app);
                         }

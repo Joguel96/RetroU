@@ -949,15 +949,6 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
     draw_text(renderer, cache, small_font, plus, plus_x + 13, key_y + 8,
               rgba(255, 246, 212));
 
-    if (!app.message.empty()) {
-        int message_w = text_width(small_font, app.message) + 28;
-        fill_rect(renderer, (width - message_w) / 2, footer_y - 46, message_w, 34,
-                  rgba(15, 23, 42, 230));
-        outline_rect(renderer, (width - message_w) / 2, footer_y - 46, message_w, 34,
-                     rgba(255, 255, 255, 60));
-        draw_text_center(renderer, cache, small_font, app.message, width / 2,
-                         footer_y - 37, rgba(255, 255, 255));
-    }
     if (app.dirty) {
         draw_unsaved_banner(renderer, cache, small_font, width, false);
     }
@@ -1687,6 +1678,8 @@ int main(int argc, char **argv)
     TextCache tv_text;
     TextCache drc_text;
     bool ui_dirty = true;
+    std::string last_message;
+    Uint32 message_set_at = 0;
 
     while (app.running) {
         if (!controller) {
@@ -1731,18 +1724,33 @@ int main(int argc, char **argv)
                     case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: dispatch(3); break;
                     case SDL_CONTROLLER_BUTTON_A: dispatch(6); break;
                     case SDL_CONTROLLER_BUTTON_B:
-                        if (app.settings_screen) app.settings_screen = false;
-                        else dispatch(9);
+                        if (app.settings_screen) {
+                            app.settings_screen = false;
+                            app.message.clear();
+                        } else {
+                            dispatch(9);
+                        }
                         break;
                     case SDL_CONTROLLER_BUTTON_X: dispatch(7); break;
                     case SDL_CONTROLLER_BUTTON_Y: dispatch(8); break;
+                    case SDL_CONTROLLER_BUTTON_BACK:
+                        if (!app.settings_screen && !app.sidebar_open) {
+                            app.sort_mode = (app.sort_mode + 1) % 2;
+                            refresh_visible(app);
+                            save_system_config(app);
+                        }
+                        break;
                     case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
-                        if (app.settings_screen) app.settings_screen = false;
+                        if (app.settings_screen) {
+                            app.settings_screen = false;
+                            app.message.clear();
+                        }
                         break;
                     case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
                         if (!app.settings_screen) {
                             app.sidebar_open = false;
                             app.settings_screen = true;
+                            app.message.clear();
                         }
                         break;
                     case SDL_CONTROLLER_BUTTON_START:
@@ -1786,6 +1794,17 @@ int main(int argc, char **argv)
                     default: break;
                 }
             }
+        }
+
+        Uint32 now = SDL_GetTicks();
+        if (app.message != last_message) {
+            last_message = app.message;
+            message_set_at = now;
+        }
+        if (!app.message.empty() && now - message_set_at > 2500) {
+            app.message.clear();
+            last_message.clear();
+            ui_dirty = true;
         }
 
         if (app.pending_rpl) {

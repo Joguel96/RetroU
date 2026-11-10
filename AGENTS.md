@@ -252,8 +252,8 @@ No commitear:
 
 - NES/SNES/GBA: WUHB estática generada y compilada.
 - No probado en hardware: NES/SNES/GBA con ROM real.
-- **Input del core no implementado**: los botones aún no llegan al emulador.
-- **Audio del core implementado con SDL2**, pendiente de probar en hardware.
+- **Input del core implementado**: A/B/X/Y/L/R, Start/Select y D-Pad/stick.
+- **Audio del core implementado con SDL2**; hay que corregir silencios/cortes en hardware.
 - SRAM/savestates/carátulas reales pendientes.
 - El sidebar funciona, pero Controles/Ajustes son placeholders.
 - El guardado de SRAM/snap todavía no escribe archivos; solo se crean las

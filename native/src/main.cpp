@@ -651,8 +651,26 @@ void fill_rounded_rect(SDL_Renderer *renderer, int x, int y, int w, int h, int r
 void outline_rounded_rect(SDL_Renderer *renderer, int x, int y, int w, int h, int radius,
                           SDL_Color color)
 {
-    outline_rect(renderer, x + radius, y, w - radius * 2, h, color);
-    outline_rect(renderer, x, y + radius, w, h - radius * 2, color);
+    radius = std::max(0, std::min(radius, std::min(w, h) / 2));
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+    SDL_RenderDrawLine(renderer, x + radius, y, x + w - radius, y);
+    SDL_RenderDrawLine(renderer, x + radius, y + h - 1, x + w - radius, y + h - 1);
+    SDL_RenderDrawLine(renderer, x, y + radius, x, y + h - radius);
+    SDL_RenderDrawLine(renderer, x + w - 1, y + radius, x + w - 1, y + h - radius);
+
+    auto arc = [&](int cx, int cy, int start, int end) {
+        for (int angle = start; angle <= end; ++angle) {
+            float rad = angle * 3.14159265f / 180.0f;
+            int px = cx + static_cast<int>(std::cos(rad) * radius);
+            int py = cy + static_cast<int>(std::sin(rad) * radius);
+            SDL_RenderDrawPoint(renderer, px, py);
+        }
+    };
+    arc(x + radius, y + radius, 180, 270);
+    arc(x + w - radius - 1, y + radius, 270, 360);
+    arc(x + w - radius - 1, y + h - radius - 1, 0, 90);
+    arc(x + radius, y + h - radius - 1, 90, 180);
 }
 
 /* SDL has no backdrop-filter. This layered treatment reproduces the RetroUI
@@ -836,16 +854,15 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
 
             fill_rounded_rect(renderer, x, y, card_w, card_h, 12, rgba(13, 20, 33, 215));
             int cover_h = static_cast<int>(card_h * 0.60f);
-            for (int band = 0; band < 5; ++band) {
-                int by = y + band * cover_h / 5;
-                int bh = (band + 1) * cover_h / 5 - band * cover_h / 5;
-                float t = static_cast<float>(band) / 4.0f;
-                fill_rounded_rect(renderer, x + 2, by, card_w - 4, bh, 10,
-                                  rgba(static_cast<uint8_t>(r * (0.55f + t * 0.45f)),
-                                       static_cast<uint8_t>(g * (0.55f + t * 0.45f)),
-                                       static_cast<uint8_t>(b * (0.55f + t * 0.45f)),
-                                       selected ? 235 : 205));
+            if (selected) {
+                fill_rounded_rect(renderer, x + 2, y + 2, card_w - 4, cover_h - 2, 10,
+                                  rgba(r, g, b, 235));
+            } else {
+                fill_rounded_rect(renderer, x + 2, y + 2, card_w - 4, cover_h - 2, 10,
+                                  rgba(r, g, b, 205));
             }
+            fill_rounded_rect(renderer, x + 2, y + 2, card_w - 4, cover_h / 2, 10,
+                              rgba(255, 255, 255, 18));
             SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 42);
             for (int py = y + 12; py < y + cover_h - 8; py += 14) {
@@ -1339,6 +1356,7 @@ void run_rpl_core(AppState &app, const std::string &core_path, const std::string
 
 #ifdef RETROU_STATIC_CORE
 void run_static_core(AppState &app, const std::string &rom_path,
+                     SDL_GameController *controller,
                      SDL_Renderer *tv, SDL_Renderer *drc,
                      TTF_Font *heading_font, TTF_Font *body_font,
                      TTF_Font *small_font)
@@ -1352,6 +1370,7 @@ void run_static_core(AppState &app, const std::string &rom_path,
 
     retrou::RplCore core;
     core.setSaveDirectory(system_save_directory(app.library.sd_root));
+    core.setController(controller);
     std::string error;
 
     TextCache loading_tv;
@@ -1469,7 +1488,7 @@ void run_test_core(AppState &app, SDL_Renderer *tv, SDL_Renderer *drc,
     (void)small_font;
     app.message = "Usa RetroU-Test.wuhb";
 #elif defined(RETROU_STATIC_CORE) && defined(RETROU_TEST_CORE)
-    run_static_core(app, "", tv, drc, heading_font, body_font, small_font);
+    run_static_core(app, "", nullptr, tv, drc, heading_font, body_font, small_font);
 #elif defined(RETROU_STATIC_CORE)
     (void)tv;
     (void)drc;
@@ -1636,7 +1655,7 @@ int main(int argc, char **argv)
             app.rpl_core.clear();
             app.rpl_rom.clear();
 #ifdef RETROU_STATIC_CORE
-            run_static_core(app, rom_path, tv_renderer, drc_renderer,
+            run_static_core(app, rom_path, controller, tv_renderer, drc_renderer,
                             heading_font, body_font, small_font);
 #else
             run_rpl_core(app, core_path, rom_path, tv_renderer, drc_renderer,

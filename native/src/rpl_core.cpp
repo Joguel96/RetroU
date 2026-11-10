@@ -203,15 +203,61 @@ void RplCore::stopAudio()
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
-void RplCore::inputPollCallback() {}
+void RplCore::inputPollCallback()
+{
+    if (instance_) {
+        instance_->pollInput();
+    }
+}
+
+void RplCore::pollInput()
+{
+    uint16_t state = 0;
+    if (controller_) {
+        auto pressed = [this](SDL_GameControllerButton button) {
+            return SDL_GameControllerGetButton(controller_, button) != 0;
+        };
+
+        if (pressed(SDL_CONTROLLER_BUTTON_A)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_A;
+        if (pressed(SDL_CONTROLLER_BUTTON_B)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_B;
+        if (pressed(SDL_CONTROLLER_BUTTON_X)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_X;
+        if (pressed(SDL_CONTROLLER_BUTTON_Y)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_Y;
+        if (pressed(SDL_CONTROLLER_BUTTON_BACK)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_SELECT;
+        if (pressed(SDL_CONTROLLER_BUTTON_START)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_START;
+        if (pressed(SDL_CONTROLLER_BUTTON_LEFTSHOULDER)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_L;
+        if (pressed(SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_R;
+        if (pressed(SDL_CONTROLLER_BUTTON_DPAD_UP)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_UP;
+        if (pressed(SDL_CONTROLLER_BUTTON_DPAD_DOWN)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_DOWN;
+        if (pressed(SDL_CONTROLLER_BUTTON_DPAD_LEFT)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_LEFT;
+        if (pressed(SDL_CONTROLLER_BUTTON_DPAD_RIGHT)) state |= 1u << RETRO_DEVICE_ID_JOYPAD_RIGHT;
+
+        const int deadzone = 12000;
+        int lx = SDL_GameControllerGetAxis(controller_, SDL_CONTROLLER_AXIS_LEFTX);
+        int ly = SDL_GameControllerGetAxis(controller_, SDL_CONTROLLER_AXIS_LEFTY);
+        if (lx < -deadzone) state |= 1u << RETRO_DEVICE_ID_JOYPAD_LEFT;
+        if (lx > deadzone) state |= 1u << RETRO_DEVICE_ID_JOYPAD_RIGHT;
+        if (ly < -deadzone) state |= 1u << RETRO_DEVICE_ID_JOYPAD_UP;
+        if (ly > deadzone) state |= 1u << RETRO_DEVICE_ID_JOYPAD_DOWN;
+    }
+    input_state_ = state;
+}
 
 int16_t RplCore::inputStateCallback(unsigned port, unsigned device, unsigned index, unsigned id)
 {
-    (void)port;
-    (void)device;
     (void)index;
-    (void)id;
-    return 0;
+    if (!instance_ || port != 0) {
+        return 0;
+    }
+    if (device != RETRO_DEVICE_JOYPAD) {
+        return 0;
+    }
+    if (id == RETRO_DEVICE_ID_JOYPAD_MASK) {
+        return static_cast<int16_t>(instance_->input_state_);
+    }
+    if (id >= 16) {
+        return 0;
+    }
+    return (instance_->input_state_ & (1u << id)) ? 1 : 0;
 }
 
 void *RplCore::resolve(const char *symbol, std::string &error)

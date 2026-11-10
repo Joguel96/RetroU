@@ -54,12 +54,12 @@ No hay selector de cores: cada app es un sistema.
 
 ## Lo que falta
 
-- Input del core.
+- Corregir audio en hardware (NES silencioso y cortes en SNES/GBA).
 - SRAM/savestates reales (las carpetas ya existen).
 - Mapeo de controles y ajustes de vídeo funcionales.
 - Carátulas reales.
 
-El audio del core ya está conectado a SDL2.
+El input básico del core ya está conectado: A/B/X/Y/L/R, Start/Select y D-Pad/stick.
 
 ## Build
 

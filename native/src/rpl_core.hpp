@@ -23,6 +23,7 @@ public:
     void runFrame();
     void present(SDL_Renderer *renderer, int width, int height) const;
     void setSaveDirectory(const std::string &path) { save_directory_ = path; }
+    void setController(SDL_GameController *controller) { controller_ = controller; }
     void startAudio();
     void stopAudio();
 
@@ -78,6 +79,8 @@ private:
 
     SDL_AudioDeviceID audio_device_ = 0;
     int sample_rate_ = 44100;
+    SDL_GameController *controller_ = nullptr;
+    uint16_t input_state_ = 0;
 
     ApiVersionFn api_version_ = nullptr;
     InitFn init_ = nullptr;
@@ -106,6 +109,7 @@ private:
     void *resolve(const char *name, std::string &error);
     void log(const std::string &message) const;
     void queueAudio(const int16_t *data, size_t frames);
+    void pollInput();
     void updateTexture(SDL_Renderer *renderer, SDL_Texture *&texture);
     void destroyTextures();};
 

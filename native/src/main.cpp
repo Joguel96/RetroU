@@ -20,6 +20,10 @@
 #include <string>
 #include <vector>
 
+#ifndef RETROU_APP_NAME
+#define RETROU_APP_NAME "RetroU"
+#endif
+
 extern "C" {
 extern const unsigned char _binary_ui_ttf_start[];
 extern const unsigned char _binary_ui_ttf_end[];
@@ -635,7 +639,7 @@ void draw_header(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_font,
 {
     (void)height;
     int margin = tv ? 28 : 18;
-    draw_text(renderer, cache, title_font, "RetroU", margin, tv ? 16 : 10, rgba(255, 255, 255));
+    draw_text(renderer, cache, title_font, RETROU_APP_NAME, margin, tv ? 16 : 10, rgba(255, 255, 255));
     draw_text(renderer, cache, body_font, "GLASS OS  /  WII U", margin, tv ? 56 : 44, rgba(148, 163, 184));
 
     std::string status = connected ? "WII U GAMEPAD" : "CONECTA UN MANDO";
@@ -787,7 +791,8 @@ void render_sidebar(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_
     fill_rect(renderer, panel_x, panel_y, panel_w, panel_h, rgba(15, 23, 42, 245));
     outline_rect(renderer, panel_x, panel_y, panel_w, panel_h, rgba(255, 255, 255, 80));
 
-    draw_text(renderer, cache, heading_font, "MENÚ RETROU", panel_x + 20, panel_y + 20,
+    draw_text(renderer, cache, heading_font, std::string("MENÚ ") + RETROU_APP_NAME,
+              panel_x + 20, panel_y + 20,
               rgba(255, 255, 255));
     draw_text(renderer, cache, small_font, "PLUS / B  CERRAR", panel_x + 20, panel_y + 54,
               rgba(148, 163, 184));
@@ -1053,14 +1058,15 @@ void render_core_menu(SDL_Renderer *renderer, TextCache &cache, TTF_Font *headin
     fill_rect(renderer, panel_x, panel_y, panel_w, panel_h, rgba(15, 23, 42, 245));
     outline_rect(renderer, panel_x, panel_y, panel_w, panel_h, rgba(255, 255, 255, 80));
 
-    draw_text(renderer, cache, heading_font, "MENÚ RETROU", panel_x + 24, panel_y + 20,
+    draw_text(renderer, cache, heading_font, std::string("MENÚ ") + RETROU_APP_NAME,
+              panel_x + 24, panel_y + 20,
               rgba(255, 255, 255));
     draw_text(renderer, cache, small_font, "MINUS + PLUS  CERRAR MENÚ     A  SELECCIONAR",
               panel_x + 24, panel_y + 58, rgba(148, 163, 184));
 
     const char *options[] = {
         "Continuar",
-        "Cerrar juego y volver a RetroU",
+        "Cerrar juego y volver a " RETROU_APP_NAME,
     };
 
     for (int i = 0; i < 2; ++i) {
@@ -1344,10 +1350,10 @@ int main(int argc, char **argv)
     SDL_GameControllerEventState(SDL_ENABLE);
 
     SDL_Window *tv_window = SDL_CreateWindow(
-        "RetroU", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720,
+        RETROU_APP_NAME, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720,
         SDL_WINDOW_SHOWN | SDL_WINDOW_WIIU_TV_ONLY);
     SDL_Window *drc_window = SDL_CreateWindow(
-        "RetroU", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 854, 480,
+        RETROU_APP_NAME, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 854, 480,
         SDL_WINDOW_SHOWN | SDL_WINDOW_WIIU_GAMEPAD_ONLY);
 
     SDL_Renderer *tv_renderer = tv_window ? make_renderer(tv_window) : nullptr;

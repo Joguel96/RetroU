@@ -7,18 +7,18 @@ Libretro enlazado estáticamente** y se distribuye como WUHB independiente.
 
 | App | Core | Sistema |
 |---|---|---|
-| `RetroU-NES.wuhb` | fceumm | NES |
-| `RetroU-SNES.wuhb` | snes9x | SNES |
-| `RetroU-GBA.wuhb` | mgba | GBA |
-| `RetroU-Test.wuhb` | test_core | prueba de vídeo |
+| `RNESU.wuhb` | fceumm | NES |
+| `RSNESU.wuhb` | snes9x | SNES |
+| `RGBAU.wuhb` | mgba | GBA |
+| `RTESTU.wuhb` | test_core | prueba de vídeo |
 
 Distribución:
 
 ```text
-dist/wiiu/apps/RetroU-NES/RetroU-NES.wuhb
-dist/wiiu/apps/RetroU-SNES/RetroU-SNES.wuhb
-dist/wiiu/apps/RetroU-GBA/RetroU-GBA.wuhb
-dist/wiiu/apps/RetroU-Test/RetroU-Test.wuhb
+dist/wiiu/apps/RNESU/RNESU.wuhb
+dist/wiiu/apps/RSNESU/RSNESU.wuhb
+dist/wiiu/apps/RGBAU/RGBAU.wuhb
+dist/wiiu/apps/RTESTU/RTESTU.wuhb
 ```
 
 No hay launcher, `RetroU.wuhb`, `retrou/cores` ni RPX sueltos.

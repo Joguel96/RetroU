@@ -79,10 +79,10 @@ native/build/retrou_test.wuhb
 Distribución:
 
 ```text
-dist/wiiu/apps/RetroU-NES/RetroU-NES.wuhb
-dist/wiiu/apps/RetroU-SNES/RetroU-SNES.wuhb
-dist/wiiu/apps/RetroU-GBA/RetroU-GBA.wuhb
-dist/wiiu/apps/RetroU-Test/RetroU-Test.wuhb
+dist/wiiu/apps/RNESU/RNESU.wuhb
+dist/wiiu/apps/RSNESU/RSNESU.wuhb
+dist/wiiu/apps/RGBAU/RGBAU.wuhb
+dist/wiiu/apps/RTESTU/RTESTU.wuhb
 ```
 
 No se distribuyen RPX sueltos ni `RetroU.wuhb` launcher.
@@ -202,9 +202,9 @@ Ya no se usa `launcher.log` ni `launch/last.txt`.
 ## 9. Directorios y datos
 
 ```text
-sd:/wiiu/apps/RetroU-NES/RetroU-NES.wuhb
-sd:/wiiu/apps/RetroU-SNES/RetroU-SNES.wuhb
-sd:/wiiu/apps/RetroU-GBA/RetroU-GBA.wuhb
+sd:/wiiu/apps/RNESU/RNESU.wuhb
+sd:/wiiu/apps/RSNESU/RSNESU.wuhb
+sd:/wiiu/apps/RGBAU/RGBAU.wuhb
 
 sd:/retrou/roms/nes/
 sd:/retrou/roms/snes/
@@ -253,7 +253,7 @@ No commitear:
 ## 11. Estado funcional y limitaciones
 
 - NES/SNES/GBA: WUHB estática generada y compilada.
-- `RetroU-Test` sigue disponible como build de desarrollo.
+- `RTESTU` sigue disponible como build de desarrollo.
 - No probado en hardware: NES/SNES/GBA con ROM real.
 - **Input del core no implementado**: los botones aún no llegan al emulador.
 - **Audio del core no implementado**.

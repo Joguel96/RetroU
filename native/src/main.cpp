@@ -125,6 +125,7 @@ struct AppState {
     int settings_index = 0;
     int theme_index = 0;
     int control_profile = 0;
+    bool assets_downloading = false;
     int keyboard_index = 0;
     std::string search_query;
     int tooltip_focus = -1;
@@ -1668,7 +1669,17 @@ void settings_action(AppState &app, int action)
             app.dirty = true;
             app.message = std::string("Tema: ") + current_theme(app).name;
         } else if (app.settings_index == 1) {
-            app.message = "Assets administrados automáticamente";
+            if (!app.assets_downloading) {
+                std::vector<RomEntry> assets;
+                for (const RomEntry &rom : app.library.roms) {
+                    if (rom.system == current_system_id()) assets.push_back(rom);
+                }
+                app.assets_downloading = true;
+                std::thread(download_assets_thread, assets).detach();
+                app.message = "Descargando assets en segundo plano";
+            } else {
+                app.message = "Descarga de assets en curso";
+            }
         } else if (app.settings_index == 2) {
             app.control_profile = (app.control_profile + 1) % 3;
             app.dirty = true;
@@ -2283,13 +2294,6 @@ int main(int argc, char **argv)
     load_libretro_metadata(app);
     load_metadata(app);
     refresh_visible(app);
-    {
-        std::vector<RomEntry> assets;
-        for (const RomEntry &rom : app.library.roms) {
-            if (rom.system == current_system_id()) assets.push_back(rom);
-        }
-        std::thread(download_assets_thread, assets).detach();
-    }
     if (app.library.roms.empty()) {
         app.message = "Copia ROMs a sd:/retrou/roms/<consola>/";
     }

@@ -22,7 +22,8 @@ int main()
 
         drawGradient(0.0f, 0.0f, 1280.0f, 720.0f, top, bottom);
         drawRect(120.0f, 120.0f, 320.0f, 200.0f, accent);
-        drawRect(460.0f, 360.0f, 360.0f, 240.0f, Color{255, 0, 0, 200});
+        drawRoundRect(460.0f, 120.0f, 360.0f, 240.0f, 40.0f, Color{255, 0, 0, 220});
+        drawRect(500.0f, 400.0f, 280.0f, 160.0f, Color{40, 200, 120, 255});
 
         endFrame();
     }

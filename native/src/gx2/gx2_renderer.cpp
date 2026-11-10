@@ -9,6 +9,8 @@
 #include <gx2r/buffer.h>
 #include <gx2r/draw.h>
 
+#include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <vector>
 
@@ -21,6 +23,7 @@ namespace {
 // so the layout stays the same whether the TV is 720p or 1080p.
 constexpr float kScreenW = 1280.0f;
 constexpr float kScreenH = 720.0f;
+constexpr float kPi = 3.14159265358979323846f;
 
 #include "solid_gsh.inc"
 #include "texture_gsh.inc"
@@ -76,6 +79,46 @@ void pushSolidVertex(float x, float y, Color c)
     g_solidCol.push_back(c.a / 255.0f);
 }
 
+void pushTriangle(float x0, float y0, float x1, float y1,
+                  float x2, float y2, Color c)
+{
+    pushSolidVertex(x0, y0, c);
+    pushSolidVertex(x1, y1, c);
+    pushSolidVertex(x2, y2, c);
+}
+
+void pushQuad(float x0, float y0, float x1, float y1, Color c)
+{
+    pushTriangle(x0, y0, x1, y0, x1, y1, c);
+    pushTriangle(x0, y0, x1, y1, x0, y1, c);
+}
+
+void pushGradientQuad(float x0, float y0, float x1, float y1,
+                      Color top, Color bottom)
+{
+    pushSolidVertex(x0, y0, top);
+    pushSolidVertex(x1, y0, top);
+    pushSolidVertex(x1, y1, bottom);
+
+    pushSolidVertex(x0, y0, top);
+    pushSolidVertex(x1, y1, bottom);
+    pushSolidVertex(x0, y1, bottom);
+}
+
+void pushCorner(float cx, float cy, float radius, float a0, float a1,
+                Color c, int segments)
+{
+    for (int i = 0; i < segments; ++i) {
+        float t0 = a0 + (a1 - a0) * i / segments;
+        float t1 = a0 + (a1 - a0) * (i + 1) / segments;
+        float p0x = cx + std::cos(t0) * radius;
+        float p0y = cy + std::sin(t0) * radius;
+        float p1x = cx + std::cos(t1) * radius;
+        float p1y = cy + std::sin(t1) * radius;
+        pushTriangle(cx, cy, p0x, p0y, p1x, p1y, c);
+    }
+}
+
 void flushSolid()
 {
     if (g_solidPos.empty()) {
@@ -93,7 +136,7 @@ void flushSolid()
     GX2RSetAttributeBuffer(&g_posBuffer, 0, 2 * sizeof(float), 0);
     GX2RSetAttributeBuffer(&g_colBuffer, 1, 4 * sizeof(float), 0);
 
-    GX2DrawEx(GX2_PRIMITIVE_MODE_QUADS,
+    GX2DrawEx(GX2_PRIMITIVE_MODE_TRIANGLES,
               static_cast<uint32_t>(g_solidPos.size() / 2), 0, 1);
 
     g_solidPos.clear();
@@ -189,31 +232,47 @@ void drawRect(float x, float y, float w, float h, Color color)
     if (!g_ready || !g_inFrame) {
         return;
     }
-    pushSolidVertex(x, y, color);
-    pushSolidVertex(x + w, y, color);
-    pushSolidVertex(x + w, y + h, color);
-    pushSolidVertex(x, y + h, color);
+    pushQuad(x, y, x + w, y + h, color);
 }
 
-// The following primitives require additional geometry or texture upload and
-// are implemented in the next milestones.
 void drawGradient(float x, float y, float w, float h, Color top, Color bottom)
 {
     if (!g_ready || !g_inFrame) {
         return;
     }
-    pushSolidVertex(x, y, top);
-    pushSolidVertex(x + w, y, top);
-    pushSolidVertex(x + w, y + h, bottom);
-    pushSolidVertex(x, y + h, bottom);
+    pushGradientQuad(x, y, x + w, y + h, top, bottom);
 }
 
-// Rounded rectangles require a triangle-fan geometry for the corners; the
-// solid pipeline currently batches axis-aligned quads, so this lands next.
-void drawRoundRect(float x, float y, float w, float h, float r, Color color)
+void drawRoundRect(float x, float y, float w, float h, float radius, Color color)
 {
-    (void)x; (void)y; (void)w; (void)h; (void)r; (void)color;
+    if (!g_ready || !g_inFrame) {
+        return;
+    }
+    if (radius <= 0.0f) {
+        pushQuad(x, y, x + w, y + h, color);
+        return;
+    }
+
+    const float r = std::min(radius, std::min(w, h) * 0.5f);
+    const float x0 = x, y0 = y, x1 = x + w, y1 = y + h;
+    const int segments = 8;
+
+    // Center and the four edge rectangles.
+    pushQuad(x0 + r, y0 + r, x1 - r, y1 - r, color); // center
+    pushQuad(x0 + r, y0, x1 - r, y0 + r, color);     // top
+    pushQuad(x0 + r, y1 - r, x1 - r, y1, color);     // bottom
+    pushQuad(x0, y0 + r, x0 + r, y1 - r, color);     // left
+    pushQuad(x1 - r, y0 + r, x1, y1 - r, color);     // right
+
+    // Corner arcs sweep 90 degrees each.
+    pushCorner(x0 + r, y0 + r, r, kPi, kPi * 1.5f, color, segments);       // top-left
+    pushCorner(x1 - r, y0 + r, r, kPi * 1.5f, kPi * 2.0f, color, segments); // top-right
+    pushCorner(x1 - r, y1 - r, r, 0.0f, kPi * 0.5f, color, segments);       // bottom-right
+    pushCorner(x0 + r, y1 - r, r, kPi * 0.5f, kPi, color, segments);        // bottom-left
 }
+
+// Textures require GX2 surface upload and the texture shader; implemented in
+// the next milestone.
 Texture createTexture(int, int, const void *) { return -1; }
 void destroyTexture(Texture) {}
 void drawTexture(Texture, float, float, float, float) {}

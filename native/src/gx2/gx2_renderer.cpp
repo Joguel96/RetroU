@@ -1,6 +1,7 @@
 #include "gx2_renderer.hpp"
 
 #include <whb/gfx.h>
+#include <coreinit/memdefaultheap.h>
 #include <gx2/clear.h>
 #include <gx2/draw.h>
 #include <gx2/mem.h>
@@ -350,7 +351,6 @@ Texture createTexture(int width, int height, const void *rgba)
     GX2Surface &surface = tex.surface;
     std::memset(&tex, 0, sizeof(tex));
 
-    surface.dim = GX2_SURFACE_DIM_TEXTURE_2D;
     surface.width = static_cast<uint32_t>(width);
     surface.height = static_cast<uint32_t>(height);
     surface.depth = 1;
@@ -358,25 +358,41 @@ Texture createTexture(int width, int height, const void *rgba)
     surface.format = GX2_SURFACE_FORMAT_UNORM_R8_G8_B8_A8;
     surface.aa = GX2_AA_MODE1X;
     surface.use = GX2_SURFACE_USE_TEXTURE;
+    surface.dim = GX2_SURFACE_DIM_TEXTURE_2D;
     surface.tileMode = GX2_TILE_MODE_LINEAR_ALIGNED;
+    surface.swizzle = 0;
+    tex.viewFirstMip = 0;
+    tex.viewNumMips = 1;
+    tex.viewFirstSlice = 0;
     tex.viewNumSlices = 1;
+    tex.compMap = 0x0010203;
 
     GX2CalcSurfaceSizeAndAlignment(&surface);
-    GX2RCreateSurface(&surface,
-                      GX2R_RESOURCE_BIND_TEXTURE |
-                      GX2R_RESOURCE_USAGE_CPU_WRITE |
-                      GX2R_RESOURCE_USAGE_GPU_READ);
     GX2InitTextureRegs(&tex);
-
-    void *image = GX2RLockSurfaceEx(&surface, 0, GX2R_RESOURCE_BIND_NONE);
-    if (image) {
-        const uint8_t *src = static_cast<const uint8_t *>(rgba);
-        for (int row = 0; row < height; ++row) {
-            std::memcpy(static_cast<uint8_t *>(image) + row * surface.pitch,
-                        src + row * width * 4, static_cast<size_t>(width) * 4);
-        }
-        GX2RUnlockSurfaceEx(&surface, 0, GX2R_RESOURCE_BIND_NONE);
+    if (surface.imageSize == 0) {
+        delete record;
+        return -1;
     }
+
+    surface.image = MEMAllocFromDefaultHeapEx(surface.imageSize, surface.alignment);
+    if (!surface.image) {
+        delete record;
+        return -1;
+    }
+
+    // For LINEAR_ALIGNED surfaces with a 32-bit format, GX2Surface::pitch is
+    // expressed in uint32_t elements, so the byte stride is pitch * 4. This
+    // matches the known-good CafeGLSL texture upload path.
+    const uint8_t *src = static_cast<const uint8_t *>(rgba);
+    for (int row = 0; row < height; ++row) {
+        uint32_t *dst = static_cast<uint32_t *>(surface.image) +
+                        row * surface.pitch;
+        std::memcpy(dst, src + static_cast<size_t>(row) * width * 4,
+                    static_cast<size_t>(width) * 4);
+    }
+
+    GX2Invalidate(GX2_INVALIDATE_MODE_CPU | GX2_INVALIDATE_MODE_TEXTURE,
+                  surface.image, surface.imageSize);
 
     record->width = width;
     record->height = height;
@@ -391,7 +407,9 @@ void destroyTexture(Texture texture)
         return;
     }
     TextureRecord *record = g_textures[index];
-    GX2RDestroySurfaceEx(&record->texture.surface, GX2R_RESOURCE_BIND_NONE);
+    if (record->texture.surface.image) {
+        MEMFreeToDefaultHeap(record->texture.surface.image);
+    }
     delete record;
     g_textures[index] = nullptr;
 }

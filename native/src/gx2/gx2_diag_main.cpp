@@ -11,11 +11,15 @@ using namespace retrou::gx2;
 static Texture makeChecker()
 {
     constexpr int size = 64;
-    std::vector<uint32_t> pixels(size * size);
+    std::vector<uint8_t> pixels(static_cast<size_t>(size) * size * 4);
     for (int y = 0; y < size; ++y) {
         for (int x = 0; x < size; ++x) {
             const bool on = ((x / 8) + (y / 8)) % 2 == 0;
-            pixels[y * size + x] = on ? 0xFFFFD97F : 0xFF2E5C8A;
+            uint8_t *px = &pixels[static_cast<size_t>(y * size + x) * 4];
+            px[0] = on ? 255 : 46;   // R
+            px[1] = on ? 217 : 92;   // G
+            px[2] = on ? 127 : 138;  // B
+            px[3] = 255;             // A
         }
     }
     return createTexture(size, size, pixels.data());

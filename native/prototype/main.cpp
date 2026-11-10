@@ -27,11 +27,9 @@ struct Color {
 
 constexpr Color kText = {241, 245, 249, 255};
 constexpr Color kMuted = {148, 163, 184, 255};
-constexpr Color kGreen = {52, 211, 153, 255};
 constexpr Color kGold = {245, 180, 40, 255};
 constexpr Color kFocus = {77, 163, 255, 255};
 constexpr Color kPanel = {15, 23, 42, 255};
-
 void setColor(SDL_Renderer *r, Color c)
 {
     SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_BLEND);
@@ -229,16 +227,6 @@ SDL_Texture *makeGradient(SDL_Renderer *renderer, int w, int h, int radius)
     return texture;
 }
 
-void drawChip(SDL_Renderer *r, TextCache &text, int x, int y, const std::string &label)
-{
-    int tw = 0, th = 0;
-    TTF_Font *f = text.font(10);
-    if (f) TTF_SizeUTF8(f, label.c_str(), &tw, &th);
-    int w = tw + 18;
-    fillRoundRect(r, x, y, w, 22, 7, Color{15, 23, 42, 180});
-    text.draw(label, 10, Color{248, 250, 252, 255}, x + 9, y + 5);
-}
-
 } // namespace
 
 int main(int, char **)
@@ -316,7 +304,6 @@ int main(int, char **)
             SDL_RenderCopy(renderer, icon, nullptr, &iconRect);
         }
 
-        drawChip(renderer, text, x + 10, y + 10, "SNES");
         drawStar(renderer, x + kCardW - 24, y + 22, 11, 4, kGold);
 
         // Featured badge.
@@ -329,17 +316,8 @@ int main(int, char **)
 
         std::string title = text.ellipsize("Super Mario World", 16, kCardW - 28);
         text.draw(title, 16, kText, x + 14, y + kCoverH + 12);
-        text.draw("Nintendo EAD · 1990", 12, kMuted, x + 14, y + kCoverH + 37);
-
-        fillRect(renderer, x + 14, y + kCoverH + 58, kCardW - 28, 1,
-                 Color{255, 255, 255, 24});
+        text.draw("Nintendo EAD · 1990", 12, kMuted, x + 14, y + kCoverH + 38);
         text.draw("Plataformas", 12, Color{203, 213, 225, 255}, x + 14, y + kCoverH + 68);
-
-        std::string runs = "142 ejec.";
-        TTF_Font *small = text.font(12);
-        int rw = 0, rh = 0;
-        if (small) TTF_SizeUTF8(small, runs.c_str(), &rw, &rh);
-        text.draw(runs, 12, kGreen, x + kCardW - 14 - rw, y + kCoverH + 68);
 
         SDL_RenderPresent(renderer);
         SDL_Delay(16);

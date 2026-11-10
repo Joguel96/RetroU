@@ -9,10 +9,13 @@ modifica el build de Wii U.
 - Una tarjeta de 190×250.
 - Degradado SNES prerenderizado a textura.
 - Esquinas redondeadas.
-- Chip de plataforma, estrella de favorito y badge `Destacado`.
-- Panel inferior con título, desarrollador/año, género y ejecuciones.
+- Estrella de favorito y badge `Destacado`.
+- Panel inferior con título, desarrollador/año y género.
 - Borde de foco azul.
 - Texto cacheado por tamaño/color/string.
+
+La tarjeta ya no muestra chip de plataforma, divisor interior ni contador de
+ejecuciones: la app es de una sola consola.
 
 Todavía no hay cuadrícula, scroll, navegación ni táctil.
 

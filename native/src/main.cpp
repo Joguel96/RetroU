@@ -114,6 +114,7 @@ struct AppState {
     int settings_index = 0;
     int theme_index = 0;
     int tooltip_focus = -1;
+    int tooltip_shown_focus = -1;
     Uint32 focus_since = 0;
     int sidebar_index = 0;
     int sort_mode = 0;       /* 0 = name, 1 = region */
@@ -985,8 +986,8 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
     const ThemePreset &theme = current_theme(app);
     draw_background(renderer, width, height, accent,
                     current_theme(app).backgroundTop, current_theme(app).backgroundBottom);
-    draw_header(renderer, cache, title_font, small_font, width, height, tv, connected,
-                current_theme(app));
+    draw_text(renderer, cache, title_font, "Biblioteca", margin, tv ? 18 : 10,
+              rgba(current_theme(app).text));
 
     const int content_x = margin;
     const int content_w = width - margin * 2;
@@ -1089,7 +1090,7 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
             static_cast<int>(app.visible.size()) - 1))]->title;
         int card_w = (content_w - gap * (columns - 1)) / columns;
         bool truncated = fit_text(body_font, full, card_w - 20) != full;
-        if (truncated && SDL_GetTicks() - app.focus_since >= 5000) {
+        if (truncated && app.tooltip_shown_focus == app.game) {
             std::string shown = fit_text(body_font, full, width - 120);
             int tip_w = text_width(body_font, shown) + 30;
             int tip_x = (width - tip_w) / 2;
@@ -1138,9 +1139,8 @@ void render_sidebar(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_
                       rgba(current_theme(app).panel, 245));
     draw_glass_panel(renderer, panel_x, panel_y, panel_w, panel_h, 18, 225);
 
-    draw_text(renderer, cache, heading_font, std::string("MENÚ ") + RETROU_APP_NAME,
-              panel_x + 20, panel_y + 20,
-              rgba(255, 255, 255));
+    draw_text(renderer, cache, heading_font, "FILTRAR Y ORGANIZAR", panel_x + 20,
+              panel_y + 20, rgba(255, 255, 255));
     draw_text(renderer, cache, small_font, "PLUS / B  CERRAR", panel_x + 20, panel_y + 54,
               rgba(148, 163, 184));
 
@@ -1178,13 +1178,6 @@ void render_sidebar(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_
                                          : rgba(current_theme(app).muted));
         y += 52;
     }
-
-    draw_text(renderer, cache, small_font,
-              "FILTRAR Y ORGANIZAR",
-              panel_x + 20, panel_y + panel_h - 52, rgba(148, 163, 184));
-    draw_text(renderer, cache, small_font,
-              "R  AJUSTES",
-              panel_x + 20, panel_y + panel_h - 30, rgba(148, 163, 184));
 }
 
 void sidebar_action(AppState &app, int action)
@@ -1248,8 +1241,8 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
     const int margin = tv ? 28 : 18;
     draw_background(renderer, width, height, current_theme(app).accent,
                     current_theme(app).backgroundTop, current_theme(app).backgroundBottom);
-    draw_header(renderer, cache, title_font, small_font, width, height, tv, connected,
-                current_theme(app));
+    draw_text(renderer, cache, title_font, "AJUSTES", margin, tv ? 18 : 10,
+              rgba(current_theme(app).text));
 
     const int panel_x = margin;
     const int panel_y = tv ? 100 : 78;
@@ -1258,9 +1251,7 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
     draw_glass_panel(renderer, panel_x, panel_y, panel_w, panel_h, 18, 225);
 
     const char *sections[] = {"PERSONALIZAR", "ASSETS", "CONTROLES", "SONIDO", "VÍDEO"};
-    draw_text(renderer, cache, small_font, "AJUSTES", panel_x + 18, panel_y + 18,
-              rgba(148, 163, 184));
-    int y = panel_y + 50;
+    int y = panel_y + 24;
     for (int i = 0; i < 5; ++i) {
         bool selected = i == app.settings_index;
         if (selected) {
@@ -1985,7 +1976,14 @@ int main(int argc, char **argv)
         Uint32 now = SDL_GetTicks();
         if (app.game != app.tooltip_focus) {
             app.tooltip_focus = app.game;
+            app.tooltip_shown_focus = -1;
             app.focus_since = now;
+            ui_dirty = true;
+        }
+        if (!app.visible.empty() && app.tooltip_shown_focus != app.game &&
+            now - app.focus_since >= 5000) {
+            app.tooltip_shown_focus = app.game;
+            ui_dirty = true;
         }
         if (app.message != last_message) {
             last_message = app.message;

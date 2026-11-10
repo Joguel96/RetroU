@@ -655,6 +655,25 @@ void outline_rounded_rect(SDL_Renderer *renderer, int x, int y, int w, int h, in
     outline_rect(renderer, x, y + radius, w, h - radius * 2, color);
 }
 
+/* SDL has no backdrop-filter. This layered treatment reproduces the RetroUI
+ * glass read: soft shadow, translucent navy body, specular top edge, darker
+ * bottom half and a crisp inner border. */
+void draw_glass_panel(SDL_Renderer *renderer, int x, int y, int w, int h, int radius,
+                      uint8_t alpha = 205)
+{
+    fill_rounded_rect(renderer, x + 5, y + 9, w, h, radius, rgba(0, 0, 0, 95));
+    fill_rounded_rect(renderer, x, y, w, h, radius, rgba(18, 27, 43, alpha));
+    fill_rounded_rect(renderer, x + 1, y + 1, w - 2, h / 2, radius,
+                      rgba(255, 255, 255, 13));
+    fill_rounded_rect(renderer, x + 1, y + h / 2, w - 2, h - h / 2 - 1, radius,
+                      rgba(0, 0, 0, 28));
+    fill_rect(renderer, x + radius, y + 1, w - radius * 2, 1,
+              rgba(255, 255, 255, 90));
+    fill_rect(renderer, x + radius, y + h - 2, w - radius * 2, 1,
+              rgba(0, 0, 0, 90));
+    outline_rounded_rect(renderer, x, y, w, h, radius, rgba(255, 255, 255, 62));
+}
+
 void draw_background(SDL_Renderer *renderer, int width, int height, uint32_t accent)
 {
     /* A handful of bands instead of one draw call per scanline. The old
@@ -705,10 +724,8 @@ void draw_header(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_font,
     (void)height;
     int margin = tv ? 28 : 18;
     int bar_h = tv ? 70 : 54;
-    fill_rounded_rect(renderer, margin - 10, tv ? 10 : 6, width - (margin - 10) * 2, bar_h,
-                      tv ? 18 : 14, rgba(12, 19, 31, 165));
-    outline_rounded_rect(renderer, margin - 10, tv ? 10 : 6, width - (margin - 10) * 2, bar_h,
-                         tv ? 18 : 14, rgba(255, 255, 255, 34));
+    draw_glass_panel(renderer, margin - 10, tv ? 10 : 6,
+                     width - (margin - 10) * 2, bar_h, tv ? 18 : 14, 190);
 
     draw_text(renderer, cache, title_font, RETROU_APP_NAME, margin, tv ? 18 : 10,
               rgba(255, 255, 255));
@@ -777,8 +794,10 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
 
     const std::vector<const RomEntry *> &games = app.visible;
     if (games.empty()) {
-        fill_rect(renderer, content_x, content_y, content_w, content_h, rgba(15, 23, 42, 150));
-        outline_rect(renderer, content_x, content_y, content_w, content_h, rgba(255, 255, 255, 30));
+        fill_rounded_rect(renderer, content_x, content_y, content_w, content_h, 16,
+                          rgba(15, 23, 42, 150));
+        outline_rounded_rect(renderer, content_x, content_y, content_w, content_h, 16,
+                             rgba(255, 255, 255, 30));
         draw_text_center(renderer, cache, heading_font, "Sin ROMs en esta consola",
                          content_x + content_w / 2, content_y + content_h / 2 - 30, rgba(226, 232, 240));
         draw_text_center(renderer, cache, small_font, "Copia ROMs a sd:/retrou/roms/<Consola>/",
@@ -821,11 +840,11 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
                 int by = y + band * cover_h / 5;
                 int bh = (band + 1) * cover_h / 5 - band * cover_h / 5;
                 float t = static_cast<float>(band) / 4.0f;
-                fill_rect(renderer, x + 2, by, card_w - 4, bh,
-                          rgba(static_cast<uint8_t>(r * (0.55f + t * 0.45f)),
-                               static_cast<uint8_t>(g * (0.55f + t * 0.45f)),
-                               static_cast<uint8_t>(b * (0.55f + t * 0.45f)),
-                               selected ? 235 : 205));
+                fill_rounded_rect(renderer, x + 2, by, card_w - 4, bh, 10,
+                                  rgba(static_cast<uint8_t>(r * (0.55f + t * 0.45f)),
+                                       static_cast<uint8_t>(g * (0.55f + t * 0.45f)),
+                                       static_cast<uint8_t>(b * (0.55f + t * 0.45f)),
+                                       selected ? 235 : 205));
             }
             SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 42);
@@ -834,8 +853,8 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
                     SDL_RenderDrawPoint(renderer, px, py);
                 }
             }
-            fill_rect(renderer, x + 2, y + cover_h, card_w - 4, card_h - cover_h - 2,
-                      rgba(8, 14, 24, 225));
+            fill_rounded_rect(renderer, x + 2, y + cover_h, card_w - 4,
+                              card_h - cover_h - 2, 10, rgba(8, 14, 24, 225));
             outline_rounded_rect(renderer, x, y, card_w, card_h, 12,
                                  selected ? rgba(255, 255, 255, 235)
                                           : rgba(255, 255, 255, 44));
@@ -915,9 +934,8 @@ void render_sidebar(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_
     int panel_h = height - 48;
 
     fill_rounded_rect(renderer, panel_x, panel_y, panel_w, panel_h, 18,
-                      rgba(10, 17, 29, 242));
-    outline_rounded_rect(renderer, panel_x, panel_y, panel_w, panel_h, 18,
-                         rgba(255, 255, 255, 78));
+                      rgba(15, 23, 42, 245));
+    draw_glass_panel(renderer, panel_x, panel_y, panel_w, panel_h, 18, 225);
 
     draw_text(renderer, cache, heading_font, std::string("MENÚ ") + RETROU_APP_NAME,
               panel_x + 20, panel_y + 20,

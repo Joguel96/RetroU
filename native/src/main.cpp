@@ -717,7 +717,32 @@ SDL_Texture *cover_for(SDL_Renderer *renderer, const RomEntry &game)
         if (it != g_covers.end() && it->second) return it->second;
         struct stat info;
         if (stat(path.c_str(), &info) != 0) continue;
-        SDL_Texture *texture = IMG_LoadTexture(renderer, path.c_str());
+        SDL_Surface *loaded = IMG_Load(path.c_str());
+        if (!loaded) continue;
+        SDL_Surface *surface = SDL_ConvertSurfaceFormat(loaded, SDL_PIXELFORMAT_ARGB8888, 0);
+        SDL_FreeSurface(loaded);
+        if (!surface) continue;
+        const int radius = 16;
+        if (surface->w > radius * 2 && surface->h > radius) {
+            SDL_LockSurface(surface);
+            for (int py = 0; py < radius; ++py) {
+                for (int px = 0; px < radius; ++px) {
+                    int dx = radius - px;
+                    int dy = radius - py;
+                    if (dx * dx + dy * dy <= radius * radius) continue;
+                    uint32_t *left = reinterpret_cast<uint32_t *>(
+                        static_cast<uint8_t *>(surface->pixels) + py * surface->pitch + px * 4);
+                    uint32_t *right = reinterpret_cast<uint32_t *>(
+                        static_cast<uint8_t *>(surface->pixels) + py * surface->pitch +
+                        (surface->w - 1 - px) * 4);
+                    *left = 0;
+                    *right = 0;
+                }
+            }
+            SDL_UnlockSurface(surface);
+        }
+        SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_FreeSurface(surface);
         g_covers[key] = texture;
         if (texture) return texture;    }
     return nullptr;
@@ -1633,10 +1658,6 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
 
     if (app.dirty) {
         draw_unsaved_banner(renderer, cache, small_font, width, true);
-    }
-    if (!app.message.empty()) {
-        draw_text(renderer, cache, small_font, app.message, content_x + 24,
-                  content_y + 146, rgba(255, 246, 212));
     }
 }
 

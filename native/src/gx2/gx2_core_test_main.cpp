@@ -31,17 +31,6 @@ using namespace retrou::gx2;
 #define RETROU_CORE_LABEL "NES"
 #endif
 
-static SDL_GameController *openGameController()
-{
-    for (int i = 0; i < SDL_NumJoysticks(); ++i) {
-        if (SDL_IsGameController(i)) {
-            SDL_GameController *c = SDL_GameControllerOpen(i);
-            if (c) return c;
-        }
-    }
-    return nullptr;
-}
-
 static Texture makeCover(uint8_t r0, uint8_t g0, uint8_t b0,
                          uint8_t r1, uint8_t g1, uint8_t b1)
 {
@@ -62,8 +51,7 @@ static Texture makeCover(uint8_t r0, uint8_t g0, uint8_t b0,
 
 int main()
 {
-    SDL_Init(SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS);
-    SDL_GameControllerEventState(SDL_ENABLE);
+    SDL_Init(SDL_INIT_AUDIO);
 
     if (!init()) return 1;
     if (!text::loadFont(_binary_ui_ttf_start,
@@ -143,8 +131,8 @@ int main()
         return 1;
     }
     core.setSaveDirectory("/vol/external01/retrou/saves/" RETROU_CORE_SYSTEM "/save");
-    SDL_GameController *controller = openGameController();
-    core.setControllers(controller, nullptr);
+    core.setControllers(nullptr, nullptr);
+    core.setVpadEnabled(true);
 
     bool inGame = false;
     Texture frameTex = -1;
@@ -159,8 +147,6 @@ int main()
     const Color gold{245, 217, 127, 255};
 
     while (true) {
-        SDL_PumpEvents();
-
         VPADStatus vpad{};
         VPADReadError vpadError = VPAD_READ_NO_SAMPLES;
         VPADRead(VPAD_CHAN_0, &vpad, 1, &vpadError);
@@ -170,7 +156,8 @@ int main()
                     core.unload();
                     core.loadStaticCore(nullptr, nullptr, error);
                     core.setSaveDirectory("/vol/external01/retrou/saves/" RETROU_CORE_SYSTEM "/save");
-                    core.setControllers(controller, nullptr);
+                    core.setControllers(nullptr, nullptr);
+                    core.setVpadEnabled(true);
                     inGame = false;
                 } else {
                     break;
@@ -280,7 +267,6 @@ int main()
     }
 
     core.unload();
-    if (controller) SDL_GameControllerClose(controller);
     SDL_Quit();
     return 0;
 }

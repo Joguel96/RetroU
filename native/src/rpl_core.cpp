@@ -1,6 +1,7 @@
 #include "rpl_core.hpp"
 #include "wpad_input.hpp"
 #include <padscore/wpad.h>
+#include <vpad/input.h>
 
 #include <cstdio>
 #include <cstring>
@@ -268,6 +269,25 @@ void RplCore::pollInput()
                 if (pad.buttons & WPAD_PRO_BUTTON_DOWN) state |= 1u << RETRO_DEVICE_ID_JOYPAD_DOWN;
                 if (pad.buttons & WPAD_PRO_BUTTON_LEFT) state |= 1u << RETRO_DEVICE_ID_JOYPAD_LEFT;
                 if (pad.buttons & WPAD_PRO_BUTTON_RIGHT) state |= 1u << RETRO_DEVICE_ID_JOYPAD_RIGHT;
+            }
+        }
+        if (port == 0 && vpad_enabled_ && !controllers_[0] && wpad_ports_[0] < 0) {
+            VPADStatus vpad{};
+            VPADReadError vpadError = VPAD_READ_NO_SAMPLES;
+            VPADRead(VPAD_CHAN_0, &vpad, 1, &vpadError);
+            if (vpadError == VPAD_READ_SUCCESS) {
+                if (vpad.hold & VPAD_BUTTON_A) state |= 1u << RETRO_DEVICE_ID_JOYPAD_A;
+                if (vpad.hold & VPAD_BUTTON_B) state |= 1u << RETRO_DEVICE_ID_JOYPAD_B;
+                if (vpad.hold & VPAD_BUTTON_X) state |= 1u << RETRO_DEVICE_ID_JOYPAD_X;
+                if (vpad.hold & VPAD_BUTTON_Y) state |= 1u << RETRO_DEVICE_ID_JOYPAD_Y;
+                if (vpad.hold & VPAD_BUTTON_L) state |= 1u << RETRO_DEVICE_ID_JOYPAD_L;
+                if (vpad.hold & VPAD_BUTTON_R) state |= 1u << RETRO_DEVICE_ID_JOYPAD_R;
+                if (vpad.hold & VPAD_BUTTON_PLUS) state |= 1u << RETRO_DEVICE_ID_JOYPAD_START;
+                if (vpad.hold & VPAD_BUTTON_MINUS) state |= 1u << RETRO_DEVICE_ID_JOYPAD_SELECT;
+                if (vpad.hold & VPAD_BUTTON_UP) state |= 1u << RETRO_DEVICE_ID_JOYPAD_UP;
+                if (vpad.hold & VPAD_BUTTON_DOWN) state |= 1u << RETRO_DEVICE_ID_JOYPAD_DOWN;
+                if (vpad.hold & VPAD_BUTTON_LEFT) state |= 1u << RETRO_DEVICE_ID_JOYPAD_LEFT;
+                if (vpad.hold & VPAD_BUTTON_RIGHT) state |= 1u << RETRO_DEVICE_ID_JOYPAD_RIGHT;
             }
         }
         input_states_[port] = state;

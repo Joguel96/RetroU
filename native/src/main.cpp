@@ -2513,9 +2513,11 @@ int main(int argc, char **argv)
                 }
             }
             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
-                if (controller &&
-                    event.cbutton.which !=
-                        SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller))) {
+                SDL_JoystickID menu_id = controller
+                    ? SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller)) : -1;
+                SDL_JoystickID pad_id = g_game_port[0]
+                    ? SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(g_game_port[0])) : -1;
+                if (event.cbutton.which != menu_id && event.cbutton.which != pad_id) {
                     continue;
                 }
                 if (app.control_listening && app.settings_screen) {

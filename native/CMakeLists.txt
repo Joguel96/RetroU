@@ -110,55 +110,25 @@ function(add_static_retrou target system label app_name core)
     )
 endfunction()
 
-add_static_retrou(retrou_nes nes "NES" "RNESU" "${FCEUMM_CORE}")
-add_static_retrou(retrou_snes snes "SNES" "RSNESU" "${SNES9X_CORE}")
-add_static_retrou(retrou_gba gba "GBA" "RGBAU" "${MGBA_CORE}")
-
-# Development-only test build.
-add_executable(retrou_test
-    src/main.cpp
-    src/rpl_core.cpp
-    src/rpl_loader.cpp
-    cores/test_core.cpp
-    ${RETRO_COMMON_SOURCES}
-)
-target_include_directories(retrou_test PRIVATE "${LIBRETRO_COMMON}/include")
-target_compile_definitions(retrou_test PRIVATE
-    RETROU_STATIC_CORE=1
-    RETROU_TEST_CORE=1
-    RETROU_APP_NAME="RTESTU"
-)
-configure_retrou(retrou_test)
-wut_create_rpx(retrou_test)
-wut_create_wuhb(retrou_test
-    CONTENT    "${CMAKE_CURRENT_SOURCE_DIR}/content"
-    NAME       "RTESTU"
-    SHORTNAME  "RTESTU"
-    AUTHOR     "joguel96"
-    ICON       "${CMAKE_CURRENT_SOURCE_DIR}/../assets/icon.png"
-    TVSPLASH   "${CMAKE_CURRENT_SOURCE_DIR}/../assets/tv-splash.png"
-    DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/../assets/drc-splash.png"
-)
+add_static_retrou(retrou_nes nes "NES" "RetroNES U" "${FCEUMM_CORE}")
+add_static_retrou(retrou_snes snes "SNES" "RetroSNES U" "${SNES9X_CORE}")
+add_static_retrou(retrou_gba gba "GBA" "RetroGBA U" "${MGBA_CORE}")
 
 add_custom_target(stage_wuhb ALL
     COMMAND "${CMAKE_COMMAND}" -E make_directory
-            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RNESU"
-            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RSNESU"
-            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RGBAU"
-            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RTESTU"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroNESU"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroSNESU"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroGBAU"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${CMAKE_CURRENT_BINARY_DIR}/retrou_nes.wuhb"
-            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RNESU/RNESU.wuhb"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroNESU/RetroNESU.wuhb"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${CMAKE_CURRENT_BINARY_DIR}/retrou_snes.wuhb"
-            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RSNESU/RSNESU.wuhb"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroSNESU/RetroSNESU.wuhb"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${CMAKE_CURRENT_BINARY_DIR}/retrou_gba.wuhb"
-            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RGBAU/RGBAU.wuhb"
-    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-            "${CMAKE_CURRENT_BINARY_DIR}/retrou_test.wuhb"
-            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RTESTU/RTESTU.wuhb"
-    DEPENDS retrou_nes_wuhb retrou_snes_wuhb retrou_gba_wuhb retrou_test_wuhb
+            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroGBAU/RetroGBAU.wuhb"
+    DEPENDS retrou_nes_wuhb retrou_snes_wuhb retrou_gba_wuhb
     COMMENT "Staging per-console WUHB files"
     VERBATIM
 )

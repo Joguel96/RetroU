@@ -7,18 +7,16 @@ Libretro enlazado estáticamente** y se distribuye como WUHB independiente.
 
 | App | Core | Sistema |
 |---|---|---|
-| `RNESU.wuhb` | fceumm | NES |
-| `RSNESU.wuhb` | snes9x | SNES |
-| `RGBAU.wuhb` | mgba | GBA |
-| `RTESTU.wuhb` | test_core | prueba de vídeo |
+| `RetroNESU.wuhb` | fceumm | NES |
+| `RetroSNESU.wuhb` | snes9x | SNES |
+| `RetroGBAU.wuhb` | mgba | GBA |
 
 Distribución:
 
 ```text
-dist/wiiu/apps/RNESU/RNESU.wuhb
-dist/wiiu/apps/RSNESU/RSNESU.wuhb
-dist/wiiu/apps/RGBAU/RGBAU.wuhb
-dist/wiiu/apps/RTESTU/RTESTU.wuhb
+dist/wiiu/apps/RetroNESU/RetroNESU.wuhb
+dist/wiiu/apps/RetroSNESU/RetroSNESU.wuhb
+dist/wiiu/apps/RetroGBAU/RetroGBAU.wuhb
 ```
 
 No hay launcher, `RetroU.wuhb`, `retrou/cores` ni RPX sueltos.
@@ -55,10 +53,12 @@ No hay selector de cores: cada app es un sistema.
 
 ## Lo que falta
 
-- Audio e input del core.
+- Input del core.
 - SRAM/savestates reales (las carpetas ya existen).
 - Mapeo de controles y ajustes de vídeo funcionales.
 - Carátulas reales.
+
+El audio del core ya está conectado a SDL2.
 
 ## Build
 
@@ -74,20 +74,20 @@ cmake --build build -j"$(nproc)"
 Salidas:
 
 ```text
-build/retrou_nes.rpx / .wuhb
-build/retrou_snes.rpx / .wuhb
-build/retrou_gba.rpx / .wuhb
-build/retrou_test.rpx / .wuhb
+build/retrou_nes.wuhb
+build/retrou_snes.wuhb
+build/retrou_gba.wuhb
 ```
 
 ## SD
 
 ```text
-sd:/retrou/roms/NES/...
-sd:/retrou/roms/SNES/...
-sd:/retrou/roms/GBA/...
-sd:/retrou/cores/system/
-sd:/retrou/cores/savefiles/
+sd:/retrou/roms/nes/...
+sd:/retrou/roms/snes/...
+sd:/retrou/roms/gba/...
+sd:/retrou/config/<consola>/
+sd:/retrou/saves/<consola>/save/
+sd:/retrou/snap/<consola>/
 ```
 
 ## Logs

@@ -65,7 +65,6 @@ Apps:
 | `retrou_nes` | fceumm | NES |
 | `retrou_snes` | snes9x | SNES |
 | `retrou_gba` | mgba | GBA |
-| `retrou_test` | `test_core.cpp` | test de vídeo |
 
 Salidas:
 
@@ -73,16 +72,14 @@ Salidas:
 native/build/retrou_nes.wuhb
 native/build/retrou_snes.wuhb
 native/build/retrou_gba.wuhb
-native/build/retrou_test.wuhb
 ```
 
 Distribución:
 
 ```text
-dist/wiiu/apps/RNESU/RNESU.wuhb
-dist/wiiu/apps/RSNESU/RSNESU.wuhb
-dist/wiiu/apps/RGBAU/RGBAU.wuhb
-dist/wiiu/apps/RTESTU/RTESTU.wuhb
+dist/wiiu/apps/RetroNESU/RetroNESU.wuhb
+dist/wiiu/apps/RetroSNESU/RetroSNESU.wuhb
+dist/wiiu/apps/RetroGBAU/RetroGBAU.wuhb
 ```
 
 No se distribuyen RPX sueltos ni `RetroU.wuhb` launcher.
@@ -202,9 +199,9 @@ Ya no se usa `launcher.log` ni `launch/last.txt`.
 ## 9. Directorios y datos
 
 ```text
-sd:/wiiu/apps/RNESU/RNESU.wuhb
-sd:/wiiu/apps/RSNESU/RSNESU.wuhb
-sd:/wiiu/apps/RGBAU/RGBAU.wuhb
+sd:/wiiu/apps/RetroNESU/RetroNESU.wuhb
+sd:/wiiu/apps/RetroSNESU/RetroSNESU.wuhb
+sd:/wiiu/apps/RetroGBAU/RetroGBAU.wuhb
 
 sd:/retrou/roms/nes/
 sd:/retrou/roms/snes/
@@ -253,10 +250,9 @@ No commitear:
 ## 11. Estado funcional y limitaciones
 
 - NES/SNES/GBA: WUHB estática generada y compilada.
-- `RTESTU` sigue disponible como build de desarrollo.
 - No probado en hardware: NES/SNES/GBA con ROM real.
 - **Input del core no implementado**: los botones aún no llegan al emulador.
-- **Audio del core no implementado**.
+- **Audio del core implementado con SDL2**, pendiente de probar en hardware.
 - SRAM/savestates/carátulas reales pendientes.
 - El sidebar funciona, pero Controles/Ajustes son placeholders.
 - El guardado de SRAM/snap todavía no escribe archivos; solo se crean las

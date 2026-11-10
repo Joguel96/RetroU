@@ -128,14 +128,79 @@ void RplCore::videoCallback(const void *data, unsigned width, unsigned height, s
 
 void RplCore::audioCallback(int16_t left, int16_t right)
 {
-    (void)left;
-    (void)right;
+    if (!instance_ || !instance_->audio_device_) {
+        return;
+    }
+    int16_t frame[2] = {left, right};
+    instance_->queueAudio(frame, 1);
 }
 
 size_t RplCore::audioBatchCallback(const int16_t *data, size_t frames)
 {
-    (void)data;
+    if (instance_ && data && frames > 0) {
+        instance_->queueAudio(data, frames);
+    }
     return frames;
+}
+
+void RplCore::queueAudio(const int16_t *data, size_t frames)
+{
+    if (!audio_device_ || !data || frames == 0) {
+        return;
+    }
+
+    /* Keep latency bounded if the frontend falls behind. */
+    const uint32_t max_bytes = static_cast<uint32_t>(sample_rate_) * 4u / 4u;
+    if (SDL_GetQueuedAudioSize(audio_device_) > max_bytes) {
+        SDL_ClearQueuedAudio(audio_device_);
+    }
+    SDL_QueueAudio(audio_device_, data,
+                   static_cast<uint32_t>(frames * 2 * sizeof(int16_t)));
+}
+
+void RplCore::startAudio()
+{
+    if (audio_device_ || !get_av_info_) {
+        return;
+    }
+
+    retro_system_av_info av{};
+    get_av_info_(&av);
+    sample_rate_ = av.timing.sample_rate > 0
+                       ? static_cast<int>(av.timing.sample_rate + 0.5)
+                       : 44100;
+
+    if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) {
+        log(std::string("SDL audio init failed: ") + SDL_GetError());
+        return;
+    }
+
+    SDL_AudioSpec want{};
+    SDL_AudioSpec have{};
+    want.freq = sample_rate_;
+    want.format = AUDIO_S16SYS;
+    want.channels = 2;
+    want.samples = 1024;
+    want.callback = nullptr;
+
+    audio_device_ = SDL_OpenAudioDevice(nullptr, 0, &want, &have, 0);
+    if (!audio_device_) {
+        log(std::string("SDL_OpenAudioDevice failed: ") + SDL_GetError());
+        return;
+    }
+
+    log("Audio opened: " + std::to_string(have.freq) + " Hz, " +
+        std::to_string(have.channels) + " ch");
+    SDL_PauseAudioDevice(audio_device_, 0);
+}
+
+void RplCore::stopAudio()
+{
+    if (audio_device_) {
+        SDL_CloseAudioDevice(audio_device_);
+        audio_device_ = 0;
+    }
+    SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
 void RplCore::inputPollCallback() {}
@@ -299,6 +364,9 @@ bool RplCore::loadGame(const std::string &rom_path, std::string &error)
 
     log("retro_load_game ok");
     game_loaded_ = true;
+
+    startAudio();
+
     return true;
 }
 
@@ -387,6 +455,7 @@ void RplCore::unload()
             unload_game_();
         }
         game_loaded_ = false;
+        stopAudio();
         if (initialized_ && deinit_) {
             deinit_();
         }

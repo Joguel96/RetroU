@@ -1887,6 +1887,8 @@ void settings_action(AppState &app, int action)
         }
     } else if (action == 9) {
         app.settings_screen = false;
+        app.sidebar_open = true;
+        app.sidebar_index = 0;
     }
 }
 
@@ -1984,14 +1986,18 @@ SDL_GameController *open_first_controller()
 void open_all_controllers()
 {
     g_controllers.clear();
-    for (int i = 0; i < SDL_NumJoysticks(); ++i) {
-        if (!SDL_IsGameController(i)) continue;
-        SDL_GameController *controller = SDL_GameControllerOpen(i);
-        if (controller) g_controllers.push_back(controller);
-    }
     wpad_input_init();
     wpad_input_poll();
     g_wpad_channels = wpad_input_channels();
+    for (int i = 0; i < SDL_NumJoysticks(); ++i) {
+        if (!SDL_IsGameController(i)) continue;
+        const char *name = SDL_GameControllerNameForIndex(i);
+        if (!g_wpad_channels.empty() && name && std::strstr(name, "Pro Controller")) {
+            continue;
+        }
+        SDL_GameController *controller = SDL_GameControllerOpen(i);
+        if (controller) g_controllers.push_back(controller);
+    }
 }
 
 void refresh_controllers()
@@ -2633,13 +2639,55 @@ int main(int argc, char **argv)
             uint32_t pressed = pad.buttons & ~last_wpad_buttons;
             last_wpad_buttons = pad.buttons;
             if (pressed) {
-                if (pressed & WPAD_PRO_BUTTON_UP) { app.game = std::max(0, app.game - 5); ui_dirty = true; }
-                if (pressed & WPAD_PRO_BUTTON_DOWN) { app.game = std::min(static_cast<int>(app.visible.size()) - 1, app.game + 5); ui_dirty = true; }
-                if (pressed & WPAD_PRO_BUTTON_LEFT) { app.game = std::max(0, app.game - 1); ui_dirty = true; }
-                if (pressed & WPAD_PRO_BUTTON_RIGHT) { app.game = std::min(static_cast<int>(app.visible.size()) - 1, app.game + 1); ui_dirty = true; }
-                if (pressed & WPAD_PRO_BUTTON_A) handle_action(app, 6);
-                if (pressed & WPAD_PRO_BUTTON_PLUS) { app.sidebar_open = !app.sidebar_open; ui_dirty = true; }
-                if (pressed & WPAD_PRO_BUTTON_B) { app.settings_screen = false; app.sidebar_open = false; ui_dirty = true; }
+                auto wpad_dispatch = [&](int action) {
+                    if (app.settings_screen) settings_action(app, action);
+                    else if (app.sidebar_open) sidebar_action(app, action);
+                    else handle_action(app, action);
+                };
+                if (pressed & WPAD_PRO_BUTTON_UP) {
+                    if (app.settings_screen || app.sidebar_open) wpad_dispatch(0);
+                    else app.game = std::max(0, app.game - 5);
+                    ui_dirty = true;
+                }
+                if (pressed & WPAD_PRO_BUTTON_DOWN) {
+                    if (app.settings_screen || app.sidebar_open) wpad_dispatch(1);
+                    else app.game = std::min(static_cast<int>(app.visible.size()) - 1, app.game + 5);
+                    ui_dirty = true;
+                }
+                if (pressed & WPAD_PRO_BUTTON_LEFT) {
+                    if (app.settings_screen) wpad_dispatch(2);
+                    else if (!app.sidebar_open) app.game = std::max(0, app.game - 1);
+                    ui_dirty = true;
+                }
+                if (pressed & WPAD_PRO_BUTTON_RIGHT) {
+                    if (app.settings_screen) wpad_dispatch(3);
+                    else if (!app.sidebar_open) app.game = std::min(static_cast<int>(app.visible.size()) - 1, app.game + 1);
+                    ui_dirty = true;
+                }
+                if (pressed & WPAD_PRO_BUTTON_A) wpad_dispatch(6);
+                if (pressed & WPAD_PRO_BUTTON_PLUS) {
+                    if (app.settings_screen) {
+                        app.dirty = false;
+                        save_theme(app);
+                        save_control_config(app);
+                        save_video_config(app);
+                        app.message = "Cambios guardados";
+                    } else {
+                        app.sidebar_open = !app.sidebar_open;
+                        app.sidebar_index = 0;
+                    }
+                    ui_dirty = true;
+                }
+                if (pressed & WPAD_PRO_BUTTON_B) {
+                    if (app.settings_screen) {
+                        app.settings_screen = false;
+                        app.sidebar_open = true;
+                        app.sidebar_index = 0;
+                    } else if (app.sidebar_open) {
+                        app.sidebar_open = false;
+                    }
+                    ui_dirty = true;
+                }
             }
         } else {
             last_wpad_buttons = 0;
@@ -2713,6 +2761,8 @@ int main(int argc, char **argv)
                         else if (app.keyboard_open) app.keyboard_open = false;
                         else if (app.settings_screen) {
                             app.settings_screen = false;
+                            app.sidebar_open = true;
+                            app.sidebar_index = 0;
                             app.message.clear();
                         } else {
                             dispatch(9);

@@ -61,6 +61,7 @@ const int kConsoleCount = static_cast<int>(sizeof(kConsoles) / sizeof(kConsoles[
 
 int title_region(const std::string &title);
 int title_year(const std::string &title);
+std::string normalize_text(std::string value);
 
 struct ThemePreset {
     const char *id;
@@ -460,8 +461,8 @@ void load_dat_file(AppState &app, const std::string &path, const std::string &ki
         for (const std::string &name : names) {
             for (RomEntry &rom : app.library.roms) {
                 if (rom.title != name) continue;
-                if (kind == "developer") rom.developer = value;
-                else if (kind == "genre") rom.genre = value;
+                if (kind == "developer") rom.developer = normalize_text(value);
+                else if (kind == "genre") rom.genre = normalize_text(value);
                 else if (kind == "releaseyear") {
                     int year = std::atoi(value.c_str());
                     if (year > 0) rom.year = year;
@@ -493,6 +494,22 @@ void load_libretro_metadata(AppState &app)
     load_dat_file(app, join_path(dir, system + "-releaseyear.dat"), "releaseyear");
 }
 
+std::string normalize_text(std::string value)
+{
+    const std::pair<const char *, const char *> pairs[] = {
+        {"Ã¡", "á"}, {"Ã©", "é"}, {"Ã­", "í"}, {"Ã³", "ó"},
+        {"Ãº", "ú"}, {"Ã±", "ñ"}, {"Ã¼", "ü"}, {"Ãš", "Ú"},
+        {"Ã", ""},
+    };
+    for (const auto &pair : pairs) {
+        size_t pos;
+        while ((pos = value.find(pair.first)) != std::string::npos) {
+            value.replace(pos, std::strlen(pair.first), pair.second);
+        }
+    }
+    return value;
+}
+
 void load_metadata(AppState &app)
 {
     std::ifstream in(join_path(system_config_dir(app.library.sd_root), "metadata.conf"));
@@ -509,8 +526,8 @@ void load_metadata(AppState &app)
         std::string title = line.substr(0, a);
         for (RomEntry &rom : app.library.roms) {
             if (rom.title != title) continue;
-            rom.developer = line.substr(a + 1, b - a - 1);
-            rom.genre = line.substr(b + 1, c - b - 1);
+            rom.developer = normalize_text(line.substr(a + 1, b - a - 1));
+            rom.genre = normalize_text(line.substr(b + 1, c - b - 1));
             rom.region = std::atoi(line.substr(c + 1, d - c - 1).c_str());
             rom.year = std::atoi(line.substr(d + 1).c_str());
             break;
@@ -1397,7 +1414,7 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
     draw_text(renderer, cache, small_font, "D-PAD  NAVEGAR     B  VOLVER",
               key_x + 116, key_y + 8, rgba(203, 213, 225));
 
-    std::string plus = "PLUS  MENÃš";
+    std::string plus = "PLUS  MENÚ";
     int plus_w = text_width(small_font, plus) + 26;
     int plus_x = width - margin - plus_w;
     fill_rounded_rect(renderer, plus_x, key_y, plus_w, 30, 10, rgba(245, 217, 127, 38));
@@ -1432,19 +1449,19 @@ void render_sidebar(SDL_Renderer *renderer, TextCache &cache, TTF_Font *heading_
 
     std::string sort_value;
     switch (app.sort_mode) {
-        case 1: sort_value = "RegiÃ³n"; break;
-        case 2: sort_value = "AÃ±o"; break;
-        case 3: sort_value = "CategorÃ­a"; break;
+        case 1: sort_value = "Región"; break;
+        case 2: sort_value = "Año"; break;
+        case 3: sort_value = "Categoría"; break;
         case 4: sort_value = "Desarrolladora"; break;
         default: sort_value = "Nombre"; break;
     }
-    const char *regions[] = {"Todas", "USA", "Europa", "JapÃ³n"};
+    const char *regions[] = {"Todas", "USA", "Europa", "Japón"};
     std::string region_value = regions[std::max(0, std::min(3, app.region_filter))];
 
     const std::string labels[] = {
         std::string("Buscar: ") + (app.search_query.empty() ? "Todos" : app.search_query),
         "Ordenar por: " + sort_value,
-        "RegiÃ³n: " + region_value,
+        "Región: " + region_value,
         std::string("Favoritos: ") + (app.favorites_only ? "Solo" : "Todos"),
     };
 
@@ -1501,7 +1518,7 @@ void draw_unsaved_banner(SDL_Renderer *renderer, TextCache &cache, TTF_Font *fon
 {
     const std::string text = settings_screen
         ? "Hay cambios sin guardar, presione \"+\" para guardarlos"
-        : "Hay cambios sin guardar, dirÃ­jase a ajustes para guardarlos";
+        : "Hay cambios sin guardar, diríjase a ajustes para guardarlos";
     int text_w = text_width(font, text);
     int w = text_w + 32;
     int x = (width - w) / 2;
@@ -1541,7 +1558,7 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
     const int panel_h = height - panel_y - (tv ? 78 : 58);
     draw_glass_panel(renderer, panel_x, panel_y, panel_w, panel_h, 18, 225);
 
-    const char *sections[] = {"PERSONALIZAR", "ASSETS", "CONTROLES", "SONIDO", "VÃDEO"};
+    const char *sections[] = {"PERSONALIZAR", "ASSETS", "CONTROLES", "SONIDO", "VÍDEO"};
     int y = panel_y + 24;
     for (int i = 0; i < 5; ++i) {
         bool selected = i == app.settings_index;
@@ -1569,9 +1586,9 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
 
     const char *hints[] = {
         "Tema, fondos y blur",
-        "CarÃ¡tulas y backdrops",
+        "Carátulas y backdrops",
         "Perfiles y mapeo",
-        "Efectos del menÃº y volumen",
+        "Efectos del menú y volumen",
         "Escalado, filtro y aspecto",
     };
     draw_text(renderer, cache, body_font, hints[app.settings_index],
@@ -1806,7 +1823,7 @@ void handle_action(AppState &app, int action)
                 rom->favorite = !rom->favorite;
                 save_favorites(app);
                 refresh_visible(app);
-                app.message = rom->favorite ? "AÃ±adido a favoritos" : "Quitado de favoritos";
+                app.message = rom->favorite ? "Añadido a favoritos" : "Quitado de favoritos";
             }
             break;
         case 9: /* back / close sidebar */
@@ -1890,10 +1907,10 @@ void render_core_menu(SDL_Renderer *renderer, TextCache &cache, TTF_Font *headin
     fill_rect(renderer, panel_x, panel_y, panel_w, panel_h, rgba(15, 23, 42, 245));
     outline_rect(renderer, panel_x, panel_y, panel_w, panel_h, rgba(255, 255, 255, 80));
 
-    draw_text(renderer, cache, heading_font, std::string("MENÃš ") + RETROU_APP_NAME,
+    draw_text(renderer, cache, heading_font, std::string("MENÚ ") + RETROU_APP_NAME,
               panel_x + 24, panel_y + 20,
               rgba(255, 255, 255));
-    draw_text(renderer, cache, small_font, "MINUS + PLUS  CERRAR MENÃš     A  SELECCIONAR",
+    draw_text(renderer, cache, small_font, "MINUS + PLUS  CERRAR MENÚ     A  SELECCIONAR",
               panel_x + 24, panel_y + 58, rgba(148, 163, 184));
 
     const char *options[] = {
@@ -1913,9 +1930,9 @@ void render_core_menu(SDL_Renderer *renderer, TextCache &cache, TTF_Font *headin
                   i == selected ? rgba(255, 255, 255) : rgba(203, 213, 225));
     }
 
-    draw_text(renderer, cache, small_font, "Savestates y remapeo: prÃ³ximamente",
+    draw_text(renderer, cache, small_font, "Savestates y remapeo: próximamente",
               panel_x + 24, panel_y + panel_h - 48, rgba(148, 163, 184));
-    draw_text(renderer, cache, small_font, "B  CERRAR MENÃš",
+    draw_text(renderer, cache, small_font, "B  CERRAR MENÚ",
               panel_x + 24, panel_y + panel_h - 26, rgba(148, 163, 184));
 }
 

@@ -168,6 +168,9 @@ SDL_GameController *g_game_port[2] = {nullptr, nullptr};
 std::vector<SDL_GameController *> g_controllers;
 std::vector<int> g_wpad_channels;
 int g_wpad_port[2] = {-1, -1};
+bool g_controllers_dirty = false;
+void open_all_controllers();
+void refresh_controllers();
 
 int controller_device_count()
 {
@@ -1771,7 +1774,7 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
                       content_x + 28, y, rgba(current_theme(app).text));
             y += 17;
         }
-        draw_text(renderer, cache, small_font, "IZQ/DER PUERTO  Y MANDO  A REMAPEAR  B CANCELAR",
+        draw_text(renderer, cache, small_font, "IZQ/DER PUERTO  Y MANDO  X REFRESCAR  A REMAPEAR",
                   content_x + 24, content_y + content_h - 34, rgba(current_theme(app).muted));
     } else if (app.settings_index == 3) {
         const char *latency[] = {"Baja", "Normal", "Alta"};
@@ -1861,7 +1864,10 @@ void settings_action(AppState &app, int action)
             app.message = "Cambio temporal: pulsa + para guardar";
         }
     } else if (action == 7) {
-        if (app.settings_index == 4) {
+        if (app.settings_index == 2) {
+            refresh_controllers();
+            app.message = "Mandos refrescados";
+        } else if (app.settings_index == 4) {
             app.video_filter = (app.video_filter + 1) % 2;
             app.dirty = true;
         }
@@ -1986,6 +1992,16 @@ void open_all_controllers()
     wpad_input_init();
     wpad_input_poll();
     g_wpad_channels = wpad_input_channels();
+}
+
+void refresh_controllers()
+{
+    for (SDL_GameController *controller : g_controllers) {
+        SDL_GameControllerClose(controller);
+    }
+    g_controllers.clear();
+    open_all_controllers();
+    g_controllers_dirty = true;
 }
 
 SDL_GameController *menu_controller()
@@ -2599,6 +2615,18 @@ int main(int argc, char **argv)
 
     while (app.running) {
         wpad_input_poll();
+        std::vector<int> now_wpad = wpad_input_channels();
+        if (now_wpad != g_wpad_channels) {
+            g_wpad_channels = now_wpad;
+            g_controllers_dirty = true;
+        }
+        if (g_controllers_dirty) {
+            controller = menu_controller();
+            connected = controller != nullptr;
+            select_game_controllers(app);
+            g_controllers_dirty = false;
+            ui_dirty = true;
+        }
         static uint32_t last_wpad_buttons = 0;
         if (g_wpad_port[0] >= 0) {
             WpadSnapshot pad = wpad_input_state(g_wpad_port[0]);
@@ -2634,14 +2662,13 @@ int main(int argc, char **argv)
                 app.running = false;
                 break;
             }
+            if (event.type == SDL_CONTROLLERDEVICEADDED) {
+                refresh_controllers();
+                continue;
+            }
             if (event.type == SDL_CONTROLLERDEVICEREMOVED) {
-                if (controller &&
-                    SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller)) ==
-                        event.cdevice.which) {
-                    SDL_GameControllerClose(controller);
-                    controller = nullptr;
-                    connected = false;
-                }
+                refresh_controllers();
+                continue;
             }
             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
                 SDL_JoystickID menu_id = controller

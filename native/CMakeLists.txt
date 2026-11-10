@@ -164,15 +164,28 @@ wut_create_wuhb(retrou_gx2_test
 add_executable(retrou_gx2_diag EXCLUDE_FROM_ALL
     src/gx2/gx2_diag_main.cpp
     src/gx2/gx2_renderer.cpp
+    src/gx2/gx2_text.cpp
+    "${FONT_REGULAR_OBJ}"
 )
+set_source_files_properties("${FONT_REGULAR_OBJ}"
+    PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
 target_include_directories(retrou_gx2_diag PRIVATE
     src
     /opt/devkitpro/wut/include
     /opt/devkitpro/portlibs/wiiu/include
     /opt/devkitpro/portlibs/ppc/include
+    /opt/devkitpro/portlibs/ppc/include/freetype2
 )
 target_compile_options(retrou_gx2_diag PRIVATE -Wall -Wextra)
-target_link_libraries(retrou_gx2_diag PRIVATE m)
+target_link_libraries(retrou_gx2_diag PRIVATE
+    m
+    freetype
+    png
+    bz2
+    brotlidec
+    brotlicommon
+    z
+)
 wut_create_rpx(retrou_gx2_diag)
 wut_create_wuhb(retrou_gx2_diag
     CONTENT    "${CMAKE_CURRENT_SOURCE_DIR}/content"

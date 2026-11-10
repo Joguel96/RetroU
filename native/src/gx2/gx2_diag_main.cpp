@@ -1,14 +1,19 @@
 #include "gx2/gx2_renderer.hpp"
+#include "gx2/gx2_text.hpp"
 
 #include <vpad/input.h>
 
 #include <cstdint>
 #include <vector>
 
-// Incremental GX2 diagnostic: sidebar + 5x2 card panels + cover textures
-// (no text yet). If this holds 60 FPS, the next step adds text.
+// Incremental GX2 diagnostic: sidebar + 5x2 card panels + cover textures +
+// card title text. This is the last step before the full UI: it should show
+// whether text rendering is what tanks the frame rate.
 
 using namespace retrou::gx2;
+
+extern const unsigned char _binary_ui_ttf_start[];
+extern const unsigned char _binary_ui_ttf_end[];
 
 static Texture makeCover(uint8_t r0, uint8_t g0, uint8_t b0,
                          uint8_t r1, uint8_t g1, uint8_t b1)
@@ -35,6 +40,10 @@ static Texture makeCover(uint8_t r0, uint8_t g0, uint8_t b0,
 int main()
 {
     if (!init()) {
+        return 1;
+    }
+    if (!text::loadFont(_binary_ui_ttf_start,
+                        static_cast<size_t>(_binary_ui_ttf_end - _binary_ui_ttf_start))) {
         return 1;
     }
 
@@ -81,6 +90,10 @@ int main()
             }
             drawRoundRect(x, y, cardW, cardH, 12.0f, (i % 2) ? panelAlt : panel);
             drawTextureCover(covers[i], x + 2.0f, y + 2.0f, cardW - 4.0f, coverH - 2.0f);
+            text::drawText("Castlevania", x + 12.0f, y + coverH + 12.0f, 15,
+                           Color{255, 255, 255, 255});
+            text::drawText("NES", x + 12.0f, y + coverH + 34.0f, 12,
+                           Color{148, 163, 184, 255});
         }
 
         endFrame();

@@ -1,6 +1,7 @@
 #include "gx2_renderer.hpp"
 
 #include <whb/gfx.h>
+#include <coreinit/cache.h>
 #include <coreinit/memdefaultheap.h>
 #include <gx2/clear.h>
 #include <gx2/draw.h>
@@ -407,6 +408,7 @@ Texture createTexture(int width, int height, const void *rgba)
 
     GX2Invalidate(GX2_INVALIDATE_MODE_CPU | GX2_INVALIDATE_MODE_TEXTURE,
                   surface.image, surface.imageSize);
+    DCFlushRange(surface.image, surface.imageSize);
 
     record->width = width;
     record->height = height;

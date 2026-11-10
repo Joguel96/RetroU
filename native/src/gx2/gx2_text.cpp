@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <map>
+#include <string>
 #include <vector>
 
 namespace retrou::gx2::text {
@@ -14,59 +15,25 @@ namespace {
 FT_Library g_library = nullptr;
 FT_Face g_face = nullptr;
 
-struct GlyphKey {
-    uint32_t codepoint;
+struct StringKey {
+    std::string text;
     int size;
-    bool operator<(const GlyphKey &other) const
+    bool operator<(const StringKey &other) const
     {
-        if (codepoint != other.codepoint) {
-            return codepoint < other.codepoint;
+        if (size != other.size) {
+            return size < other.size;
         }
-        return size < other.size;
+        return text < other.text;
     }
 };
 
-std::map<GlyphKey, Texture> g_glyphs;
+struct StringSprite {
+    Texture texture = -1;
+    int width = 0;
+    int height = 0;
+};
 
-Texture rasterizeGlyph(uint32_t codepoint, int size)
-{
-    GlyphKey key{codepoint, size};
-    auto found = g_glyphs.find(key);
-    if (found != g_glyphs.end()) {
-        return found->second;
-    }
-
-    FT_Set_Pixel_Sizes(g_face, 0, static_cast<FT_UInt>(size));
-    FT_UInt index = FT_Get_Char_Index(g_face, codepoint);
-    if (FT_Load_Glyph(g_face, index, FT_LOAD_DEFAULT) != 0 ||
-        FT_Render_Glyph(g_face->glyph, FT_RENDER_MODE_NORMAL) != 0) {
-        return -1;
-    }
-
-    FT_Bitmap &bitmap = g_face->glyph->bitmap;
-    const int w = static_cast<int>(bitmap.width);
-    const int h = static_cast<int>(bitmap.rows);
-    if (w <= 0 || h <= 0) {
-        return -1;
-    }
-
-    std::vector<uint8_t> rgba(static_cast<size_t>(w) * h * 4);
-    for (int y = 0; y < h; ++y) {
-        const unsigned char *src = bitmap.buffer + y * bitmap.pitch;
-        for (int x = 0; x < w; ++x) {
-            const unsigned char alpha = src[x];
-            uint8_t *dst = &rgba[static_cast<size_t>(y * w + x) * 4];
-            dst[0] = 255;
-            dst[1] = 255;
-            dst[2] = 255;
-            dst[3] = alpha;
-        }
-    }
-
-    Texture texture = createTexture(w, h, rgba.data());
-    g_glyphs[key] = texture;
-    return texture;
-}
+std::map<StringKey, StringSprite> g_strings;
 
 bool decodeUtf8(const char *text, uint32_t &out, int &advance)
 {
@@ -89,6 +56,87 @@ bool decodeUtf8(const char *text, uint32_t &out, int &advance)
         advance = 4;
     }
     return true;
+}
+
+// Renders a whole string into one RGBA texture (white glyphs + alpha). Drawing
+// a string then costs a single textured quad instead of one draw per glyph,
+// which is what keeps the GX2 frontend at 60 FPS.
+StringSprite renderString(const std::string &text, int size)
+{
+    StringSprite sprite;
+    if (!g_face || text.empty() || size <= 0) {
+        return sprite;
+    }
+
+    FT_Set_Pixel_Sizes(g_face, 0, static_cast<FT_UInt>(size));
+    const int ascent = static_cast<int>(g_face->size->metrics.ascender >> 6);
+    const int descent = static_cast<int>(-(g_face->size->metrics.descender >> 6));
+
+    // First pass: total advance width.
+    int width = 0;
+    {
+        const char *cursor = text.c_str();
+        uint32_t codepoint = 0;
+        int advance = 0;
+        while (decodeUtf8(cursor, codepoint, advance)) {
+            cursor += advance;
+            FT_UInt index = FT_Get_Char_Index(g_face, codepoint);
+            if (FT_Load_Glyph(g_face, index, FT_LOAD_DEFAULT) == 0) {
+                width += static_cast<int>(g_face->glyph->advance.x >> 6);
+            }
+        }
+    }
+    if (width <= 0) {
+        return sprite;
+    }
+
+    const int padding = 2;
+    const int height = ascent + descent + padding;
+    std::vector<uint8_t> pixels(static_cast<size_t>(width) * height * 4, 0);
+
+    // Second pass: rasterise and copy each glyph into the string bitmap.
+    const char *cursor = text.c_str();
+    uint32_t codepoint = 0;
+    int advance = 0;
+    int penX = 0;
+    while (decodeUtf8(cursor, codepoint, advance)) {
+        cursor += advance;
+        FT_UInt index = FT_Get_Char_Index(g_face, codepoint);
+        if (FT_Load_Glyph(g_face, index, FT_LOAD_DEFAULT) != 0 ||
+            FT_Render_Glyph(g_face->glyph, FT_RENDER_MODE_NORMAL) != 0) {
+            continue;
+        }
+        const FT_Bitmap &bitmap = g_face->glyph->bitmap;
+        const int gw = static_cast<int>(bitmap.width);
+        const int gh = static_cast<int>(bitmap.rows);
+        const int left = g_face->glyph->bitmap_left;
+        const int top = g_face->glyph->bitmap_top;
+
+        for (int gy = 0; gy < gh; ++gy) {
+            const int dstY = ascent - top + gy;
+            if (dstY < 0 || dstY >= height) {
+                continue;
+            }
+            const unsigned char *src = bitmap.buffer + gy * bitmap.pitch;
+            for (int gx = 0; gx < gw; ++gx) {
+                const int dstX = penX + left + gx;
+                if (dstX < 0 || dstX >= width) {
+                    continue;
+                }
+                uint8_t *pixel = &pixels[(static_cast<size_t>(dstY) * width + dstX) * 4];
+                pixel[0] = 255;
+                pixel[1] = 255;
+                pixel[2] = 255;
+                pixel[3] = src[gx];
+            }
+        }
+        penX += static_cast<int>(g_face->glyph->advance.x >> 6);
+    }
+
+    sprite.texture = createTexture(width, height, pixels.data());
+    sprite.width = width;
+    sprite.height = height;
+    return sprite;
 }
 
 } // namespace
@@ -145,41 +193,26 @@ std::string fitText(const char *text, int pixelSize, float maxWidth)
     return result + "...";
 }
 
-void drawText(const char *text, float x, float y, int pixelSize, Color color){
-    if (!text || !g_face) {
+void drawText(const char *text, float x, float y, int pixelSize, Color color)
+{
+    if (!text || !g_face || text[0] == 0) {
         return;
     }
 
-    float penX = x;
-    const char *cursor = text;
-    uint32_t codepoint = 0;
-    int advance = 0;
-    while (decodeUtf8(cursor, codepoint, advance)) {
-        cursor += advance;
-
-        Texture glyph = rasterizeGlyph(codepoint, pixelSize);
-        if (glyph < 0) {
-            continue;
-        }
-
-        FT_Set_Pixel_Sizes(g_face, 0, static_cast<FT_UInt>(pixelSize));
-        FT_UInt index = FT_Get_Char_Index(g_face, codepoint);
-        if (FT_Load_Glyph(g_face, index, FT_LOAD_DEFAULT) == 0) {
-            const int left = g_face->glyph->bitmap_left;
-            const int top = g_face->glyph->bitmap_top;
-            const int w = static_cast<int>(g_face->glyph->bitmap.width);
-            const int h = static_cast<int>(g_face->glyph->bitmap.rows);
-            const int penAdvance = static_cast<int>(g_face->glyph->advance.x >> 6);
-
-            drawTextureTinted(glyph,
-                              penX + left,
-                              y + pixelSize - top,
-                              static_cast<float>(w),
-                              static_cast<float>(h),
-                              color);
-            penX += penAdvance;
-        }
+    StringKey key{text, pixelSize};
+    auto found = g_strings.find(key);
+    if (found == g_strings.end()) {
+        StringSprite sprite = renderString(text, pixelSize);
+        found = g_strings.emplace(key, sprite).first;
     }
+
+    const StringSprite &sprite = found->second;
+    if (sprite.texture < 0) {
+        return;
+    }
+    drawTextureTinted(sprite.texture, x, y,
+                      static_cast<float>(sprite.width),
+                      static_cast<float>(sprite.height), color);
 }
 
 } // namespace retrou::gx2::text

@@ -31,6 +31,15 @@ public:
     }
     void setControlProfile(int profile) { control_profile_ = profile; }
     void setControlMaps(const std::array<std::array<int, 8>, 2> &maps) { control_maps_ = maps; }
+    void setVideoOptions(int aspect, int scale, int filter) {
+        video_aspect_ = aspect;
+        video_scale_ = scale;
+        video_filter_ = filter;
+    }
+    void setAudioOptions(int volume, int latency) {
+        audio_volume_ = volume;
+        audio_latency_ = latency;
+    }
     void startAudio();
     void stopAudio();
 
@@ -86,6 +95,11 @@ private:
 
     SDL_AudioDeviceID audio_device_ = 0;
     int sample_rate_ = 44100;
+    int audio_volume_ = 100;
+    int audio_latency_ = 1;
+    int video_aspect_ = 0;
+    int video_scale_ = 0;
+    int video_filter_ = 0;
     SDL_GameController *controller_ = nullptr;
     std::array<SDL_GameController *, 2> controllers_ = {nullptr, nullptr};
     uint16_t input_state_ = 0;

@@ -142,6 +142,11 @@ struct AppState {
     bool assets_downloading = false;
     int keyboard_index = 0;
     std::string search_query;
+    int video_aspect = 0;   /* 0 core, 1 4:3, 2 16:9 */
+    int video_scale = 0;    /* 0 fit, 1 integer */
+    int video_filter = 0;   /* 0 nearest, 1 linear */
+    int audio_volume = 100;
+    int audio_latency = 1;  /* 0 low, 1 normal, 2 high */
     int tooltip_focus = -1;
     int tooltip_shown_focus = -1;
     Uint32 focus_since = 0;
@@ -604,6 +609,38 @@ void save_control_config(const AppState &app){
             out << keys[i] << "=" << app.control_maps[port][i] << "\n";
         }
     }
+}
+
+void load_video_config(AppState &app)
+{
+    std::ifstream in(join_path(system_config_dir(app.library.sd_root), "video.conf"));
+    std::string line;
+    while (std::getline(in, line)) {
+        if (line.rfind("aspect=", 0) == 0) {
+            std::string v = line.substr(7);
+            app.video_aspect = v == "4:3" ? 1 : v == "16:9" ? 2 : 0;
+        } else if (line.rfind("scale=", 0) == 0) {
+            app.video_scale = line.substr(6) == "integer" ? 1 : 0;
+        } else if (line.rfind("filter=", 0) == 0) {
+            app.video_filter = line.substr(7) == "linear" ? 1 : 0;
+        } else if (line.rfind("volume=", 0) == 0) {
+            app.audio_volume = std::max(0, std::min(100, std::atoi(line.substr(7).c_str())));
+        } else if (line.rfind("latency=", 0) == 0) {
+            app.audio_latency = std::max(0, std::min(2, std::atoi(line.substr(8).c_str())));
+        }
+    }
+}
+
+void save_video_config(const AppState &app)
+{
+    std::string path = join_path(system_config_dir(app.library.sd_root), "video.conf");
+    std::ofstream out(path, std::ios::trunc);
+    if (!out) return;
+    out << "aspect=" << (app.video_aspect == 1 ? "4:3" : app.video_aspect == 2 ? "16:9" : "core") << "\n";
+    out << "scale=" << (app.video_scale ? "integer" : "fit") << "\n";
+    out << "filter=" << (app.video_filter ? "linear" : "nearest") << "\n";
+    out << "volume=" << app.audio_volume << "\n";
+    out << "latency=" << app.audio_latency << "\n";
 }
 
 void load_favorites(AppState &app)
@@ -1718,6 +1755,29 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
         }
         draw_text(renderer, cache, small_font, "IZQ/DER PUERTO  Y MANDO  A REMAPEAR  B CANCELAR",
                   content_x + 24, content_y + content_h - 34, rgba(current_theme(app).muted));
+    } else if (app.settings_index == 3) {
+        const char *latency[] = {"Baja", "Normal", "Alta"};
+        draw_text(renderer, cache, body_font,
+                  "Volumen: " + std::to_string(app.audio_volume) + "%",
+                  content_x + 24, content_y + 148, rgba(current_theme(app).accent));
+        draw_text(renderer, cache, body_font,
+                  std::string("Latencia: ") + latency[app.audio_latency],
+                  content_x + 24, content_y + 176, rgba(current_theme(app).text));
+        draw_text(renderer, cache, small_font, "A VOLUMEN     Y LATENCIA",
+                  content_x + 24, content_y + 204, rgba(current_theme(app).muted));
+    } else if (app.settings_index == 4) {
+        const char *aspect[] = {"Core", "4:3", "16:9"};
+        draw_text(renderer, cache, body_font,
+                  std::string("Aspecto: ") + aspect[app.video_aspect],
+                  content_x + 24, content_y + 148, rgba(current_theme(app).accent));
+        draw_text(renderer, cache, body_font,
+                  std::string("Escalado: ") + (app.video_scale ? "Integer" : "Ajuste"),
+                  content_x + 24, content_y + 176, rgba(current_theme(app).text));
+        draw_text(renderer, cache, body_font,
+                  std::string("Filtro: ") + (app.video_filter ? "Lineal" : "Nearest"),
+                  content_x + 24, content_y + 204, rgba(current_theme(app).text));
+        draw_text(renderer, cache, small_font, "A ASPECTO  Y ESCALA  X FILTRO",
+                  content_x + 24, content_y + 232, rgba(current_theme(app).muted));
     }
 
     draw_text(renderer, cache, small_font, "A  MODIFICAR     B / L  VOLVER     +  GUARDAR",
@@ -1770,9 +1830,22 @@ void settings_action(AppState &app, int action)
         } else if (app.settings_index == 2) {
             app.control_listening = true;
             app.message = "Pulsa el botón físico para asignar";
+        } else if (app.settings_index == 3) {
+            app.audio_volume = (app.audio_volume + 25) % 125;
+            app.dirty = true;
+            app.message = "Volumen: " + std::to_string(app.audio_volume) + "%";
+        } else if (app.settings_index == 4) {
+            app.video_aspect = (app.video_aspect + 1) % 3;
+            app.dirty = true;
+            app.message = "Aspecto cambiado";
         } else {
             app.dirty = true;
             app.message = "Cambio temporal: pulsa + para guardar";
+        }
+    } else if (action == 7) {
+        if (app.settings_index == 4) {
+            app.video_filter = (app.video_filter + 1) % 2;
+            app.dirty = true;
         }
     } else if (action == 8) {
         if (app.settings_index == 2 && !g_controllers.empty()) {
@@ -1781,6 +1854,12 @@ void settings_action(AppState &app, int action)
             select_game_controllers(app);
             app.dirty = true;
             app.message = "Mando del juego cambiado";
+        } else if (app.settings_index == 3) {
+            app.audio_latency = (app.audio_latency + 1) % 3;
+            app.dirty = true;
+        } else if (app.settings_index == 4) {
+            app.video_scale = (app.video_scale + 1) % 2;
+            app.dirty = true;
         }
     } else if (action == 9) {
         app.settings_screen = false;
@@ -2223,6 +2302,8 @@ void run_static_core(AppState &app, const std::string &rom_path,
     core.setController(controller);
     core.setControllers(g_game_port[0], g_game_port[1]);
     core.setControlMaps(app.control_maps);
+    core.setVideoOptions(app.video_aspect, app.video_scale, app.video_filter);
+    core.setAudioOptions(app.audio_volume, app.audio_latency);
     std::string error;
 
     TextCache loading_tv;
@@ -2429,6 +2510,7 @@ int main(int argc, char **argv)
     load_system_config(app);
     load_theme(app);
     load_control_config(app);
+    load_video_config(app);
     load_favorites(app);
     load_libretro_metadata(app);
     boot_log("after libretro_metadata");
@@ -2589,6 +2671,7 @@ int main(int argc, char **argv)
                             app.dirty = false;
                             save_theme(app);
                             save_control_config(app);
+                            save_video_config(app);
                             app.message = "Cambios guardados";
                         } else {
                             app.sidebar_open = !app.sidebar_open;

@@ -150,12 +150,22 @@ void RplCore::queueAudio(const int16_t *data, size_t frames)
     }
 
     /* Keep latency bounded if the frontend falls behind. */
-    const uint32_t max_bytes = static_cast<uint32_t>(sample_rate_) * 4u / 4u;
+    const uint32_t max_bytes = static_cast<uint32_t>(sample_rate_) * 4u *
+                               (audio_latency_ == 0 ? 1u : audio_latency_ == 2 ? 8u : 4u) / 4u;
     if (SDL_GetQueuedAudioSize(audio_device_) > max_bytes) {
         SDL_ClearQueuedAudio(audio_device_);
     }
-    SDL_QueueAudio(audio_device_, data,
-                   static_cast<uint32_t>(frames * 2 * sizeof(int16_t)));
+    if (audio_volume_ >= 100) {
+        SDL_QueueAudio(audio_device_, data,
+                       static_cast<uint32_t>(frames * 2 * sizeof(int16_t)));
+    } else {
+        std::vector<int16_t> scaled(frames * 2);
+        for (size_t i = 0; i < scaled.size(); ++i) {
+            scaled[i] = static_cast<int16_t>(data[i] * audio_volume_ / 100);
+        }
+        SDL_QueueAudio(audio_device_, scaled.data(),
+                       static_cast<uint32_t>(scaled.size() * sizeof(int16_t)));
+    }
 }
 
 void RplCore::startAudio()
@@ -469,17 +479,26 @@ void RplCore::present(SDL_Renderer *renderer, int width, int height) const
     }
 
     float frame_aspect = static_cast<float>(frame_width_) / static_cast<float>(frame_height_);
+    if (video_aspect_ == 1) frame_aspect = 4.0f / 3.0f;
+    else if (video_aspect_ == 2) frame_aspect = 16.0f / 9.0f;
     float screen_aspect = static_cast<float>(width) / static_cast<float>(height);
     int draw_w = width;
     int draw_h = height;
 
-    if (frame_aspect > screen_aspect) {
+    if (video_scale_ == 1) {
+        int sx = static_cast<int>(width) / static_cast<int>(frame_width_);
+        int sy = static_cast<int>(height) / static_cast<int>(frame_height_);
+        int scale = std::max(1, std::min(sx, sy));
+        draw_w = static_cast<int>(frame_width_) * scale;
+        draw_h = static_cast<int>(frame_height_) * scale;
+    } else if (frame_aspect > screen_aspect) {
         draw_h = static_cast<int>(width / frame_aspect);
     } else {
         draw_w = static_cast<int>(height * frame_aspect);
     }
 
     SDL_Rect dest{(width - draw_w) / 2, (height - draw_h) / 2, draw_w, draw_h};
+    SDL_SetTextureScaleMode(texture, video_filter_ ? SDL_ScaleModeLinear : SDL_ScaleModeNearest);
     SDL_RenderCopy(renderer, texture, nullptr, &dest);
 }
 

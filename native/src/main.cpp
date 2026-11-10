@@ -57,6 +57,9 @@ const ConsoleDef kConsoles[] = {
 
 const int kConsoleCount = static_cast<int>(sizeof(kConsoles) / sizeof(kConsoles[0]));
 
+int title_region(const std::string &title);
+int title_year(const std::string &title);
+
 struct ThemePreset {
     const char *id;
     const char *name;
@@ -82,7 +85,11 @@ struct RomEntry {
     std::string title;
     std::string path;
     std::string system;
+    std::string developer;
+    std::string genre;
     uint32_t color;
+    int year = 0;
+    int region = 0;
     bool favorite = false;
 };
 
@@ -264,6 +271,8 @@ void scan_roms(const std::string &rom_root, Library &library)
             rom.path = join_path(folder_path, name);
             rom.system = console->id;
             rom.color = console->color;
+            rom.region = title_region(rom.title);
+            rom.year = title_year(rom.title);
             library.roms.push_back(rom);
         }
         closedir(dir);
@@ -424,6 +433,31 @@ const ThemePreset &current_theme(const AppState &app)
 uint32_t theme_color(uint32_t color, uint8_t alpha = 255)
 {
     return (color & 0x00FFFFFF) | (static_cast<uint32_t>(alpha) << 24);
+}
+
+void load_metadata(AppState &app)
+{
+    std::ifstream in(join_path(system_config_dir(app.library.sd_root), "metadata.conf"));
+    std::string line;
+    while (std::getline(in, line)) {
+        size_t a = line.find('|');
+        size_t b = a == std::string::npos ? a : line.find('|', a + 1);
+        size_t c = b == std::string::npos ? b : line.find('|', b + 1);
+        size_t d = c == std::string::npos ? c : line.find('|', c + 1);
+        if (a == std::string::npos || b == std::string::npos || c == std::string::npos ||
+            d == std::string::npos) {
+            continue;
+        }
+        std::string title = line.substr(0, a);
+        for (RomEntry &rom : app.library.roms) {
+            if (rom.title != title) continue;
+            rom.developer = line.substr(a + 1, b - a - 1);
+            rom.genre = line.substr(b + 1, c - b - 1);
+            rom.region = std::atoi(line.substr(c + 1, d - c - 1).c_str());
+            rom.year = std::atoi(line.substr(d + 1).c_str());
+            break;
+        }
+    }
 }
 
 void load_favorites(AppState &app)
@@ -622,7 +656,7 @@ void refresh_visible(AppState &app)
                 continue;
             }
         }
-        if (app.region_filter != 0 && title_region(rom.title) != app.region_filter) {
+        if (app.region_filter != 0 && rom.region != app.region_filter) {
             continue;
         }
         if (app.favorites_only && !rom.favorite) {
@@ -634,8 +668,8 @@ void refresh_visible(AppState &app)
     if (app.sort_mode == 1) {
         std::sort(app.visible.begin(), app.visible.end(),
                   [](const RomEntry *a, const RomEntry *b) {
-                      int ra = title_region(a->title);
-                      int rb = title_region(b->title);
+                      int ra = a->region;
+                      int rb = b->region;
                       if (ra != rb) {
                           if (ra == 0) return false;
                           if (rb == 0) return true;
@@ -646,12 +680,26 @@ void refresh_visible(AppState &app)
     } else if (app.sort_mode == 2) {
         std::sort(app.visible.begin(), app.visible.end(),
                   [](const RomEntry *a, const RomEntry *b) {
-                      int ya = title_year(a->title);
-                      int yb = title_year(b->title);
+                      int ya = a->year;
+                      int yb = b->year;
                       if (ya != yb) {
                           if (ya == 0) return false;
                           if (yb == 0) return true;
                           return ya < yb;
+                      }
+                      return lower_copy(a->title) < lower_copy(b->title);
+                  });
+    } else if (app.sort_mode == 3 || app.sort_mode == 4) {
+        const bool byDeveloper = app.sort_mode == 4;
+        std::sort(app.visible.begin(), app.visible.end(),
+                  [byDeveloper](const RomEntry *a, const RomEntry *b) {
+                      std::string va = lower_copy(byDeveloper ? a->developer : a->genre);
+                      std::string vb = lower_copy(byDeveloper ? b->developer : b->genre);
+                      if (va.empty() != vb.empty()) {
+                          return !va.empty();
+                      }
+                      if (va != vb) {
+                          return va < vb;
                       }
                       return lower_copy(a->title) < lower_copy(b->title);
                   });
@@ -1076,9 +1124,13 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
             int text_y = y + cover_h + 10;
             std::string title = fit_text(body_font, game.title, card_w - 28);
             draw_text(renderer, cache, body_font, title, x + 14, text_y, rgba(theme.text));
-            int year = title_year(game.title);
-            if (year > 0) {
-                draw_text(renderer, cache, small_font, std::to_string(year), x + 14,
+            std::string meta = !game.developer.empty() ? game.developer : game.genre;
+            if (game.year > 0) {
+                if (!meta.empty()) meta += " · ";
+                meta += std::to_string(game.year);
+            }
+            if (!meta.empty()) {
+                draw_text(renderer, cache, small_font, meta, x + 14,
                           text_y + (tv ? 24 : 19), rgba(theme.muted));
             }
         }
@@ -1904,6 +1956,7 @@ int main(int argc, char **argv)
     load_system_config(app);
     load_theme(app);
     load_favorites(app);
+    load_metadata(app);
     refresh_visible(app);
     if (app.library.roms.empty()) {
         app.message = "Copia ROMs a sd:/retrou/roms/<consola>/";

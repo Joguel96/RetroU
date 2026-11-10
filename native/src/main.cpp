@@ -130,6 +130,13 @@ SDL_Color rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255)
     return SDL_Color{r, g, b, a};
 }
 
+SDL_Color rgba(uint32_t color, uint8_t alpha = 255)
+{
+    return SDL_Color{static_cast<uint8_t>((color >> 16) & 0xFF),
+                     static_cast<uint8_t>((color >> 8) & 0xFF),
+                     static_cast<uint8_t>(color & 0xFF), alpha};
+}
+
 std::string lower_copy(const std::string &value)
 {
     std::string result = value;
@@ -815,7 +822,8 @@ void draw_background(SDL_Renderer *renderer, int width, int height, uint32_t acc
 }
 
 void draw_header(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_font,
-                 TTF_Font *body_font, int width, int height, bool tv, bool connected)
+                 TTF_Font *body_font, int width, int height, bool tv, bool connected,
+                 const ThemePreset &theme)
 {
     (void)height;
     int margin = tv ? 28 : 18;
@@ -824,10 +832,10 @@ void draw_header(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_font,
                      width - (margin - 10) * 2, bar_h, tv ? 18 : 14, 190);
 
     draw_text(renderer, cache, title_font, RETROU_APP_NAME, margin, tv ? 18 : 10,
-              rgba(255, 255, 255));
+              rgba(theme.text));
     draw_text(renderer, cache, body_font,
               std::string("BIBLIOTECA  /  ") + RETROU_CORE_LABEL,
-              margin, tv ? 48 : 38, rgba(148, 163, 184));
+              margin, tv ? 48 : 38, rgba(theme.muted));
 
     std::string status = connected ? "WII U GAMEPAD" : "CONECTA UN MANDO";
     int status_width = text_width(body_font, status);
@@ -837,7 +845,7 @@ void draw_header(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_font,
     outline_rounded_rect(renderer, width - margin - pill_w, tv ? 22 : 14, pill_w, 28,
                          14, rgba(255, 255, 255, 34));
     draw_text(renderer, cache, body_font, status, width - margin - status_width - 12,
-              tv ? 27 : 19, rgba(226, 232, 240));
+              tv ? 27 : 19, rgba(theme.text));
 }
 
 int console_count(const AppState &app, int system_index)
@@ -883,9 +891,11 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
     const int rows = tv ? 3 : 2;
 
     const uint32_t accent = current_theme(app).accent;
+    const ThemePreset &theme = current_theme(app);
     draw_background(renderer, width, height, accent,
                     current_theme(app).backgroundTop, current_theme(app).backgroundBottom);
-    draw_header(renderer, cache, title_font, small_font, width, height, tv, connected);
+    draw_header(renderer, cache, title_font, small_font, width, height, tv, connected,
+                current_theme(app));
 
     const int content_x = margin;
     const int content_w = width - margin * 2;
@@ -934,7 +944,7 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
                                   rgba(r, g, b, 95));
             }
 
-            fill_rounded_rect(renderer, x, y, card_w, card_h, 12, rgba(13, 20, 33, 215));
+            fill_rounded_rect(renderer, x, y, card_w, card_h, 12, rgba(theme.panel, 215));
             int cover_h = static_cast<int>(card_h * 0.60f);
             if (selected) {
                 fill_rounded_rect(renderer, x + 2, y + 2, card_w - 4, cover_h - 2, 10,
@@ -953,13 +963,13 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
                 }
             }
             fill_rounded_rect(renderer, x + 2, y + cover_h, card_w - 4,
-                              card_h - cover_h - 2, 10, rgba(8, 14, 24, 225));
+                              card_h - cover_h - 2, 10, rgba(theme.backgroundBottom, 225));
             outline_rounded_rect(renderer, x, y, card_w, card_h, 12,
-                                 selected ? rgba(255, 255, 255, 235)
+                                 selected ? rgba(theme.focus)
                                           : rgba(255, 255, 255, 44));
             if (selected) {
                 outline_rounded_rect(renderer, x - 3, y - 3, card_w + 6, card_h + 6, 15,
-                                     rgba(255, 255, 255, 130));
+                                     rgba(theme.focus, 150));
             }
 
             const ConsoleDef *console = console_by_id(game.system);
@@ -982,10 +992,10 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
             int text_y = y + cover_h + 10;
             std::string title = fit_text(body_font, game.title, card_w - 20);
             draw_text(renderer, cache, body_font, title, x + 10, text_y,
-                      rgba(248, 250, 252));
+                      rgba(theme.text));
             std::string meta = "ROM  ·  " + std::to_string(index + 1);
             draw_text(renderer, cache, small_font, meta, x + 10,
-                      text_y + (tv ? 25 : 20), rgba(148, 163, 184));
+                      text_y + (tv ? 25 : 20), rgba(theme.muted));
         }
     }
 
@@ -1132,7 +1142,8 @@ void render_settings(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_f
     const int margin = tv ? 28 : 18;
     draw_background(renderer, width, height, current_theme(app).accent,
                     current_theme(app).backgroundTop, current_theme(app).backgroundBottom);
-    draw_header(renderer, cache, title_font, small_font, width, height, tv, connected);
+    draw_header(renderer, cache, title_font, small_font, width, height, tv, connected,
+                current_theme(app));
 
     const int panel_x = margin;
     const int panel_y = tv ? 100 : 78;

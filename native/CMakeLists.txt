@@ -125,15 +125,28 @@ add_static_retrou(retrou_gba gba "GBA" "RetroGBA U" "${MGBA_CORE}")
 add_executable(retrou_gx2_test EXCLUDE_FROM_ALL
     src/gx2/gx2_test_main.cpp
     src/gx2/gx2_renderer.cpp
+    src/gx2/gx2_text.cpp
+    "${FONT_REGULAR_OBJ}"
 )
+set_source_files_properties("${FONT_REGULAR_OBJ}"
+    PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
 target_include_directories(retrou_gx2_test PRIVATE
     src
     /opt/devkitpro/wut/include
     /opt/devkitpro/portlibs/wiiu/include
     /opt/devkitpro/portlibs/ppc/include
+    /opt/devkitpro/portlibs/ppc/include/freetype2
 )
 target_compile_options(retrou_gx2_test PRIVATE -Wall -Wextra)
-target_link_libraries(retrou_gx2_test PRIVATE m)
+target_link_libraries(retrou_gx2_test PRIVATE
+    m
+    freetype
+    png
+    bz2
+    brotlidec
+    brotlicommon
+    z
+)
 wut_create_rpx(retrou_gx2_test)
 wut_create_wuhb(retrou_gx2_test
     CONTENT    "${CMAKE_CURRENT_SOURCE_DIR}/content"

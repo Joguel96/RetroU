@@ -55,6 +55,10 @@ void destroyTexture(Texture texture);
 // Draws a texture into a destination rectangle (pixels).
 void drawTexture(Texture texture, float x, float y, float w, float h);
 
+// Same as drawTexture but multiplies the sampled color by `tint` (used for
+// tinted glyphs where the texture stores white + alpha).
+void drawTextureTinted(Texture texture, float x, float y, float w, float h, Color tint);
+
 // Draws a texture preserving its aspect ratio inside the destination box,
 // cropping (cover) instead of stretching.
 void drawTextureCover(Texture texture, float x, float y, float w, float h);

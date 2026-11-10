@@ -1,12 +1,16 @@
 #include "gx2/gx2_renderer.hpp"
+#include "gx2/gx2_text.hpp"
 
 #include <cstdint>
 #include <vector>
 
 // Smoke test for the GX2 renderer: fills the single TV buffer and draws
-// gradients, rounded rectangles and a procedural texture every frame. If the
+// gradients, rounded rectangles, textures and text every frame. If the
 // TV-to-DRC copy works, the same image appears on the GamePad without a
 // second render pass.
+
+extern const unsigned char _binary_ui_ttf_start[];
+extern const unsigned char _binary_ui_ttf_end[];
 
 static retrou::gx2::Texture makeCheckerboard()
 {
@@ -28,6 +32,10 @@ int main()
     if (!init()) {
         return 1;
     }
+    if (!text::loadFont(_binary_ui_ttf_start,
+                        static_cast<size_t>(_binary_ui_ttf_end - _binary_ui_ttf_start))) {
+        return 1;
+    }
 
     Texture checker = makeCheckerboard();
 
@@ -35,6 +43,7 @@ int main()
     Color top{30, 120, 200, 255};
     Color bottom{12, 30, 60, 255};
     Color accent{240, 210, 120, 255};
+    Color white{255, 255, 255, 255};
 
     while (true) {
         beginFrame(background);
@@ -44,6 +53,10 @@ int main()
         drawRoundRect(460.0f, 120.0f, 360.0f, 240.0f, 40.0f, Color{255, 0, 0, 220});
         drawTexture(checker, 500.0f, 400.0f, 200.0f, 160.0f);
         drawTextureCover(checker, 760.0f, 400.0f, 240.0f, 200.0f);
+
+        text::drawText("RetroU · Biblioteca", 120.0f, 360.0f, 30, accent);
+        text::drawText("Carátulas, Año y Categoría", 120.0f, 400.0f, 20, white);
+        text::drawText("Acción · ñ · í · ó · á", 120.0f, 428.0f, 18, white);
 
         endFrame();
     }

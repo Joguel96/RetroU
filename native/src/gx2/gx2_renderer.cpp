@@ -428,6 +428,28 @@ void drawTexture(Texture texture, float x, float y, float w, float h)
     flushTexture(record);
 }
 
+void drawTextureTinted(Texture texture, float x, float y, float w, float h, Color tint)
+{
+    if (!g_ready || !g_inFrame) {
+        return;
+    }
+    TextureRecord *record = getTexture(texture);
+    if (!record) {
+        return;
+    }
+
+    flushSolid();
+
+    pushTexVertex(x, y, 0.0f, 0.0f, tint);
+    pushTexVertex(x + w, y, 1.0f, 0.0f, tint);
+    pushTexVertex(x + w, y + h, 1.0f, 1.0f, tint);
+    pushTexVertex(x, y, 0.0f, 0.0f, tint);
+    pushTexVertex(x + w, y + h, 1.0f, 1.0f, tint);
+    pushTexVertex(x, y + h, 0.0f, 1.0f, tint);
+
+    flushTexture(record);
+}
+
 void drawTextureCover(Texture texture, float x, float y, float w, float h)
 {
     if (!g_ready || !g_inFrame) {

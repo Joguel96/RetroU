@@ -5,6 +5,7 @@
 #include <gx2/clear.h>
 #include <gx2/draw.h>
 #include <gx2/mem.h>
+#include <gx2/registers.h>
 #include <gx2/sampler.h>
 #include <gx2/shaders.h>
 #include <gx2/surface.h>
@@ -281,6 +282,18 @@ void beginFrame(Color clear)
     WHBGfxBeginRenderTV();
     WHBGfxClearColor(clear.r / 255.0f, clear.g / 255.0f,
                      clear.b / 255.0f, clear.a / 255.0f);
+
+    // Enable straight alpha blending for every draw in this frame.
+    GX2SetColorControl(GX2_LOGIC_OP_COPY, 0xFF, FALSE, TRUE);
+    GX2SetBlendControl(GX2_RENDER_TARGET_0,
+                       GX2_BLEND_MODE_SRC_ALPHA,
+                       GX2_BLEND_MODE_INV_SRC_ALPHA,
+                       GX2_BLEND_COMBINE_MODE_ADD,
+                       TRUE,
+                       GX2_BLEND_MODE_ONE,
+                       GX2_BLEND_MODE_ZERO,
+                       GX2_BLEND_COMBINE_MODE_ADD);
+
     g_inFrame = true;
 }
 

@@ -1,5 +1,7 @@
 #include "gx2/gx2_renderer.hpp"
 
+#include <vpad/input.h>
+
 #include <cstdint>
 #include <vector>
 
@@ -36,6 +38,10 @@ int main()
     Texture checker = makeChecker();
 
     while (true) {
+        VPADStatus vpad{};
+        VPADReadError vpadError = VPAD_READ_NO_SAMPLES;
+        VPADRead(VPAD_CHAN_0, &vpad, 1, &vpadError);
+
         beginFrame(red);
         drawRect(40.0f, 40.0f, 200.0f, 100.0f, white);
         drawTextureCover(checker, 300.0f, 150.0f, 880.0f, 420.0f);

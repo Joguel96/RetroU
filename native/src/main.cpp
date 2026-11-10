@@ -2513,6 +2513,11 @@ int main(int argc, char **argv)
                 }
             }
             if (event.type == SDL_CONTROLLERBUTTONDOWN) {
+                if (controller &&
+                    event.cbutton.which !=
+                        SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller))) {
+                    continue;
+                }
                 if (app.control_listening && app.settings_screen) {
                     if (event.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
                         app.control_listening = false;

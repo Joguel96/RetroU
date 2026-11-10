@@ -1,0 +1,8 @@
+native/prototype/third_party/
+native/prototype/build/
+native/prototype/ninja.exe
+native/prototype/card_demo.exe
+native/prototype/*.dll
+native/prototype/run.out
+native/prototype/run.err
+native/prototype/screenshot.png

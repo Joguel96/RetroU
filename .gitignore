@@ -16,3 +16,8 @@ dist/
 *.log
 .DS_Store
 Thumbs.db
+
+# CafeGLSL toolchain (downloaded binaries + compiled shaders)
+tools/cafeglsl/win/
+tools/cafeglsl/*.zip
+tools/cafeglsl/*.gsh

@@ -1,5 +1,6 @@
 #include "gx2/gx2_renderer.hpp"
 #include "gx2/gx2_text.hpp"
+#include "gx2/gx2_image.hpp"
 
 #include <vpad/input.h>
 
@@ -80,6 +81,11 @@ int main()
         covers[i] = makeCover(kGames[i].top, kGames[i].bottom);
     }
 
+    // If the user has a downloaded cover on the SD, use it for the first card
+    // to exercise real PNG decoding; otherwise keep the procedural cover.
+    Texture realCover = image::loadFromFile(
+        "/vol/external01/retrou/thumbnails/nes/Castlevania (USA).png");
+
     const Color bgTop{20, 28, 44, 255};
     const Color bgBottom{8, 11, 18, 255};
     const Color accent{245, 217, 127, 255};
@@ -159,7 +165,8 @@ int main()
             drawRoundRect(x, y, cardW, cardH, 12.0f, cardPanel);
 
             // Cover (inset), then footer below it.
-            drawTextureCover(covers[i], x + 2.0f, y + 2.0f, cardW - 4.0f, coverH - 2.0f);
+            Texture cover = (i == 0 && realCover >= 0) ? realCover : covers[i];
+            drawTextureCover(cover, x + 2.0f, y + 2.0f, cardW - 4.0f, coverH - 2.0f);
             drawRoundRect(x + 2.0f, y + coverH, cardW - 4.0f, cardH - coverH - 2.0f, 10.0f,
                           cardFooter);
 

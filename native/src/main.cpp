@@ -113,6 +113,8 @@ struct AppState {
     bool favorites_only = false;
     int settings_index = 0;
     int theme_index = 0;
+    int tooltip_focus = -1;
+    Uint32 focus_since = 0;
     int sidebar_index = 0;
     int sort_mode = 0;       /* 0 = name, 1 = region */
     int region_filter = 0;   /* 0 = all, 1 = USA, 2 = Europe, 3 = Japan */
@@ -559,17 +561,24 @@ SDL_Texture *cover_for(SDL_Renderer *renderer, const RomEntry &game)
     for (char &c : safe) {
         if (c == '/' || c == '\\') c = '_';
     }
-    std::string path = "/vol/external01/retrou/thumbnails/" + game.system + "/" + safe + ".png";
-    auto it = g_covers.find(path);
-    if (it != g_covers.end()) return it->second;
-    struct stat info;
-    if (stat(path.c_str(), &info) != 0) {
-        g_covers[path] = nullptr;
-        return nullptr;
+    std::string upper = game.system;
+    std::transform(upper.begin(), upper.end(), upper.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+
+    std::string paths[] = {
+        "/vol/external01/retrou/thumbnails/" + game.system + "/" + safe + ".png",
+        "/vol/external01/retrou/thumbnails/" + upper + "/" + safe + ".png",
+    };
+    for (const std::string &path : paths) {
+        auto it = g_covers.find(path);
+        if (it != g_covers.end() && it->second) return it->second;
+        struct stat info;
+        if (stat(path.c_str(), &info) != 0) continue;
+        SDL_Texture *texture = IMG_LoadTexture(renderer, path.c_str());
+        g_covers[path] = texture;
+        if (texture) return texture;
     }
-    SDL_Texture *texture = IMG_LoadTexture(renderer, path.c_str());
-    g_covers[path] = texture;
-    return texture;
+    return nullptr;
 }
 
 void draw_star(SDL_Renderer *renderer, int cx, int cy, int outer, int inner, SDL_Color color)
@@ -1098,12 +1107,14 @@ void render_screen(SDL_Renderer *renderer, TextCache &cache, TTF_Font *title_fon
         const std::string full = app.visible[std::max(0, std::min(app.game,
             static_cast<int>(app.visible.size()) - 1))]->title;
         std::string shown = fit_text(body_font, full, width - 120);
-        int tip_w = text_width(body_font, shown) + 30;
-        int tip_x = (width - tip_w) / 2;
-        int tip_y = footer_y - 44;
-        fill_rounded_rect(renderer, tip_x, tip_y, tip_w, 32, 10, rgba(theme.panel, 235));
-        outline_rounded_rect(renderer, tip_x, tip_y, tip_w, 32, 10, rgba(theme.focus, 150));
-        draw_text(renderer, cache, body_font, shown, tip_x + 15, tip_y + 7, rgba(theme.text));
+        if (shown != full && SDL_GetTicks() - app.focus_since >= 5000) {
+            int tip_w = text_width(body_font, shown) + 30;
+            int tip_x = (width - tip_w) / 2;
+            int tip_y = footer_y - 44;
+            fill_rounded_rect(renderer, tip_x, tip_y, tip_w, 32, 10, rgba(theme.panel, 235));
+            outline_rounded_rect(renderer, tip_x, tip_y, tip_w, 32, 10, rgba(theme.focus, 150));
+            draw_text(renderer, cache, body_font, shown, tip_x + 15, tip_y + 7, rgba(theme.text));
+        }
     }
     fill_rect(renderer, 0, footer_y, width, footer_h, rgba(theme.backgroundBottom, 235));
     outline_rect(renderer, 0, footer_y, width, 1, rgba(255, 255, 255, 30));
@@ -1989,6 +2000,10 @@ int main(int argc, char **argv)
         }
 
         Uint32 now = SDL_GetTicks();
+        if (app.game != app.tooltip_focus) {
+            app.tooltip_focus = app.game;
+            app.focus_since = now;
+        }
         if (app.message != last_message) {
             last_message = app.message;
             message_set_at = now;

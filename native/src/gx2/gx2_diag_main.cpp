@@ -2,30 +2,11 @@
 
 #include <vpad/input.h>
 
-#include <cstdint>
-#include <vector>
-
-// GX2 texture diagnostic: red background, a known-good white rect and a large
-// procedural checkerboard texture. Isolates texture creation/drawing.
+// Incremental GX2 diagnostic: sidebar + 5x2 grid of rounded card panels
+// (solid only, no textures or text). If this holds 60 FPS, the next step adds
+// cover textures, then text, to find what causes the slowdown.
 
 using namespace retrou::gx2;
-
-static Texture makeChecker()
-{
-    constexpr int size = 64;
-    std::vector<uint8_t> pixels(static_cast<size_t>(size) * size * 4);
-    for (int y = 0; y < size; ++y) {
-        for (int x = 0; x < size; ++x) {
-            const bool on = ((x / 8) + (y / 8)) % 2 == 0;
-            uint8_t *px = &pixels[static_cast<size_t>(y * size + x) * 4];
-            px[0] = on ? 255 : 46;   // R
-            px[1] = on ? 217 : 92;   // G
-            px[2] = on ? 127 : 138;  // B
-            px[3] = 255;             // A
-        }
-    }
-    return createTexture(size, size, pixels.data());
-}
 
 int main()
 {
@@ -33,18 +14,41 @@ int main()
         return 1;
     }
 
-    const Color red{255, 0, 0, 255};
-    const Color white{255, 255, 255, 255};
-    Texture checker = makeChecker();
+    const Color bg{8, 11, 18, 255};
+    const Color accent{245, 217, 127, 255};
+    const Color panel{28, 34, 48, 255};
+    const Color panelAlt{38, 44, 60, 255};
+
+    const int columns = 5;
+    const int rows = 2;
+    const float gridX = 344.0f;
+    const float gridY = 88.0f;
+    const float gridW = 1280.0f - gridX - 28.0f;
+    const float gridH = 560.0f;
+    const float gap = 14.0f;
+    const float cardW = (gridW - gap * (columns - 1)) / columns;
+    const float cardH = (gridH - gap * (rows - 1)) / rows;
 
     while (true) {
         VPADStatus vpad{};
         VPADReadError vpadError = VPAD_READ_NO_SAMPLES;
         VPADRead(VPAD_CHAN_0, &vpad, 1, &vpadError);
 
-        beginFrame(red);
-        drawRect(40.0f, 40.0f, 200.0f, 100.0f, white);
-        drawTextureCover(checker, 300.0f, 150.0f, 880.0f, 420.0f);
+        beginFrame(bg);
+
+        drawRoundRect(24.0f, 88.0f, 300.0f, 560.0f, 18.0f, panel);
+
+        for (int i = 0; i < 10; ++i) {
+            const int col = i % columns;
+            const int row = i / columns;
+            const float x = gridX + col * (cardW + gap);
+            const float y = gridY + row * (cardH + gap);
+            if (i == 0) {
+                drawRoundRect(x - 3.0f, y - 3.0f, cardW + 6.0f, cardH + 6.0f, 15.0f, accent);
+            }
+            drawRoundRect(x, y, cardW, cardH, 12.0f, (i % 2) ? panelAlt : panel);
+        }
+
         endFrame();
     }
 

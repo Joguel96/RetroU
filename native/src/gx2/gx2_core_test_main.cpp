@@ -164,33 +164,12 @@ static void saveControlOptions(const std::string &sdRoot, int player1, bool swap
     }
 }
 
-// ---- UI audio: 16-bit retro background loop + navigation blip ----
+// ---- UI audio: 16-bit retro background loop + navigation blip (queue-based) ----
 static SDL_AudioDeviceID g_uiDevice = 0;
-static std::vector<int16_t> g_bgMusic;
-static std::vector<int16_t> g_navBlip;
-static int g_navBlipPos = -1;
-static size_t g_bgPos = 0;
-
-static void uiAudioCallback(void *, uint8_t *stream, int len)
-{
-    int16_t *out = reinterpret_cast<int16_t *>(stream);
-    const int frames = len / static_cast<int>(sizeof(int16_t));
-    for (int i = 0; i < frames; ++i) {
-        int32_t s = 0;
-        if (!g_bgMusic.empty()) {
-            s += g_bgMusic[g_bgPos];
-            g_bgPos = (g_bgPos + 1) % g_bgMusic.size();
-        }
-        if (g_navBlipPos >= 0 && g_navBlipPos < static_cast<int>(g_navBlip.size())) {
-            s += g_navBlip[g_navBlipPos];
-            ++g_navBlipPos;
-            if (g_navBlipPos >= static_cast<int>(g_navBlip.size())) g_navBlipPos = -1;
-        }
-        if (s > 32767) s = 32767;
-        if (s < -32768) s = -32768;
-        out[i] = static_cast<int16_t>(s);
-    }
-}
+static std::vector<int16_t> g_loop;
+static std::vector<int16_t> g_blip;
+static size_t g_loopPos = 0;
+static bool g_navBlipPending = false;
 
 static void initUiAudio()
 {
@@ -203,22 +182,22 @@ static void initUiAudio()
             for (int i = 0; i < n; ++i) {
                 const float t = static_cast<float>(i) / rate;
                 const float w = std::sin(6.2831853f * f * t);
-                g_bgMusic.push_back(static_cast<int16_t>((w >= 0.0f ? 0.12f : -0.12f) * 32767.0f));
+                g_loop.push_back(static_cast<int16_t>((w >= 0.0f ? 0.15f : -0.15f) * 32767.0f));
             }
         }
     }
-    const int blipFrames = static_cast<int>(rate * 0.045f);
+    const int blipFrames = static_cast<int>(rate * 0.05f);
     for (int i = 0; i < blipFrames; ++i) {
         const float t = static_cast<float>(i) / rate;
         const float w = std::sin(6.2831853f * 880.0f * t);
-        g_navBlip.push_back(static_cast<int16_t>((w >= 0.0f ? 0.22f : -0.22f) * 32767.0f));
+        g_blip.push_back(static_cast<int16_t>((w >= 0.0f ? 0.3f : -0.3f) * 32767.0f));
     }
     SDL_AudioSpec want{};
     want.freq = rate;
     want.format = AUDIO_S16SYS;
     want.channels = 1;
-    want.samples = 1024;
-    want.callback = uiAudioCallback;
+    want.samples = 512;
+    want.callback = nullptr;
     SDL_AudioSpec obtained{};
     g_uiDevice = SDL_OpenAudioDevice(nullptr, 0, &want, &obtained, 0);
     if (g_uiDevice) {
@@ -228,7 +207,32 @@ static void initUiAudio()
 
 static void navBlip()
 {
-    g_navBlipPos = 0;
+    g_navBlipPending = true;
+}
+
+static void uiAudioTick()
+{
+    if (!g_uiDevice) {
+        return;
+    }
+    Uint32 queued = SDL_GetQueuedAudioSize(g_uiDevice);
+    const Uint32 minBytes = 8192;
+    while (queued < minBytes) {
+        const size_t remaining = g_loop.size() - g_loopPos;
+        const size_t n = std::min<size_t>(remaining, 2048);
+        SDL_QueueAudio(g_uiDevice, g_loop.data() + g_loopPos,
+                       static_cast<Uint32>(n * sizeof(int16_t)));
+        g_loopPos += n;
+        if (g_loopPos >= g_loop.size()) {
+            g_loopPos = 0;
+        }
+        queued += static_cast<Uint32>(n * sizeof(int16_t));
+    }
+    if (g_navBlipPending) {
+        SDL_QueueAudio(g_uiDevice, g_blip.data(),
+                       static_cast<Uint32>(g_blip.size() * sizeof(int16_t)));
+        g_navBlipPending = false;
+    }
 }
 
 int main()
@@ -598,6 +602,7 @@ int main()
             core.runFrame();
         }
 
+        uiAudioTick();
         beginFrame(bg);
         drawGradient(0.0f, 0.0f, 1280.0f, 720.0f, bgTop, bg);
 

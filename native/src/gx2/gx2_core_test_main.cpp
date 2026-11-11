@@ -113,6 +113,25 @@ static void saveThemeIndex(const std::string &sdRoot, int idx)
     }
 }
 
+static void loadVideoOptions(const std::string &sdRoot, int &aspect, int &scale, int &filter)
+{
+    std::ifstream in(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/video.conf");
+    if (in >> aspect >> scale >> filter) {
+        return;
+    }
+    aspect = 0;
+    scale = 0;
+    filter = 1;
+}
+
+static void saveVideoOptions(const std::string &sdRoot, int aspect, int scale, int filter)
+{
+    std::ofstream out(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/video.conf", std::ios::trunc);
+    if (out) {
+        out << aspect << " " << scale << " " << filter << "\n";
+    }
+}
+
 int main()
 {
     OSEnableHomeButtonMenu(TRUE);
@@ -129,6 +148,13 @@ int main()
     scanRoms(library, RETROU_CORE_SYSTEM);
     loadFavorites(library, RETROU_CORE_SYSTEM);
     int themeIndex = loadThemeIndex(library.sd_root);
+    int videoAspect = 0;
+    int videoScale = 0;
+    int videoFilter = 1;
+    loadVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter);
+    int settingsSection = -1; // -1 = section list, 0..4 = inside a section
+    int sectionCursor = 0;
+    int settingsItem = 0;
 
     std::vector<int> visible;
     for (int i = 0; i < static_cast<int>(library.roms.size()); ++i) {
@@ -226,7 +252,15 @@ int main()
     text::prewarm("Verde", 22);
     text::prewarm("Dorado", 22);
     text::prewarm("Rosa", 22);
-    text::prewarm("L  BIBLIOTECA    IZQ/DER  TEMA", 15);
+    text::prewarm("Original", 22);
+    text::prewarm("Ajustar", 22);
+    text::prewarm("Entero", 22);
+    text::prewarm("Estirar", 22);
+    text::prewarm("Aspecto", 22);
+    text::prewarm("Escala", 22);
+    text::prewarm("Pendiente", 22);
+    text::prewarm("A  ABRIR    L/B  BIBLIOTECA", 15);
+    text::prewarm("IZQ/DER  CAMBIAR    B  ATRÁS    L  BIBLIOTECA", 15);
     text::prewarm("Sin ROMs", 24);
     text::prewarm("A  JUGAR    B  VOLVER    X  FAVORITO    +  FILTROS", 15);
     text::prewarm("MENU", 26);
@@ -242,6 +276,7 @@ int main()
     core.setSaveDirectory("/vol/external01/retrou/saves/" RETROU_CORE_SYSTEM "/save");
     core.setControllers(nullptr, nullptr);
     core.setVpadEnabled(true);
+    core.setVideoOptions(videoAspect, videoScale, videoFilter);
 
     bool inGame = false;
     bool coreMenu = false;
@@ -286,14 +321,47 @@ int main()
                     }
                 }
             } else if (settingsOpen) {
-                if (vpad.trigger & VPAD_BUTTON_L) {
-                    settingsOpen = false;
-                } else if (vpad.trigger & VPAD_BUTTON_LEFT) {
-                    themeIndex = (themeIndex + 4) % 5;
-                    saveThemeIndex(library.sd_root, themeIndex);
-                } else if (vpad.trigger & VPAD_BUTTON_RIGHT) {
-                    themeIndex = (themeIndex + 1) % 5;
-                    saveThemeIndex(library.sd_root, themeIndex);
+                const int sectionCount = 5;
+                if (settingsSection == -1) {
+                    if (vpad.trigger & (VPAD_BUTTON_L | VPAD_BUTTON_B)) {
+                        settingsOpen = false;
+                    } else if (vpad.trigger & VPAD_BUTTON_UP) {
+                        sectionCursor = (sectionCursor + sectionCount - 1) % sectionCount;
+                    } else if (vpad.trigger & VPAD_BUTTON_DOWN) {
+                        sectionCursor = (sectionCursor + 1) % sectionCount;
+                    } else if (vpad.trigger & VPAD_BUTTON_A) {
+                        settingsSection = sectionCursor;
+                        settingsItem = 0;
+                    }
+                } else {
+                    int itemCount = 1;
+                    if (settingsSection == 0) itemCount = 1;
+                    else if (settingsSection == 4) itemCount = 2;
+
+                    if (vpad.trigger & VPAD_BUTTON_B) {
+                        settingsSection = -1;
+                    } else if (vpad.trigger & VPAD_BUTTON_L) {
+                        settingsOpen = false;
+                        settingsSection = -1;
+                    } else if (vpad.trigger & VPAD_BUTTON_UP) {
+                        settingsItem = (settingsItem + itemCount - 1) % itemCount;
+                    } else if (vpad.trigger & VPAD_BUTTON_DOWN) {
+                        settingsItem = (settingsItem + 1) % itemCount;
+                    } else if ((vpad.trigger & VPAD_BUTTON_LEFT) || (vpad.trigger & VPAD_BUTTON_RIGHT)) {
+                        const int dir = (vpad.trigger & VPAD_BUTTON_RIGHT) ? 1 : -1;
+                        if (settingsSection == 0 && settingsItem == 0) {
+                            themeIndex = (themeIndex + dir + 5) % 5;
+                            saveThemeIndex(library.sd_root, themeIndex);
+                        } else if (settingsSection == 4 && settingsItem == 0) {
+                            videoAspect = (videoAspect + dir + 3) % 3;
+                            saveVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter);
+                            core.setVideoOptions(videoAspect, videoScale, videoFilter);
+                        } else if (settingsSection == 4 && settingsItem == 1) {
+                            videoScale = (videoScale + dir + 3) % 3;
+                            saveVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter);
+                            core.setVideoOptions(videoAspect, videoScale, videoFilter);
+                        }
+                    }
                 }
             } else if (sidebarOpen) {
                 if (vpad.trigger & VPAD_BUTTON_B) {
@@ -358,7 +426,24 @@ int main()
                                        static_cast<int>(core.frameHeight()),
                                        static_cast<int>(core.framePitch()), rgb565);
                 if (frameTex >= 0) {
-                    drawTexture(frameTex, 0.0f, 0.0f, 1280.0f, 720.0f);
+                    const float srcW = static_cast<float>(core.frameWidth());
+                    const float srcH = static_cast<float>(core.frameHeight());
+                    float aspect = (srcH > 0.0f) ? srcW / srcH : 1.0f;
+                    if (videoAspect == 1) aspect = 4.0f / 3.0f;
+                    else if (videoAspect == 2) aspect = 16.0f / 9.0f;
+                    const float screenAspect = 1280.0f / 720.0f;
+                    float dw = 1280.0f, dh = 720.0f;
+                    if (videoScale == 0) {
+                        if (aspect > screenAspect) dh = 1280.0f / aspect;
+                        else dw = 720.0f * aspect;
+                    } else if (videoScale == 1) {
+                        const int sx = static_cast<int>(1280.0f / srcW);
+                        const int sy = static_cast<int>(720.0f / srcH);
+                        const int scale = std::max(1, std::min(sx, sy));
+                        dw = srcW * scale;
+                        dh = srcH * scale;
+                    }
+                    drawTexture(frameTex, (1280.0f - dw) * 0.5f, (720.0f - dh) * 0.5f, dw, dh);
                 }
             }
             if (coreMenu) {
@@ -372,16 +457,47 @@ int main()
                 text::drawText("A  Aceptar    B  Volver", 430.0f, 440.0f, 15, muted);
             }
         } else if (settingsOpen) {
-            text::drawText("Ajustes", 28.0f, 18.0f, 34, white);
-            text::drawText(("Tema: " + std::string(kThemes[themeIndex].name)).c_str(),
-                           60.0f, 80.0f, 22, accent);
             const char *sections[] = {"PERSONALIZAR", "ASSETS", "CONTROLES", "SONIDO", "VÍDEO"};
-            for (int i = 0; i < 5; ++i) {
-                const float y = 130.0f + i * 90.0f;
-                text::drawText(sections[i], 60.0f, y, 24, muted);
-                drawRect(60.0f, y + 36.0f, 1160.0f, 2.0f, Color{40, 46, 62, 255});
+            const char *themeOpts[] = {"Gris", "Azul", "Verde", "Dorado", "Rosa"};
+            const char *aspectOpts[] = {"Original", "4:3", "16:9"};
+            const char *scaleOpts[] = {"Ajustar", "Entero", "Estirar"};
+
+            if (settingsSection == -1) {
+                text::drawText("Ajustes", 28.0f, 18.0f, 34, white);
+                for (int i = 0; i < 5; ++i) {
+                    const float y = 120.0f + i * 80.0f;
+                    const bool sel = i == sectionCursor;
+                    if (sel) {
+                        drawRoundRect(50.0f, y - 8.0f, 520.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                    }
+                    text::drawText(sections[i], 60.0f, y, 24, sel ? white : muted);
+                }
+                text::drawText("A  ABRIR    L/B  BIBLIOTECA", 28.0f, 672.0f, 15, muted);
+            } else {
+                text::drawText(sections[settingsSection], 28.0f, 18.0f, 34, white);
+                if (settingsSection == 0) {
+                    const float y = 120.0f;
+                    if (settingsItem == 0) {
+                        drawRoundRect(50.0f, y - 8.0f, 520.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                    }
+                    text::drawText(("Tema: " + std::string(themeOpts[themeIndex])).c_str(),
+                                   60.0f, y, 22, settingsItem == 0 ? white : muted);
+                } else if (settingsSection == 4) {
+                    const char *labels[2] = {"Aspecto", "Escala"};
+                    const char *vals[2] = {aspectOpts[videoAspect], scaleOpts[videoScale]};
+                    for (int i = 0; i < 2; ++i) {
+                        const float y = 120.0f + i * 70.0f;
+                        if (settingsItem == i) {
+                            drawRoundRect(50.0f, y - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                        }
+                        text::drawText((std::string(labels[i]) + ": " + vals[i]).c_str(),
+                                       60.0f, y, 22, settingsItem == i ? white : muted);
+                    }
+                } else {
+                    text::drawText("Pendiente", 60.0f, 120.0f, 22, muted);
+                }
+                text::drawText("IZQ/DER  CAMBIAR    B  ATRÁS    L  BIBLIOTECA", 28.0f, 672.0f, 15, muted);
             }
-            text::drawText("L  BIBLIOTECA    IZQ/DER  TEMA", 28.0f, 672.0f, 15, muted);
         } else {
             text::drawText("Biblioteca", 28.0f, 18.0f, 34, white);
 

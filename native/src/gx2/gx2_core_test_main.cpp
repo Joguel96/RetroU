@@ -11,6 +11,7 @@
 #include <vpad/input.h>
 
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <cmath>
 #include <cstdint>
@@ -173,24 +174,89 @@ static void saveVideoOptions(const std::string &sdRoot, int aspect, int scale, i
     }
 }
 
-static void loadControlOptions(const std::string &sdRoot, int &player1, bool &swapAB)
+static std::array<uint32_t, 12> defaultVpadMap()
 {
-    std::ifstream in(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/control-map.conf");
-    int sw = 0;
-    if (in >> player1 >> sw) {
-        swapAB = (sw != 0);
-        return;
-    }
-    player1 = 0;
-    swapAB = false;
+    return {
+        VPAD_BUTTON_B, VPAD_BUTTON_Y, VPAD_BUTTON_MINUS, VPAD_BUTTON_PLUS,
+        VPAD_BUTTON_UP, VPAD_BUTTON_DOWN, VPAD_BUTTON_LEFT, VPAD_BUTTON_RIGHT,
+        VPAD_BUTTON_A, VPAD_BUTTON_X, VPAD_BUTTON_L, VPAD_BUTTON_R
+    };
 }
 
-static void saveControlOptions(const std::string &sdRoot, int player1, bool swapAB)
+static std::vector<int> consoleActions()
+{
+    const std::string s = RETROU_CORE_SYSTEM;
+    if (s == "nes") return {0, 8, 2, 3, 4, 5, 6, 7};
+    if (s == "snes") return {0, 1, 8, 9, 10, 11, 2, 3, 4, 5, 6, 7};
+    return {0, 8, 10, 11, 2, 3, 4, 5, 6, 7};
+}
+
+static const char *retroName(int id)
+{
+    switch (id) {
+        case 0: return "B";
+        case 1: return "Y";
+        case 2: return "Select";
+        case 3: return "Start";
+        case 4: return "Arriba";
+        case 5: return "Abajo";
+        case 6: return "Izquierda";
+        case 7: return "Derecha";
+        case 8: return "A";
+        case 9: return "X";
+        case 10: return "L";
+        case 11: return "R";
+    }
+    return "?";
+}
+
+static const char *vpadName(uint32_t mask)
+{
+    switch (mask) {
+        case VPAD_BUTTON_A: return "A";
+        case VPAD_BUTTON_B: return "B";
+        case VPAD_BUTTON_X: return "X";
+        case VPAD_BUTTON_Y: return "Y";
+        case VPAD_BUTTON_L: return "L";
+        case VPAD_BUTTON_R: return "R";
+        case VPAD_BUTTON_ZL: return "ZL";
+        case VPAD_BUTTON_ZR: return "ZR";
+        case VPAD_BUTTON_PLUS: return "+";
+        case VPAD_BUTTON_MINUS: return "-";
+        case VPAD_BUTTON_UP: return "D-Pad Arriba";
+        case VPAD_BUTTON_DOWN: return "D-Pad Abajo";
+        case VPAD_BUTTON_LEFT: return "D-Pad Izq";
+        case VPAD_BUTTON_RIGHT: return "D-Pad Der";
+        case VPAD_BUTTON_STICK_L: return "Stick L";
+        case VPAD_BUTTON_STICK_R: return "Stick R";
+    }
+    return "-";
+}
+
+static void loadControlOptions(const std::string &sdRoot, int &player1, std::array<uint32_t, 12> &map)
+{
+    map = defaultVpadMap();
+    std::ifstream in(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/control-map.conf");
+    int p1 = 0;
+    if (!(in >> p1)) {
+        player1 = 0;
+        return;
+    }
+    player1 = p1;
+    for (int i = 0; i < 12; ++i) {
+        unsigned m = 0;
+        if (!(in >> m)) return;
+        map[i] = m;
+    }
+}
+
+static void saveControlOptions(const std::string &sdRoot, int player1, const std::array<uint32_t, 12> &map)
 {
     std::ofstream out(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/control-map.conf", std::ios::trunc);
-    if (out) {
-        out << player1 << " " << (swapAB ? 1 : 0) << "\n";
-    }
+    if (!out) return;
+    out << player1;
+    for (int i = 0; i < 12; ++i) out << " " << map[i];
+    out << "\n";
 }
 
 static void loadAppSettings(const std::string &sdRoot, int &columns, bool &showCovers,
@@ -327,8 +393,11 @@ int main()
     int videoFilter = 1;
     loadVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter);
     int player1Device = 0;
-    bool swapAB = false;
-    loadControlOptions(library.sd_root, player1Device, swapAB);
+    std::array<uint32_t, 12> vpadMap{};
+    loadControlOptions(library.sd_root, player1Device, vpadMap);
+    bool remapMode = false;
+    int remapIndex = 0;
+    bool remapListening = false;
     int columns = 5;
     bool showCovers = true;
     int uiVolume = 80;
@@ -457,7 +526,10 @@ int main()
     text::prewarm("GamePad", 22);
     text::prewarm("Pro 1", 22);
     text::prewarm("Pro 2", 22);
-    text::prewarm("Intercambiar A/B", 22);
+    text::prewarm("Remapear botones", 34);
+    text::prewarm("Remapear botones  (A)", 22);
+    text::prewarm("Pulsa un boton...", 18);
+    text::prewarm("A  Capturar    B  Volver", 15);
     text::prewarm("Columnas", 22);
     text::prewarm("Carátulas", 22);
     text::prewarm("Música", 22);
@@ -503,7 +575,7 @@ int main()
         else if (player1Device == 1) { p0 = pro0; p1 = pro1; }
         else { p0 = pro1; p1 = pro0; }
         core.setWpadPorts(p0, p1);
-        core.setSwapAB(swapAB);
+        core.setVpadMap(vpadMap);
     };
     applyControllers();
 
@@ -557,6 +629,28 @@ int main()
                         coreMenuIndex = 0;
                     }
                 }
+            } else if (remapMode) {
+                const std::vector<int> acts = consoleActions();
+                const int n = static_cast<int>(acts.size());
+                if (remapListening) {
+                    if (vpad.trigger != 0) {
+                        vpadMap[acts[remapIndex]] = vpad.trigger;
+                        remapListening = false;
+                        saveControlOptions(library.sd_root, player1Device, vpadMap);
+                        core.setVpadMap(vpadMap);
+                        navBlip();
+                    }
+                } else if (vpad.trigger & VPAD_BUTTON_B) {
+                    remapMode = false;
+                } else if (vpad.trigger & VPAD_BUTTON_UP) {
+                    remapIndex = (remapIndex + n - 1) % n;
+                    navBlip();
+                } else if (vpad.trigger & VPAD_BUTTON_DOWN) {
+                    remapIndex = (remapIndex + 1) % n;
+                    navBlip();
+                } else if (vpad.trigger & VPAD_BUTTON_A) {
+                    remapListening = true;
+                }
             } else if (settingsOpen) {
                 const int sectionCount = 5;
                 if (settingsSection == -1) {
@@ -586,6 +680,12 @@ int main()
                         settingsItem = (settingsItem + itemCount - 1) % itemCount;
                     } else if (vpad.trigger & VPAD_BUTTON_DOWN) {
                         settingsItem = (settingsItem + 1) % itemCount;
+                    } else if (vpad.trigger & VPAD_BUTTON_A) {
+                        if (settingsSection == 2 && settingsItem == 1) {
+                            remapMode = true;
+                            remapIndex = 0;
+                            remapListening = false;
+                        }
                     } else if ((vpad.trigger & VPAD_BUTTON_LEFT) || (vpad.trigger & VPAD_BUTTON_RIGHT)) {
                         const int dir = (vpad.trigger & VPAD_BUTTON_RIGHT) ? 1 : -1;
                         if (settingsSection == 0 && settingsItem == 0) {
@@ -616,11 +716,7 @@ int main()
                         } else if (settingsSection == 2 && settingsItem == 0) {
                             const int n = static_cast<int>(devOpts.size());
                             if (n > 0) player1Device = (player1Device + dir + n) % n;
-                            saveControlOptions(library.sd_root, player1Device, swapAB);
-                            applyControllers();
-                        } else if (settingsSection == 2 && settingsItem == 1) {
-                            swapAB = !swapAB;
-                            saveControlOptions(library.sd_root, player1Device, swapAB);
+                            saveControlOptions(library.sd_root, player1Device, vpadMap);
                             applyControllers();
                         }
                     }
@@ -759,6 +855,19 @@ int main()
                                coreMenuIndex == 1 ? accent : muted);
                 text::drawText("A  Aceptar    B  Volver", 430.0f, 440.0f, 15, muted);
             }
+        } else if (remapMode) {
+            text::drawText("Remapear botones", 28.0f, 18.0f, 34, white);
+            const std::vector<int> acts = consoleActions();
+            const int n = static_cast<int>(acts.size());
+            for (int i = 0; i < n; ++i) {
+                const float y = 90.0f + i * 44.0f;
+                const bool sel = i == remapIndex;
+                if (sel) drawRoundRect(40.0f, y - 8.0f, 760.0f, 36.0f, 8.0f, Color{245, 217, 127, 40});
+                std::string line = std::string(retroName(acts[i])) + "  =  " +
+                    (remapListening && sel ? "Pulsa un boton..." : vpadName(vpadMap[acts[i]]));
+                text::drawText(line.c_str(), 50.0f, y, 18, sel ? white : muted);
+            }
+            text::drawText("A  Capturar    B  Volver", 28.0f, 672.0f, 15, muted);
         } else if (settingsOpen) {
             const char *sections[] = {"PERSONALIZAR", "ASSETS", "CONTROLES", "SONIDO", "VÍDEO"};
             const char *themeOpts[] = {"Gris", "Azul", "Verde", "Dorado", "Rosa"};
@@ -794,8 +903,7 @@ int main()
                     text::drawText(("Mando 1: " + devOpts[player1Device]).c_str(),
                                    60.0f, y0, 22, settingsItem == 0 ? white : muted);
                     if (settingsItem == 1) drawRoundRect(50.0f, y1 - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                    text::drawText(("Intercambiar A/B: " + std::string(swapAB ? "Sí" : "No")).c_str(),
-                                   60.0f, y1, 22, settingsItem == 1 ? white : muted);
+                    text::drawText("Remapear botones  (A)", 60.0f, y1, 22, settingsItem == 1 ? white : muted);
                 } else if (settingsSection == 4) {
                     const char *labels[2] = {"Aspecto", "Escala"};
                     const char *vals[2] = {aspectOpts[videoAspect], scaleOpts[videoScale]};

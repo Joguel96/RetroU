@@ -44,7 +44,7 @@ public:
     void setControlMaps(const std::array<std::array<int, 8>, 2> &maps) { control_maps_ = maps; }
     void setWpadPorts(int first, int second) { wpad_ports_[0] = first; wpad_ports_[1] = second; }
     void setVpadEnabled(bool enabled) { vpad_enabled_ = enabled; }
-    void setSwapAB(bool swap) { swap_ab_ = swap; }
+    void setVpadMap(const std::array<uint32_t, 12> &map) { vpad_map_ = map; }
     void setVideoOptions(int aspect, int scale, int filter) {
         video_aspect_ = aspect;
         video_scale_ = scale;
@@ -116,7 +116,7 @@ private:
     int video_filter_ = 0;
     int wpad_ports_[2] = {-1, -1};
     bool vpad_enabled_ = false;
-    bool swap_ab_ = false;
+    std::array<uint32_t, 12> vpad_map_{};
     SDL_GameController *controller_ = nullptr;
     std::array<SDL_GameController *, 2> controllers_ = {nullptr, nullptr};
     uint16_t input_state_ = 0;

@@ -164,12 +164,44 @@ static void saveControlOptions(const std::string &sdRoot, int player1, bool swap
     }
 }
 
+static void loadAppSettings(const std::string &sdRoot, int &columns, bool &showCovers,
+                            int &uiVolume, bool &bgMusicOn, bool &sfxOn)
+{
+    std::ifstream in(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/" RETROU_CORE_SYSTEM ".conf");
+    int c = 0, v = 0, bg = 0, sfx = 0;
+    if (in >> columns >> c >> v >> bg >> sfx) {
+        showCovers = (c != 0);
+        uiVolume = v;
+        bgMusicOn = (bg != 0);
+        sfxOn = (sfx != 0);
+        return;
+    }
+    columns = 5;
+    showCovers = true;
+    uiVolume = 80;
+    bgMusicOn = true;
+    sfxOn = true;
+}
+
+static void saveAppSettings(const std::string &sdRoot, int columns, bool showCovers,
+                            int uiVolume, bool bgMusicOn, bool sfxOn)
+{
+    std::ofstream out(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/" RETROU_CORE_SYSTEM ".conf", std::ios::trunc);
+    if (out) {
+        out << columns << " " << (showCovers ? 1 : 0) << " " << uiVolume << " "
+            << (bgMusicOn ? 1 : 0) << " " << (sfxOn ? 1 : 0) << "\n";
+    }
+}
+
 // ---- UI audio: 16-bit retro background loop + navigation blip (queue-based) ----
 static SDL_AudioDeviceID g_uiDevice = 0;
 static std::vector<int16_t> g_loop;
 static std::vector<int16_t> g_blip;
 static size_t g_loopPos = 0;
 static bool g_navBlipPending = false;
+static int g_uiVolume = 80;
+static bool g_bgMusicOn = true;
+static bool g_sfxOn = true;
 
 static void initUiAudio()
 {
@@ -207,7 +239,28 @@ static void initUiAudio()
 
 static void navBlip()
 {
+    if (!g_sfxOn) {
+        return;
+    }
     g_navBlipPending = true;
+}
+
+static void queueScaled(const int16_t *data, size_t samples)
+{
+    if (samples == 0) {
+        return;
+    }
+    static std::vector<int16_t> tmp;
+    const float gain = g_uiVolume / 100.0f;
+    if (gain >= 0.999f) {
+        SDL_QueueAudio(g_uiDevice, data, static_cast<Uint32>(samples * sizeof(int16_t)));
+        return;
+    }
+    tmp.resize(samples);
+    for (size_t i = 0; i < samples; ++i) {
+        tmp[i] = static_cast<int16_t>(data[i] * gain);
+    }
+    SDL_QueueAudio(g_uiDevice, tmp.data(), static_cast<Uint32>(samples * sizeof(int16_t)));
 }
 
 static void uiAudioTick()
@@ -215,22 +268,22 @@ static void uiAudioTick()
     if (!g_uiDevice) {
         return;
     }
-    Uint32 queued = SDL_GetQueuedAudioSize(g_uiDevice);
-    const Uint32 minBytes = 8192;
-    while (queued < minBytes) {
-        const size_t remaining = g_loop.size() - g_loopPos;
-        const size_t n = std::min<size_t>(remaining, 2048);
-        SDL_QueueAudio(g_uiDevice, g_loop.data() + g_loopPos,
-                       static_cast<Uint32>(n * sizeof(int16_t)));
-        g_loopPos += n;
-        if (g_loopPos >= g_loop.size()) {
-            g_loopPos = 0;
+    if (g_bgMusicOn) {
+        Uint32 queued = SDL_GetQueuedAudioSize(g_uiDevice);
+        const Uint32 minBytes = 8192;
+        while (queued < minBytes) {
+            const size_t remaining = g_loop.size() - g_loopPos;
+            const size_t n = std::min<size_t>(remaining, 2048);
+            queueScaled(g_loop.data() + g_loopPos, n);
+            g_loopPos += n;
+            if (g_loopPos >= g_loop.size()) {
+                g_loopPos = 0;
+            }
+            queued += static_cast<Uint32>(n * sizeof(int16_t));
         }
-        queued += static_cast<Uint32>(n * sizeof(int16_t));
     }
     if (g_navBlipPending) {
-        SDL_QueueAudio(g_uiDevice, g_blip.data(),
-                       static_cast<Uint32>(g_blip.size() * sizeof(int16_t)));
+        queueScaled(g_blip.data(), g_blip.size());
         g_navBlipPending = false;
     }
 }
@@ -259,6 +312,15 @@ int main()
     int player1Device = 0;
     bool swapAB = false;
     loadControlOptions(library.sd_root, player1Device, swapAB);
+    int columns = 5;
+    bool showCovers = true;
+    int uiVolume = 80;
+    bool bgMusicOn = true;
+    bool sfxOn = true;
+    loadAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn);
+    g_uiVolume = uiVolume;
+    g_bgMusicOn = bgMusicOn;
+    g_sfxOn = sfxOn;
     int settingsSection = -1; // -1 = section list, 0..4 = inside a section
     int sectionCursor = 0;
     int settingsItem = 0;
@@ -308,13 +370,14 @@ int main()
         if (focused >= static_cast<int>(visible.size())) focused = 0;
     };
 
-    const int columns = 5, rows = 2;
+    const int rows = 2;
     const float gridX = 24.0f, gridY = 88.0f;
     const float gridW = 1280.0f - 48.0f, gridH = 560.0f;
     const float gap = 14.0f;
-    const float cardW = (gridW - gap * (columns - 1)) / columns;
-    const float cardH = (gridH - gap * (rows - 1)) / rows;
-    const float coverH = cardH * 0.62f;
+    float cardW = (gridW - gap * (columns - 1)) / columns;
+    float cardH = (gridH - gap * (rows - 1)) / rows;
+    float coverH = cardH * 0.62f;
+    int lastColumns = columns;
 
     std::map<int, Texture> coverCache;
     auto getCover = [&](int romIndex) -> Texture {
@@ -378,6 +441,11 @@ int main()
     text::prewarm("Pro 1", 22);
     text::prewarm("Pro 2", 22);
     text::prewarm("Intercambiar A/B", 22);
+    text::prewarm("Columnas", 22);
+    text::prewarm("Carátulas", 22);
+    text::prewarm("Música", 22);
+    text::prewarm("Efectos", 22);
+    text::prewarm("Volumen", 22);
     text::prewarm("ESP", 16);
     text::prewarm("BORR", 16);
     text::prewarm("OK", 16);
@@ -433,6 +501,14 @@ int main()
         const Color bgTop = kThemes[themeIndex].bgTop;
         const Color accent = kThemes[themeIndex].accent;
 
+        if (columns != lastColumns) {
+            cardW = (gridW - gap * (columns - 1)) / columns;
+            cardH = (gridH - gap * (rows - 1)) / rows;
+            coverH = cardH * 0.62f;
+            titleCache.clear();
+            lastColumns = columns;
+        }
+
         VPADStatus vpad{};
         VPADReadError vpadError = VPAD_READ_NO_SAMPLES;
         VPADRead(VPAD_CHAN_0, &vpad, 1, &vpadError);
@@ -473,8 +549,9 @@ int main()
                     }
                 } else {
                     int itemCount = 1;
-                    if (settingsSection == 0) itemCount = 1;
+                    if (settingsSection == 0) itemCount = 2;
                     else if (settingsSection == 2) itemCount = 2;
+                    else if (settingsSection == 3) itemCount = 3;
                     else if (settingsSection == 4) itemCount = 2;
 
                     if (vpad.trigger & VPAD_BUTTON_B) {
@@ -491,6 +568,24 @@ int main()
                         if (settingsSection == 0 && settingsItem == 0) {
                             themeIndex = (themeIndex + dir + 5) % 5;
                             saveThemeIndex(library.sd_root, themeIndex);
+                        } else if (settingsSection == 0 && settingsItem == 1) {
+                            columns = std::max(3, std::min(6, columns + dir));
+                            saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn);
+                        } else if (settingsSection == 1 && settingsItem == 0) {
+                            showCovers = !showCovers;
+                            saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn);
+                        } else if (settingsSection == 3 && settingsItem == 0) {
+                            bgMusicOn = !bgMusicOn;
+                            g_bgMusicOn = bgMusicOn;
+                            saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn);
+                        } else if (settingsSection == 3 && settingsItem == 1) {
+                            sfxOn = !sfxOn;
+                            g_sfxOn = sfxOn;
+                            saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn);
+                        } else if (settingsSection == 3 && settingsItem == 2) {
+                            uiVolume = std::max(0, std::min(100, uiVolume + dir * 10));
+                            g_uiVolume = uiVolume;
+                            saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn);
                         } else if (settingsSection == 4 && settingsItem == 0) {
                             videoAspect = (videoAspect + dir + 3) % 3;
                             saveVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter);
@@ -664,12 +759,15 @@ int main()
             } else {
                 text::drawText(sections[settingsSection], 28.0f, 18.0f, 34, white);
                 if (settingsSection == 0) {
+                    const float y0 = 120.0f, y1 = 190.0f;
+                    if (settingsItem == 0) drawRoundRect(50.0f, y0 - 8.0f, 520.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                    text::drawText(("Tema: " + std::string(themeOpts[themeIndex])).c_str(), 60.0f, y0, 22, settingsItem == 0 ? white : muted);
+                    if (settingsItem == 1) drawRoundRect(50.0f, y1 - 8.0f, 520.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                    text::drawText(("Columnas: " + std::to_string(columns)).c_str(), 60.0f, y1, 22, settingsItem == 1 ? white : muted);
+                } else if (settingsSection == 1) {
                     const float y = 120.0f;
-                    if (settingsItem == 0) {
-                        drawRoundRect(50.0f, y - 8.0f, 520.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                    }
-                    text::drawText(("Tema: " + std::string(themeOpts[themeIndex])).c_str(),
-                                   60.0f, y, 22, settingsItem == 0 ? white : muted);
+                    if (settingsItem == 0) drawRoundRect(50.0f, y - 8.0f, 520.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                    text::drawText(("Carátulas: " + std::string(showCovers ? "Sí" : "No")).c_str(), 60.0f, y, 22, settingsItem == 0 ? white : muted);
                 } else if (settingsSection == 2) {
                     const char *devOpts[] = {"GamePad", "Pro 1", "Pro 2"};
                     const float y0 = 120.0f, y1 = 190.0f;
@@ -689,6 +787,15 @@ int main()
                         }
                         text::drawText((std::string(labels[i]) + ": " + vals[i]).c_str(),
                                        60.0f, y, 22, settingsItem == i ? white : muted);
+                    }
+                } else if (settingsSection == 3) {
+                    const char *labels[3] = {"Música", "Efectos", "Volumen"};
+                    std::string vals[3] = {bgMusicOn ? "Sí" : "No", sfxOn ? "Sí" : "No",
+                                           std::to_string(uiVolume)};
+                    for (int i = 0; i < 3; ++i) {
+                        const float y = 120.0f + i * 70.0f;
+                        if (settingsItem == i) drawRoundRect(50.0f, y - 8.0f, 520.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                        text::drawText((std::string(labels[i]) + ": " + vals[i]).c_str(), 60.0f, y, 22, settingsItem == i ? white : muted);
                     }
                 } else {
                     text::drawText("Pendiente", 60.0f, 120.0f, 22, muted);
@@ -711,7 +818,9 @@ int main()
                     drawRoundRect(x - 3.0f, y - 3.0f, cardW + 6.0f, cardH + 6.0f, 15.0f,
                                   sel ? accent : Color{255, 255, 255, 44});
                     drawRoundRect(x, y, cardW, cardH, 12.0f, cardPanel);
-                    drawTextureCover(getCover(romIndex), x + 2.0f, y + 2.0f, cardW - 4.0f, coverH - 2.0f);
+                    if (showCovers) {
+                        drawTextureCover(getCover(romIndex), x + 2.0f, y + 2.0f, cardW - 4.0f, coverH - 2.0f);
+                    }
                     drawRoundRect(x + 2.0f, y + coverH, cardW - 4.0f, cardH - coverH - 2.0f, 10.0f, cardFooter);
                     text::drawText(getTitle(romIndex).c_str(),
                                    x + 12.0f, y + coverH + 12.0f, 15, white);

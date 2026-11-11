@@ -617,6 +617,15 @@ int main()
     };
     uint32_t focusedTick = SDL_GetTicks();
     int lastFocused = -1;
+    int activeRom = -1;
+
+    auto snapPath = [&]() -> std::string {
+        std::string safe = activeRom >= 0 ? library.roms[activeRom].title : std::string("state");
+        for (char &c : safe) {
+            if (std::string("&*/:`<>?\\|\"").find(c) != std::string::npos) c = '_';
+        }
+        return library.sd_root + "/retrou/snap/" + RETROU_CORE_SYSTEM + "/" + safe + ".state";
+    };
 
     std::map<int, std::string> titleCache;
     auto getTitle = [&](int romIndex) -> const std::string & {
@@ -683,6 +692,8 @@ int main()
     text::prewarm("A  JUGAR    B  VOLVER    X  FAVORITO    +  FILTROS", 15);
     text::prewarm("MENU", 26);
     text::prewarm("Continuar", 20);
+    text::prewarm("Guardar estado", 20);
+    text::prewarm("Cargar estado", 20);
     text::prewarm("Cerrar core", 20);
     text::prewarm(RETROU_CORE_LABEL, 12);
 
@@ -766,17 +777,24 @@ int main()
         if (vpadError == VPAD_READ_SUCCESS) {
             if (inGame) {
                 if (coreMenu) {
-                    if (vpad.trigger & (VPAD_BUTTON_UP | VPAD_BUTTON_DOWN)) {
-                        coreMenuIndex = 1 - coreMenuIndex;
+                    if (vpad.trigger & VPAD_BUTTON_DOWN) {
+                        coreMenuIndex = (coreMenuIndex + 1) % 4;
+                    } else if (vpad.trigger & VPAD_BUTTON_UP) {
+                        coreMenuIndex = (coreMenuIndex + 3) % 4;
                     } else if (vpad.trigger & VPAD_BUTTON_A) {
                         if (coreMenuIndex == 0) {
                             coreMenu = false;
+                        } else if (coreMenuIndex == 1) {
+                            core.saveState(snapPath());
+                        } else if (coreMenuIndex == 2) {
+                            core.loadState(snapPath());
                         } else {
+                            core.saveSram();
                             core.unloadGame();
                             inGame = false;
                             coreMenu = false;
                         }
-                    } else if (vpad.trigger & (VPAD_BUTTON_B | VPAD_BUTTON_MINUS | VPAD_BUTTON_PLUS)) {
+                    } else if (vpad.trigger & (VPAD_BUTTON_MINUS | VPAD_BUTTON_PLUS)) {
                         coreMenu = false;
                     }
                 } else {
@@ -959,6 +977,8 @@ int main()
                 } else if (rc > 0) {
                     if (vpad.trigger & VPAD_BUTTON_A) {
                         if (core.loadGame(library.roms[visible[focused]].path, error)) {
+                            activeRom = visible[focused];
+                            core.loadSram();
                             inGame = true;
                         }
                     } else if (vpad.trigger & VPAD_BUTTON_X) {
@@ -1033,13 +1053,15 @@ int main()
             }
             if (coreMenu) {
                 drawRect(0.0f, 0.0f, 1280.0f, 720.0f, Color{0, 0, 0, 170});
-                drawRoundRect(390.0f, 190.0f, 500.0f, 340.0f, 18.0f, panel);
-                text::drawText("MENU", 430.0f, 230.0f, 26, white);
-                text::drawText("Continuar", 430.0f, 310.0f, 20,
-                               coreMenuIndex == 0 ? accent : muted);
-                text::drawText("Cerrar core", 430.0f, 360.0f, 20,
-                               coreMenuIndex == 1 ? accent : muted);
-                text::drawText("A  Aceptar    B  Volver", 430.0f, 440.0f, 15, muted);
+                drawRoundRect(390.0f, 170.0f, 500.0f, 380.0f, 18.0f, panel);
+                text::drawText("MENU", 430.0f, 200.0f, 26, white);
+                const char *items[4] = {"Continuar", "Guardar estado", "Cargar estado",
+                                        "Cerrar core"};
+                for (int i = 0; i < 4; ++i) {
+                    text::drawText(items[i], 430.0f, 270.0f + i * 44.0f, 20,
+                                   coreMenuIndex == i ? accent : muted);
+                }
+                text::drawText("A  Aceptar    B  Volver", 430.0f, 500.0f, 15, muted);
             }
         } else if (remapMode) {
             text::drawText("Remapear botones", 28.0f, 18.0f, 34, white);

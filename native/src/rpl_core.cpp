@@ -6,7 +6,9 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <iterator>
 #include <sys/stat.h>
+#include <vector>
 
 namespace retrou {
 
@@ -419,6 +421,11 @@ bool RplCore::loadStaticCore(SDL_Renderer *tv, SDL_Renderer *drc, std::string &e
     unload_game_ = retro_unload_game;
     run_ = retro_run;
     reset_ = retro_reset;
+    serialize_size_ = retro_serialize_size;
+    serialize_ = retro_serialize;
+    unserialize_ = retro_unserialize;
+    get_memory_data_ = retro_get_memory_data;
+    get_memory_size_ = retro_get_memory_size;
     loaded_ = true;
 
     set_environment_(environmentCallback);
@@ -488,6 +495,72 @@ void RplCore::unloadGame()
     frame_height_ = 0;
     frame_pitch_ = 0;
     log("unloadGame: done");
+}
+
+std::string RplCore::sramPath() const
+{
+    std::string name = rom_path_;
+    const size_t slash = name.find_last_of("/\\");
+    if (slash != std::string::npos) name = name.substr(slash + 1);
+    const size_t dot = name.find_last_of('.');
+    if (dot != std::string::npos) name = name.substr(0, dot);
+    return save_directory_ + "/" + name + ".srm";
+}
+
+bool RplCore::loadSram()
+{
+    if (!get_memory_data_ || !get_memory_size_) return false;
+    const size_t size = get_memory_size_(RETRO_MEMORY_SAVE_RAM);
+    if (size == 0) return false;
+    void *data = get_memory_data_(RETRO_MEMORY_SAVE_RAM);
+    if (!data) return false;
+    std::ifstream in(sramPath(), std::ios::binary);
+    if (!in) return false;
+    in.read(static_cast<char *>(data), static_cast<std::streamsize>(size));
+    log("loadSram " + sramPath() + " size=" + std::to_string(size));
+    return true;
+}
+
+bool RplCore::saveSram()
+{
+    if (!get_memory_data_ || !get_memory_size_) return false;
+    const size_t size = get_memory_size_(RETRO_MEMORY_SAVE_RAM);
+    if (size == 0) return false;
+    void *data = get_memory_data_(RETRO_MEMORY_SAVE_RAM);
+    if (!data) return false;
+    std::ofstream out(sramPath(), std::ios::binary | std::ios::trunc);
+    if (!out) return false;
+    out.write(static_cast<const char *>(data), static_cast<std::streamsize>(size));
+    log("saveSram " + sramPath() + " size=" + std::to_string(size));
+    return true;
+}
+
+bool RplCore::saveState(const std::string &path)
+{
+    if (!serialize_size_ || !serialize_) return false;
+    const size_t size = serialize_size_();
+    if (size == 0) return false;
+    std::vector<uint8_t> buf(size);
+    if (!serialize_(buf.data(), size)) return false;
+    std::ofstream out(path, std::ios::binary | std::ios::trunc);
+    if (!out) return false;
+    out.write(reinterpret_cast<const char *>(buf.data()),
+              static_cast<std::streamsize>(size));
+    log("saveState " + path);
+    return true;
+}
+
+bool RplCore::loadState(const std::string &path)
+{
+    if (!unserialize_) return false;
+    std::ifstream in(path, std::ios::binary);
+    if (!in) return false;
+    std::vector<uint8_t> buf((std::istreambuf_iterator<char>(in)),
+                             std::istreambuf_iterator<char>());
+    if (buf.empty()) return false;
+    const bool ok = unserialize_(buf.data(), buf.size());
+    log("loadState " + path + " ok=" + (ok ? "1" : "0"));
+    return ok;
 }
 
 void RplCore::runFrame()

@@ -24,6 +24,10 @@ public:
     // Unloads only the running game (keeps the core initialized and audio open).
     // Used when returning to the library so we don't deinit/reinit the core.
     void unloadGame();
+    bool loadSram();
+    bool saveSram();
+    bool saveState(const std::string &path);
+    bool loadState(const std::string &path);
     void runFrame();
     void present(SDL_Renderer *renderer, int width, int height) const;
     // Frame access for a GX2 frontend: the core exposes the last rendered
@@ -86,6 +90,12 @@ private:
     using UnserializeFn = bool (*)(const void *, size_t);
     using GetMemoryDataFn = void *(*)(unsigned);
     using GetMemorySizeFn = size_t (*)(unsigned);
+    SerializeSizeFn serialize_size_ = nullptr;
+    SerializeFn serialize_ = nullptr;
+    UnserializeFn unserialize_ = nullptr;
+    GetMemoryDataFn get_memory_data_ = nullptr;
+    GetMemorySizeFn get_memory_size_ = nullptr;
+    std::string sramPath() const;
     using SetControllerFn = void (*)(unsigned, unsigned);
 
     RplLoader loader_;

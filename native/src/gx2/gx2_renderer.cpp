@@ -367,6 +367,12 @@ void drawGradient(float x, float y, float w, float h, Color top, Color bottom)
     pushGradientQuad(x, y, x + w, y + h, top, bottom);
 }
 
+void drawTriangle(float x0, float y0, float x1, float y1, float x2, float y2, Color color)
+{
+    if (!g_ready || !g_inFrame) return;
+    pushTriangle(x0, y0, x1, y1, x2, y2, color);
+}
+
 void drawRoundRect(float x, float y, float w, float h, float radius, Color color)
 {
     if (!g_ready || !g_inFrame) return;

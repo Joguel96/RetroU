@@ -46,6 +46,7 @@ void drawRoundRect(float x, float y, float w, float h, float radius, Color color
 
 // Draws a vertical linear gradient between two colors.
 void drawGradient(float x, float y, float w, float h, Color top, Color bottom);
+void drawTriangle(float x0, float y0, float x1, float y1, float x2, float y2, Color color);
 
 // Creates a texture from RGBA8 pixels (top-left origin). Returns >=0 or -1.
 Texture createTexture(int width, int height, const void *rgba);

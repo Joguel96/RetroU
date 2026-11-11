@@ -90,6 +90,35 @@ static std::string toLower(const std::string &s)
 
 static const char *kbChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // 36
 
+static void drawStar(float cx, float cy, float outer, float inner, Color color)
+{
+    const float pi = 3.14159265f;
+    float px[10], py[10];
+    for (int i = 0; i < 10; ++i) {
+        const float r = (i % 2 == 0) ? outer : inner;
+        const float a = -pi / 2.0f + i * (pi / 5.0f);
+        px[i] = cx + std::cos(a) * r;
+        py[i] = cy + std::sin(a) * r;
+    }
+    for (int i = 0; i < 10; ++i) {
+        const int j = (i + 1) % 10;
+        drawTriangle(cx, cy, px[i], py[i], px[j], py[j], color);
+    }
+}
+
+static std::string titleYear(const std::string &title)
+{
+    for (size_t i = 0; i + 4 < title.size(); ++i) {
+        if (title[i] == '(' && (title[i + 1] == '1' || title[i + 1] == '2') &&
+            std::isdigit(static_cast<unsigned char>(title[i + 2])) &&
+            std::isdigit(static_cast<unsigned char>(title[i + 3])) &&
+            std::isdigit(static_cast<unsigned char>(title[i + 4]))) {
+            return title.substr(i + 1, 4);
+        }
+    }
+    return {};
+}
+
 struct Theme {
     const char *name;
     Color bgTop;
@@ -206,18 +235,6 @@ static bool g_sfxOn = true;
 static void initUiAudio()
 {
     const int rate = 32000;
-    const float notes[] = {261.63f, 329.63f, 392.0f, 523.25f, 392.0f, 329.63f};
-    const float noteLen = 0.12f;
-    for (int rep = 0; rep < 2; ++rep) {
-        for (float f : notes) {
-            const int n = static_cast<int>(rate * noteLen);
-            for (int i = 0; i < n; ++i) {
-                const float t = static_cast<float>(i) / rate;
-                const float w = std::sin(6.2831853f * f * t);
-                g_loop.push_back(static_cast<int16_t>((w >= 0.0f ? 0.15f : -0.15f) * 32767.0f));
-            }
-        }
-    }
     const int blipFrames = static_cast<int>(rate * 0.05f);
     for (int i = 0; i < blipFrames; ++i) {
         const float t = static_cast<float>(i) / rate;
@@ -268,7 +285,7 @@ static void uiAudioTick()
     if (!g_uiDevice) {
         return;
     }
-    if (g_bgMusicOn) {
+    if (g_bgMusicOn && !g_loop.empty()) {
         Uint32 queued = SDL_GetQueuedAudioSize(g_uiDevice);
         const Uint32 minBytes = 8192;
         while (queued < minBytes) {
@@ -474,6 +491,12 @@ int main()
     std::vector<int> proChannels = wpad_input_channels();
     const int pro0 = proChannels.size() > 0 ? proChannels[0] : -1;
     const int pro1 = proChannels.size() > 1 ? proChannels[1] : -1;
+    std::vector<std::string> devOpts;
+    devOpts.push_back("GamePad");
+    for (size_t i = 0; i < proChannels.size() && i < 2; ++i) {
+        devOpts.push_back("Pro " + std::to_string(i + 1));
+    }
+    if (player1Device >= static_cast<int>(devOpts.size())) player1Device = 0;
     auto applyControllers = [&]() {
         int p0 = -1, p1 = -1;
         if (player1Device == 0) { p0 = -1; p1 = pro0; }
@@ -551,7 +574,7 @@ int main()
                     int itemCount = 1;
                     if (settingsSection == 0) itemCount = 2;
                     else if (settingsSection == 2) itemCount = 2;
-                    else if (settingsSection == 3) itemCount = 3;
+                    else if (settingsSection == 3) itemCount = 2;
                     else if (settingsSection == 4) itemCount = 2;
 
                     if (vpad.trigger & VPAD_BUTTON_B) {
@@ -575,14 +598,10 @@ int main()
                             showCovers = !showCovers;
                             saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn);
                         } else if (settingsSection == 3 && settingsItem == 0) {
-                            bgMusicOn = !bgMusicOn;
-                            g_bgMusicOn = bgMusicOn;
-                            saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn);
-                        } else if (settingsSection == 3 && settingsItem == 1) {
                             sfxOn = !sfxOn;
                             g_sfxOn = sfxOn;
                             saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn);
-                        } else if (settingsSection == 3 && settingsItem == 2) {
+                        } else if (settingsSection == 3 && settingsItem == 1) {
                             uiVolume = std::max(0, std::min(100, uiVolume + dir * 10));
                             g_uiVolume = uiVolume;
                             saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn);
@@ -595,7 +614,8 @@ int main()
                             saveVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter);
                             core.setVideoOptions(videoAspect, videoScale, videoFilter);
                         } else if (settingsSection == 2 && settingsItem == 0) {
-                            player1Device = (player1Device + dir + 3) % 3;
+                            const int n = static_cast<int>(devOpts.size());
+                            if (n > 0) player1Device = (player1Device + dir + n) % n;
                             saveControlOptions(library.sd_root, player1Device, swapAB);
                             applyControllers();
                         } else if (settingsSection == 2 && settingsItem == 1) {
@@ -769,10 +789,9 @@ int main()
                     if (settingsItem == 0) drawRoundRect(50.0f, y - 8.0f, 520.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
                     text::drawText(("Carátulas: " + std::string(showCovers ? "Sí" : "No")).c_str(), 60.0f, y, 22, settingsItem == 0 ? white : muted);
                 } else if (settingsSection == 2) {
-                    const char *devOpts[] = {"GamePad", "Pro 1", "Pro 2"};
                     const float y0 = 120.0f, y1 = 190.0f;
                     if (settingsItem == 0) drawRoundRect(50.0f, y0 - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                    text::drawText(("Mando 1: " + std::string(devOpts[player1Device])).c_str(),
+                    text::drawText(("Mando 1: " + devOpts[player1Device]).c_str(),
                                    60.0f, y0, 22, settingsItem == 0 ? white : muted);
                     if (settingsItem == 1) drawRoundRect(50.0f, y1 - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
                     text::drawText(("Intercambiar A/B: " + std::string(swapAB ? "Sí" : "No")).c_str(),
@@ -789,10 +808,9 @@ int main()
                                        60.0f, y, 22, settingsItem == i ? white : muted);
                     }
                 } else if (settingsSection == 3) {
-                    const char *labels[3] = {"Música", "Efectos", "Volumen"};
-                    std::string vals[3] = {bgMusicOn ? "Sí" : "No", sfxOn ? "Sí" : "No",
-                                           std::to_string(uiVolume)};
-                    for (int i = 0; i < 3; ++i) {
+                    const char *labels[2] = {"Efectos", "Volumen"};
+                    std::string vals[2] = {sfxOn ? "Sí" : "No", std::to_string(uiVolume)};
+                    for (int i = 0; i < 2; ++i) {
                         const float y = 120.0f + i * 70.0f;
                         if (settingsItem == i) drawRoundRect(50.0f, y - 8.0f, 520.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
                         text::drawText((std::string(labels[i]) + ": " + vals[i]).c_str(), 60.0f, y, 22, settingsItem == i ? white : muted);
@@ -824,9 +842,20 @@ int main()
                     drawRoundRect(x + 2.0f, y + coverH, cardW - 4.0f, cardH - coverH - 2.0f, 10.0f, cardFooter);
                     text::drawText(getTitle(romIndex).c_str(),
                                    x + 12.0f, y + coverH + 12.0f, 15, white);
-                    text::drawText(RETROU_CORE_LABEL, x + 12.0f, y + coverH + 34.0f, 12, muted);
+                    {
+                        static const char *regionNames[] = {"", "USA", "EUR", "JAP"};
+                        std::string meta;
+                        const int r = detectRegion(library.roms[romIndex].title);
+                        if (r >= 1 && r <= 3) meta = regionNames[r];
+                        const std::string yr = titleYear(library.roms[romIndex].title);
+                        if (!yr.empty()) {
+                            if (!meta.empty()) meta += " ";
+                            meta += yr;
+                        }
+                        text::drawText(meta.c_str(), x + 12.0f, y + coverH + 34.0f, 12, muted);
+                    }
                     if (library.roms[romIndex].favorite) {
-                        drawRoundRect(x + cardW - 22.0f, y + 10.0f, 14.0f, 14.0f, 7.0f, gold);
+                        drawStar(x + cardW - 18.0f, y + 18.0f, 9.0f, 4.0f, gold);
                     }
                 }
             }

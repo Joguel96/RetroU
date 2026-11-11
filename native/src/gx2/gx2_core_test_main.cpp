@@ -29,6 +29,8 @@
 
 extern const unsigned char _binary_ui_ttf_start[];
 extern const unsigned char _binary_ui_ttf_end[];
+extern const unsigned char _binary_icon_png_start[];
+extern const unsigned char _binary_icon_png_end[];
 
 using namespace retrou;
 using namespace retrou::gx2;
@@ -121,6 +123,27 @@ static std::string titleYear(const std::string &title)
         }
     }
     return {};
+}
+
+static void loadMetaMap(const std::string &sdRoot, const std::string &system,
+                        const char *kind, std::map<std::string, std::string> &out)
+{
+    std::ifstream in(sdRoot + "/retrou/metadata/" + system + "-" + kind + ".dat");
+    if (!in) return;
+    std::string line;
+    while (std::getline(in, line)) {
+        const size_t q1 = line.find('"');
+        if (q1 == std::string::npos) continue;
+        const size_t q2 = line.find('"', q1 + 1);
+        if (q2 == std::string::npos) continue;
+        const size_t eq = line.find('=', q2 + 1);
+        if (eq == std::string::npos) continue;
+        const size_t v1 = line.find('"', eq + 1);
+        if (v1 == std::string::npos) continue;
+        const size_t v2 = line.find('"', v1 + 1);
+        if (v2 == std::string::npos) continue;
+        out[line.substr(q1 + 1, q2 - q1 - 1)] = line.substr(v1 + 1, v2 - v1 - 1);
+    }
 }
 
 struct Theme {
@@ -459,6 +482,11 @@ int main()
             if (out) out << now << "\n";
         }
     }
+
+    std::map<std::string, std::string> metaDev, metaYear;
+    loadMetaMap(library.sd_root, RETROU_CORE_SYSTEM, "developer", metaDev);
+    loadMetaMap(library.sd_root, RETROU_CORE_SYSTEM, "releaseyear", metaYear);
+    bool metaApplied = false;
     int settingsSection = -1; // -1 = section list, 0..4 = inside a section
     int sectionCursor = 0;
     int settingsItem = 0;
@@ -522,8 +550,13 @@ int main()
     std::map<int, Texture> coverCache;
     static Texture thumbTex = -2;
     if (thumbTex == -2) {
-        thumbTex = image::loadFromFile(
-            (library.sd_root + "/retrou/thumb_" + RETROU_CORE_SYSTEM + ".png").c_str());
+        thumbTex = image::loadFromMemory(
+            _binary_icon_png_start,
+            static_cast<size_t>(_binary_icon_png_end - _binary_icon_png_start));
+        if (thumbTex < 0) {
+            thumbTex = image::loadFromFile(
+                (library.sd_root + "/retrou/thumb_" + RETROU_CORE_SYSTEM + ".png").c_str());
+        }
     }
     auto getCover = [&](int romIndex) -> Texture {
         auto it = coverCache.find(romIndex);
@@ -667,6 +700,15 @@ int main()
             titleCache.clear();
             lastColumns = columns;
             scroll = 0;
+        }
+
+        if (g_downloadDone && !metaApplied) {
+            metaDev.clear();
+            metaYear.clear();
+            loadMetaMap(library.sd_root, RETROU_CORE_SYSTEM, "developer", metaDev);
+            loadMetaMap(library.sd_root, RETROU_CORE_SYSTEM, "releaseyear", metaYear);
+            coverCache.clear();
+            metaApplied = true;
         }
 
         VPADStatus vpad{};
@@ -1039,14 +1081,22 @@ int main()
                     text::drawText(getTitle(romIndex).c_str(),
                                    x + 12.0f, y + coverH + 12.0f, 15, white);
                     {
-                        static const char *regionNames[] = {"", "USA", "EUR", "JAP"};
+                        const std::string &title = library.roms[romIndex].title;
                         std::string meta;
-                        const int r = detectRegion(library.roms[romIndex].title);
-                        if (r >= 1 && r <= 3) meta = regionNames[r];
-                        const std::string yr = titleYear(library.roms[romIndex].title);
+                        auto dit = metaDev.find(title);
+                        if (dit != metaDev.end()) meta = dit->second;
+                        std::string yr;
+                        auto yit = metaYear.find(title);
+                        if (yit != metaYear.end()) yr = yit->second;
+                        if (yr.empty()) yr = titleYear(title);
                         if (!yr.empty()) {
-                            if (!meta.empty()) meta += " ";
+                            if (!meta.empty()) meta += "  ";
                             meta += yr;
+                        }
+                        if (meta.empty()) {
+                            static const char *regionNames[] = {"", "USA", "EUR", "JAP"};
+                            const int r = detectRegion(title);
+                            if (r >= 1 && r <= 3) meta = regionNames[r];
                         }
                         text::drawText(meta.c_str(), x + 12.0f, y + coverH + 34.0f, 12, muted);
                     }

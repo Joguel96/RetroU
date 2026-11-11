@@ -53,6 +53,22 @@ add_custom_command(
     DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/content/ui-bold.ttf"
 )
 
+# Per-console default thumbnail (the RetroU icon), embedded as an object so it
+# does not depend on the SD card. The symbol is always _binary_icon_png_start.
+set(ICON_OBJECT_DIR "${CMAKE_CURRENT_BINARY_DIR}/embedded_icons")
+foreach(ICON_SYSTEM nes snes gba)
+    set(ICON_OBJ_${ICON_SYSTEM} "${ICON_OBJECT_DIR}/${ICON_SYSTEM}_icon.o")
+    add_custom_command(
+        OUTPUT "${ICON_OBJ_${ICON_SYSTEM}}"
+        COMMAND "${CMAKE_COMMAND}" -E make_directory "${ICON_OBJECT_DIR}"
+        COMMAND "${OBJCOPY}" -I binary -O elf32-powerpc -B powerpc
+                --rename-section .data=.rodata,alloc,load,readonly,data,contents
+                icon.png "${ICON_OBJ_${ICON_SYSTEM}}"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/${ICON_SYSTEM}"
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/${ICON_SYSTEM}/icon.png"
+    )
+endforeach()
+
 function(configure_retrou target)
     target_sources(${target} PRIVATE "${FONT_REGULAR_OBJ}" "${FONT_BOLD_OBJ}")
     set_source_files_properties("${FONT_REGULAR_OBJ}" "${FONT_BOLD_OBJ}"
@@ -211,8 +227,11 @@ function(add_gx2_retrou target system label app_name core)
         src/retrou_assets.cpp
         ${RETRO_COMMON_SOURCES}
         "${FONT_REGULAR_OBJ}"
+        "${ICON_OBJ_${system}}"
     )
     set_source_files_properties("${FONT_REGULAR_OBJ}"
+        PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
+    set_source_files_properties("${ICON_OBJ_${system}}"
         PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
     target_include_directories(${target} PRIVATE
         src

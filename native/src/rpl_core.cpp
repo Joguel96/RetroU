@@ -231,6 +231,12 @@ void RplCore::inputPollCallback()
 
 void RplCore::pollInput()
 {
+    if (!input_enabled_) {
+        input_states_[0] = 0;
+        input_states_[1] = 0;
+        input_state_ = 0;
+        return;
+    }
     wpad_input_poll();
     for (int port = 0; port < 2; ++port) {
         uint16_t state = 0;

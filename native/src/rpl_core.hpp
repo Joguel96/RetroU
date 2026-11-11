@@ -49,6 +49,7 @@ public:
     void setWpadPorts(int first, int second) { wpad_ports_[0] = first; wpad_ports_[1] = second; }
     void setVpadEnabled(bool enabled) { vpad_enabled_ = enabled; }
     void setVpadMap(const std::array<uint32_t, 12> &map) { vpad_map_ = map; }
+    void setInputEnabled(bool on) { input_enabled_ = on; }
     void setExternalAudioDevice(SDL_AudioDeviceID device) { external_audio_ = device; }
     void setVideoOptions(int aspect, int scale, int filter) {
         video_aspect_ = aspect;
@@ -127,6 +128,7 @@ private:
     int video_filter_ = 0;
     int wpad_ports_[2] = {-1, -1};
     bool vpad_enabled_ = false;
+    bool input_enabled_ = true;
     std::array<uint32_t, 12> vpad_map_{};
     SDL_AudioDeviceID external_audio_ = 0;
     SDL_GameController *controller_ = nullptr;

@@ -732,6 +732,7 @@ int main()
     bool inGame = false;
     bool coreMenu = false;
     int coreMenuIndex = 0;
+    bool waitingRelease = false;
     Texture frameTex = -1;
 
     const Color white{255, 255, 255, 255};
@@ -784,18 +785,21 @@ int main()
                     } else if (vpad.trigger & VPAD_BUTTON_A) {
                         if (coreMenuIndex == 0) {
                             coreMenu = false;
+                            core.setInputEnabled(false);
+                            waitingRelease = true;
                         } else if (coreMenuIndex == 1) {
                             core.saveState(snapPath());
                         } else if (coreMenuIndex == 2) {
                             core.loadState(snapPath());
                         } else {
-                            core.saveSram();
                             core.unloadGame();
                             inGame = false;
                             coreMenu = false;
                         }
-                    } else if (vpad.trigger & (VPAD_BUTTON_MINUS | VPAD_BUTTON_PLUS)) {
+                    } else if (vpad.trigger & VPAD_BUTTON_B) {
                         coreMenu = false;
+                        core.setInputEnabled(false);
+                        waitingRelease = true;
                     }
                 } else {
                     if ((vpad.trigger & VPAD_BUTTON_MINUS) && (vpad.trigger & VPAD_BUTTON_PLUS)) {
@@ -978,7 +982,6 @@ int main()
                     if (vpad.trigger & VPAD_BUTTON_A) {
                         if (core.loadGame(library.roms[visible[focused]].path, error)) {
                             activeRom = visible[focused];
-                            core.loadSram();
                             inGame = true;
                         }
                     } else if (vpad.trigger & VPAD_BUTTON_X) {
@@ -1004,6 +1007,11 @@ int main()
                     scroll = scrollRow * columns;
                 }
             }
+        }
+
+        if (waitingRelease && !coreMenu && vpadError == VPAD_READ_SUCCESS && vpad.hold == 0) {
+            core.setInputEnabled(true);
+            waitingRelease = false;
         }
 
         if (inGame && !coreMenu) {
@@ -1056,7 +1064,7 @@ int main()
                 drawRoundRect(390.0f, 170.0f, 500.0f, 380.0f, 18.0f, panel);
                 text::drawText("MENU", 430.0f, 200.0f, 26, white);
                 const char *items[4] = {"Continuar", "Guardar estado", "Cargar estado",
-                                        "Cerrar core"};
+                                        "Salir del juego"};
                 for (int i = 0; i < 4; ++i) {
                     text::drawText(items[i], 430.0f, 270.0f + i * 44.0f, 20,
                                    coreMenuIndex == i ? accent : muted);

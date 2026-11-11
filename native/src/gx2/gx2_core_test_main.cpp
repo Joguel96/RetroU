@@ -441,7 +441,7 @@ static void uiAudioTick()
 int main()
 {
     OSEnableHomeButtonMenu(TRUE);
-    SDL_Init(SDL_INIT_AUDIO);
+    SDL_Init(SDL_INIT_AUDIO | SDL_INIT_TIMER);
     initUiAudio();
 
     if (!init()) return 1;
@@ -601,6 +601,23 @@ int main()
         return real;
     };
 
+    std::map<int, Texture> backdropCache;
+    auto getBackdrop = [&](int romIndex) -> Texture {
+        auto it = backdropCache.find(romIndex);
+        if (it != backdropCache.end()) return it->second;
+        std::string safe = library.roms[romIndex].title;
+        for (char &c : safe) {
+            if (std::string("&*/:`<>?\\|\"").find(c) != std::string::npos) c = '_';
+        }
+        const std::string path = library.sd_root + "/retrou/backdrops/" +
+                                 RETROU_CORE_SYSTEM + "/" + safe + ".png";
+        Texture bd = image::loadFromFileBlurred(path.c_str(), 64, 36);
+        backdropCache[romIndex] = bd;
+        return bd;
+    };
+    uint32_t focusedTick = SDL_GetTicks();
+    int lastFocused = -1;
+
     std::map<int, std::string> titleCache;
     auto getTitle = [&](int romIndex) -> const std::string & {
         auto it = titleCache.find(romIndex);
@@ -737,6 +754,11 @@ int main()
         }
 
         setNearestFilter(videoFilter == 0);
+
+        if (focused != lastFocused) {
+            lastFocused = focused;
+            focusedTick = SDL_GetTicks();
+        }
 
         VPADStatus vpad{};
         VPADReadError vpadError = VPAD_READ_NO_SAMPLES;
@@ -972,6 +994,15 @@ int main()
         beginFrame(bg);
         drawGradient(0.0f, 0.0f, 1280.0f, 720.0f, bgTop, bg);
 
+        if (!inGame && !remapMode && !settingsOpen && !sidebarOpen && !searchActive &&
+            !visible.empty() && SDL_GetTicks() - focusedTick >= 3000) {
+            Texture bd = getBackdrop(visible[focused]);
+            if (bd >= 0) {
+                drawTexture(bd, 0.0f, 0.0f, 1280.0f, 720.0f);
+                drawRect(0.0f, 0.0f, 1280.0f, 720.0f, Color{8, 11, 18, 170});
+            }
+        }
+
         if (inGame) {
             if (core.hasFrame()) {
                 const bool rgb565 = core.pixelFormat() == RETRO_PIXEL_FORMAT_RGB565;
@@ -1095,6 +1126,12 @@ int main()
             }
         } else {
             text::drawText("Biblioteca", 28.0f, 18.0f, 34, white);
+            if (!visible.empty()) {
+                const std::string &full = library.roms[visible[focused]].title;
+                if (getTitle(visible[focused]).size() < full.size()) {
+                    text::drawText(full.c_str(), 400.0f, 26.0f, 20, muted);
+                }
+            }
 
             const int cells = columns * rows;
             if (visible.empty()) {

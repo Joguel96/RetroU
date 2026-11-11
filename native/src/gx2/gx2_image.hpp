@@ -13,6 +13,8 @@ Texture loadFromMemory(const unsigned char *data, size_t size);
 // cover respects the card mask.
 Texture loadFromMemoryRounded(const unsigned char *data, size_t size);
 Texture loadFromFileRounded(const char *path);
+// Loads and box-downscales to smallW x smallH (cheap blur when upscaled).
+Texture loadFromFileBlurred(const char *path, int smallW, int smallH);
 
 // Decodes an image file into an RGBA8 GX2 texture. Returns -1 on failure.
 Texture loadFromFile(const char *path);

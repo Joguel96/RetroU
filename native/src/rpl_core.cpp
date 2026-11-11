@@ -208,13 +208,10 @@ void RplCore::startAudio()
 
 void RplCore::stopAudio()
 {
-    if (audio_device_) {
-        SDL_CloseAudioDevice(audio_device_);
-        audio_device_ = 0;
-    }
-    // Note: do not SDL_QuitSubSystem(SDL_INIT_AUDIO) here; the subsystem is
-    // initialized once and cleaned up by SDL_Quit() at app exit. Quitting it
-    // mid-session could hang on hardware.
+    // SDL_CloseAudioDevice hangs on Wii U hardware, so keep the device open and
+    // let the OS reclaim it at app exit. Do NOT reset audio_device_ so that
+    // startAudio() skips re-opening the device on the next loaded game.
+    log("stopAudio: skipped close");
 }
 
 void RplCore::inputPollCallback()
@@ -580,9 +577,11 @@ void RplCore::unload()
         }
         game_loaded_ = false;
         stopAudio();
+        log("unload: after stopAudio");
         if (initialized_ && deinit_) {
             deinit_();
         }
+        log("unload: after deinit");
         initialized_ = false;
         destroyTextures();
         if (!static_test_) {

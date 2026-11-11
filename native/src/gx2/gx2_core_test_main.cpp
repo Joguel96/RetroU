@@ -279,5 +279,9 @@ int main()
 
     // Exit without SDL_Quit: SDL audio teardown can hang on hardware.
     appLog("app: return");
+    core.unload();
+    appLog("app: shutdown");
+    shutdown();
+    appLog("app: shutdown done");
     return 0;
 }

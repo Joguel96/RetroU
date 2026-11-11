@@ -598,6 +598,7 @@ void RplCore::unload()
     drc_ = nullptr;
     frame_data_ = nullptr;
     name_.clear();
+    log("unload: end");
 }
 
 } // namespace retrou

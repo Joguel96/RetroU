@@ -56,6 +56,8 @@ struct TextureRecord {
 std::vector<TextureRecord *> g_textures;
 
 GX2Sampler g_sampler{};
+GX2Sampler g_samplerNearest{};
+bool g_nearest = false;
 bool g_ready = false;
 bool g_inFrame = false;
 
@@ -252,7 +254,7 @@ void flushFrame()
             const uint32_t unit =
                 g_textureGroup.pixelShader->samplerVars[0].location;
             GX2SetPixelTexture(&record->texture, unit);
-            GX2SetPixelSampler(&g_sampler, unit);
+            GX2SetPixelSampler(g_nearest ? &g_samplerNearest : &g_sampler, unit);
             GX2DrawEx(GX2_PRIMITIVE_MODE_TRIANGLES, run.count, 0, 1);
         }
     }
@@ -299,6 +301,8 @@ bool init()
     WHBGfxInitFetchShader(&g_textureGroup);
     GX2InitSampler(&g_sampler, GX2_TEX_CLAMP_MODE_CLAMP,
                    GX2_TEX_XY_FILTER_MODE_LINEAR);
+    GX2InitSampler(&g_samplerNearest, GX2_TEX_CLAMP_MODE_CLAMP,
+                   GX2_TEX_XY_FILTER_MODE_POINT);
     g_ready = true;
     return true;
 }
@@ -582,5 +586,6 @@ void drawTextureCover(Texture texture, float x, float y, float w, float h)
 
 void setScissor(int, int, int, int) {}
 void clearScissor() {}
+void setNearestFilter(bool on) { g_nearest = on; }
 
 } // namespace retrou::gx2

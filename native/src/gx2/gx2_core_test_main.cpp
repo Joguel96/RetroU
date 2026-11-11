@@ -130,19 +130,27 @@ static void loadMetaMap(const std::string &sdRoot, const std::string &system,
 {
     std::ifstream in(sdRoot + "/retrou/metadata/" + system + "-" + kind + ".dat");
     if (!in) return;
+    const std::string keyPrefix = std::string(kind) + " \"";
     std::string line;
+    std::string currentTitle;
     while (std::getline(in, line)) {
-        const size_t q1 = line.find('"');
-        if (q1 == std::string::npos) continue;
-        const size_t q2 = line.find('"', q1 + 1);
-        if (q2 == std::string::npos) continue;
-        const size_t eq = line.find('=', q2 + 1);
-        if (eq == std::string::npos) continue;
-        const size_t v1 = line.find('"', eq + 1);
-        if (v1 == std::string::npos) continue;
-        const size_t v2 = line.find('"', v1 + 1);
-        if (v2 == std::string::npos) continue;
-        out[line.substr(q1 + 1, q2 - q1 - 1)] = line.substr(v1 + 1, v2 - v1 - 1);
+        const size_t c = line.find("comment \"");
+        if (c != std::string::npos) {
+            const size_t s = c + 9;
+            const size_t e = line.find('"', s);
+            if (e != std::string::npos) {
+                currentTitle = line.substr(s, e - s);
+            }
+            continue;
+        }
+        const size_t k = line.find(keyPrefix);
+        if (k != std::string::npos && !currentTitle.empty()) {
+            const size_t s = k + keyPrefix.size();
+            const size_t e = line.find('"', s);
+            if (e != std::string::npos) {
+                out[currentTitle] = line.substr(s, e - s);
+            }
+        }
     }
 }
 
@@ -520,20 +528,32 @@ int main()
             }
             visible.push_back(i);
         }
-        if (sortMode == 0) {
-            std::sort(visible.begin(), visible.end(), [&](int a, int b) {
-                return library.roms[a].title < library.roms[b].title;
-            });
-        } else {
-            std::sort(visible.begin(), visible.end(), [&](int a, int b) {
-                const int ka = detectRegion(library.roms[a].title);
-                const int kb = detectRegion(library.roms[b].title);
+        std::sort(visible.begin(), visible.end(), [&](int a, int b) {
+            const RomEntry &ra = library.roms[a];
+            const RomEntry &rb = library.roms[b];
+            if (sortMode == 1) {
+                const int ka = detectRegion(ra.title);
+                const int kb = detectRegion(rb.title);
                 const int oa = ka == 0 ? 4 : ka;
                 const int ob = kb == 0 ? 4 : kb;
                 if (oa != ob) return oa < ob;
-                return library.roms[a].title < library.roms[b].title;
-            });
-        }
+            } else if (sortMode == 2) {
+                auto ita = metaYear.find(ra.title);
+                auto itb = metaYear.find(rb.title);
+                const std::string ya = ita != metaYear.end() ? ita->second : titleYear(ra.title);
+                const std::string yb = itb != metaYear.end() ? itb->second : titleYear(rb.title);
+                if (ya != yb) return ya < yb;
+            } else if (sortMode == 3) {
+                auto ita = metaDev.find(ra.title);
+                auto itb = metaDev.find(rb.title);
+                const std::string da = ita != metaDev.end() ? ita->second : std::string();
+                const std::string db = itb != metaDev.end() ? itb->second : std::string();
+                if (da != db) return da < db;
+            } else if (sortMode == 4) {
+                if (ra.favorite != rb.favorite) return ra.favorite;
+            }
+            return ra.title < rb.title;
+        });
         if (focused >= static_cast<int>(visible.size())) focused = 0;
         scroll = 0;
     };
@@ -562,7 +582,7 @@ int main()
         auto it = coverCache.find(romIndex);
         if (it != coverCache.end()) return it->second;
         std::string cp = coverPath(library.sd_root, RETROU_CORE_SYSTEM, library.roms[romIndex].title);
-        Texture real = image::loadFromFile(cp.c_str());
+        Texture real = image::loadFromFileRounded(cp.c_str());
         if (real < 0) {
             if (thumbTex >= 0) {
                 real = thumbTex;
@@ -655,6 +675,7 @@ int main()
     core.setVpadEnabled(true);
     core.setVideoOptions(videoAspect, videoScale, videoFilter);
     core.setExternalAudioDevice(g_uiDevice);
+    core.setAudioOptions(uiVolume, 0);
 
     wpad_input_init();
     std::vector<int> proChannels = wpad_input_channels();
@@ -711,6 +732,8 @@ int main()
             metaApplied = true;
         }
 
+        setNearestFilter(videoFilter == 0);
+
         VPADStatus vpad{};
         VPADReadError vpadError = VPAD_READ_NO_SAMPLES;
         VPADRead(VPAD_CHAN_0, &vpad, 1, &vpadError);
@@ -761,7 +784,7 @@ int main()
             } else if (settingsOpen) {
                 const int sectionCount = 5;
                 if (settingsSection == -1) {
-                    if (vpad.trigger & (VPAD_BUTTON_L | VPAD_BUTTON_B)) {
+                    if (vpad.trigger & VPAD_BUTTON_L) {
                         settingsOpen = false;
                     } else if (vpad.trigger & VPAD_BUTTON_UP) {
                         sectionCursor = (sectionCursor + sectionCount - 1) % sectionCount;
@@ -819,6 +842,7 @@ int main()
                         } else if (settingsSection == 3 && settingsItem == 1) {
                             uiVolume = std::max(0, std::min(100, uiVolume + dir * 10));
                             g_uiVolume = uiVolume;
+                            core.setAudioOptions(uiVolume, 0);
                             saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn);
                         } else if (settingsSection == 4 && settingsItem == 0) {
                             videoAspect = (videoAspect + dir + 3) % 3;
@@ -881,8 +905,9 @@ int main()
                         searchActive = true;
                         searchCursor = 0;
                     } else if (sidebarIndex == 1) {
-                        sortMode = (sortMode + 1) % 2;
+                        sortMode = (sortMode + 1) % 5;
                         rebuildVisible();
+                        navBlip();
                     } else if (sidebarIndex == 2) {
                         regionFilter = (regionFilter + 1) % 4;
                         rebuildVisible();
@@ -898,6 +923,10 @@ int main()
                 } else if (vpad.trigger & VPAD_BUTTON_PLUS) {
                     sidebarOpen = true;
                     sidebarIndex = 0;
+                } else if (vpad.trigger & VPAD_BUTTON_MINUS) {
+                    sortMode = (sortMode + 1) % 5;
+                    rebuildVisible();
+                    navBlip();
                 } else if (rc > 0) {
                     if (vpad.trigger & VPAD_BUTTON_A) {
                         if (core.loadGame(library.roms[visible[focused]].path, error)) {
@@ -1110,9 +1139,10 @@ int main()
                 text::drawText("FILTRAR Y ORGANIZAR", 44.0f, 106.0f, 16, muted);
 
                 const char *regionNames[] = {"Todas", "USA", "Europa", "Japón"};
+                const char *sortNames[] = {"Nombre", "Región", "Año", "Desarrollador", "Favoritos"};
                 std::string labels[4] = {
                     "Buscar",
-                    std::string("Ordenar por: ") + (sortMode == 0 ? "Nombre" : "Región"),
+                    std::string("Ordenar por: ") + sortNames[sortMode],
                     std::string("Región: ") + regionNames[regionFilter],
                     std::string("Favoritos: ") + (favoritesOnly ? "Sí" : "No"),
                 };

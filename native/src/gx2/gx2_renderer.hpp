@@ -83,4 +83,7 @@ void drawTextureCover(Texture texture, float x, float y, float w, float h);
 void setScissor(int x, int y, int w, int h);
 void clearScissor();
 
+// Selects point (nearest) or linear filtering for textured draws.
+void setNearestFilter(bool on);
+
 } // namespace retrou::gx2

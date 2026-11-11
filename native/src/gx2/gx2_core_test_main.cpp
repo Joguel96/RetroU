@@ -294,15 +294,17 @@ static void saveControlOptions(const std::string &sdRoot, int player1, const std
 }
 
 static void loadAppSettings(const std::string &sdRoot, int &columns, bool &showCovers,
-                            int &uiVolume, bool &bgMusicOn, bool &sfxOn)
+                            int &uiVolume, bool &bgMusicOn, bool &sfxOn, int &coreVolume)
 {
     std::ifstream in(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/" RETROU_CORE_SYSTEM ".conf");
-    int c = 0, v = 0, bg = 0, sfx = 0;
+    int c = 0, v = 0, bg = 0, sfx = 0, cv = 80;
     if (in >> columns >> c >> v >> bg >> sfx) {
         showCovers = (c != 0);
         uiVolume = v;
         bgMusicOn = (bg != 0);
         sfxOn = (sfx != 0);
+        if (!(in >> cv)) cv = uiVolume;
+        coreVolume = cv;
         return;
     }
     columns = 5;
@@ -310,15 +312,16 @@ static void loadAppSettings(const std::string &sdRoot, int &columns, bool &showC
     uiVolume = 80;
     bgMusicOn = true;
     sfxOn = true;
+    coreVolume = 80;
 }
 
 static void saveAppSettings(const std::string &sdRoot, int columns, bool showCovers,
-                            int uiVolume, bool bgMusicOn, bool sfxOn)
+                            int uiVolume, bool bgMusicOn, bool sfxOn, int coreVolume)
 {
     std::ofstream out(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/" RETROU_CORE_SYSTEM ".conf", std::ios::trunc);
     if (out) {
         out << columns << " " << (showCovers ? 1 : 0) << " " << uiVolume << " "
-            << (bgMusicOn ? 1 : 0) << " " << (sfxOn ? 1 : 0) << "\n";
+            << (bgMusicOn ? 1 : 0) << " " << (sfxOn ? 1 : 0) << " " << coreVolume << "\n";
     }
 }
 
@@ -467,7 +470,8 @@ int main()
     int uiVolume = 80;
     bool bgMusicOn = true;
     bool sfxOn = true;
-    loadAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn);
+    int coreVolume = 80;
+    loadAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn, coreVolume);
     g_uiVolume = uiVolume;
     g_bgMusicOn = bgMusicOn;
     g_sfxOn = sfxOn;
@@ -582,7 +586,7 @@ int main()
         auto it = coverCache.find(romIndex);
         if (it != coverCache.end()) return it->second;
         std::string cp = coverPath(library.sd_root, RETROU_CORE_SYSTEM, library.roms[romIndex].title);
-        Texture real = image::loadFromFileRounded(cp.c_str());
+        Texture real = image::loadFromFile(cp.c_str());
         if (real < 0) {
             if (thumbTex >= 0) {
                 real = thumbTex;
@@ -675,7 +679,7 @@ int main()
     core.setVpadEnabled(true);
     core.setVideoOptions(videoAspect, videoScale, videoFilter);
     core.setExternalAudioDevice(g_uiDevice);
-    core.setAudioOptions(uiVolume, 0);
+    core.setAudioOptions(coreVolume, 0);
 
     wpad_input_init();
     std::vector<int> proChannels = wpad_input_channels();
@@ -799,7 +803,7 @@ int main()
                     if (settingsSection == 0) itemCount = 2;
                     else if (settingsSection == 1) itemCount = 3;
                     else if (settingsSection == 2) itemCount = 2;
-                    else if (settingsSection == 3) itemCount = 2;
+                    else if (settingsSection == 3) itemCount = 3;
                     else if (settingsSection == 4) itemCount = 2;
 
                     if (vpad.trigger & VPAD_BUTTON_B) {
@@ -828,22 +832,25 @@ int main()
                             saveThemeIndex(library.sd_root, themeIndex);
                         } else if (settingsSection == 0 && settingsItem == 1) {
                             columns = std::max(3, std::min(6, columns + dir));
-                            saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn);
+                            saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn, coreVolume);
                         } else if (settingsSection == 1 && settingsItem == 0) {
                             showCovers = !showCovers;
-                            saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn);
+                            saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn, coreVolume);
                         } else if (settingsSection == 1 && settingsItem == 1) {
                             autoDownload = !autoDownload;
                             saveAutoDownload(library.sd_root, autoDownload);
                         } else if (settingsSection == 3 && settingsItem == 0) {
-                            sfxOn = !sfxOn;
-                            g_sfxOn = sfxOn;
-                            saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn);
-                        } else if (settingsSection == 3 && settingsItem == 1) {
                             uiVolume = std::max(0, std::min(100, uiVolume + dir * 10));
                             g_uiVolume = uiVolume;
-                            core.setAudioOptions(uiVolume, 0);
-                            saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn);
+                            saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn, coreVolume);
+                        } else if (settingsSection == 3 && settingsItem == 1) {
+                            coreVolume = std::max(0, std::min(100, coreVolume + dir * 10));
+                            core.setAudioOptions(coreVolume, 0);
+                            saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn, coreVolume);
+                        } else if (settingsSection == 3 && settingsItem == 2) {
+                            sfxOn = !sfxOn;
+                            g_sfxOn = sfxOn;
+                            saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn, coreVolume);
                         } else if (settingsSection == 4 && settingsItem == 0) {
                             videoAspect = (videoAspect + dir + 3) % 3;
                             saveVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter);
@@ -1073,11 +1080,12 @@ int main()
                                        60.0f, y, 22, settingsItem == i ? white : muted);
                     }
                 } else if (settingsSection == 3) {
-                    const char *labels[2] = {"Efectos", "Volumen"};
-                    std::string vals[2] = {sfxOn ? "Sí" : "No", std::to_string(uiVolume)};
-                    for (int i = 0; i < 2; ++i) {
+                    const char *labels[3] = {"Sonido del menú", "Sonido del juego", "Efectos"};
+                    std::string vals[3] = {std::to_string(uiVolume), std::to_string(coreVolume),
+                                           sfxOn ? "Sí" : "No"};
+                    for (int i = 0; i < 3; ++i) {
                         const float y = 120.0f + i * 70.0f;
-                        if (settingsItem == i) drawRoundRect(50.0f, y - 8.0f, 520.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                        if (settingsItem == i) drawRoundRect(50.0f, y - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
                         text::drawText((std::string(labels[i]) + ": " + vals[i]).c_str(), 60.0f, y, 22, settingsItem == i ? white : muted);
                     }
                 } else {

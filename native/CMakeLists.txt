@@ -208,6 +208,7 @@ function(add_gx2_retrou target system label app_name core)
         src/wpad_input.cpp
         src/rpl_core.cpp
         src/rpl_loader.cpp
+        src/retrou_assets.cpp
         ${RETRO_COMMON_SOURCES}
         "${FONT_REGULAR_OBJ}"
     )
@@ -233,6 +234,10 @@ function(add_gx2_retrou target system label app_name core)
         m
         z
         SDL2
+        curl
+        mbedtls
+        mbedx509
+        mbedcrypto
         freetype
         png
         bz2

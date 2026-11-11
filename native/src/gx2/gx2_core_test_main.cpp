@@ -2,12 +2,15 @@
 #include "gx2/gx2_text.hpp"
 #include "gx2/gx2_image.hpp"
 #include "gx2/retrou_data.hpp"
+#include "retrou_assets.hpp"
 #include "rpl_core.hpp"
 #include "wpad_input.hpp"
 
 #include <SDL.h>
+#include <atomic>
 #include <coreinit/systeminfo.h>
 #include <libretro.h>
+#include <thread>
 #include <vpad/input.h>
 
 #include <algorithm>
@@ -288,6 +291,38 @@ static void saveAppSettings(const std::string &sdRoot, int columns, bool showCov
     }
 }
 
+// ---- Asset download (covers/backdrops/metadata) ----
+static std::atomic<bool> g_downloading{false};
+static std::atomic<bool> g_downloadDone{false};
+
+static bool loadAutoDownload(const std::string &sdRoot)
+{
+    std::ifstream in(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/auto.conf");
+    int v = 1;
+    if (in >> v) return v != 0;
+    return true;
+}
+
+static void saveAutoDownload(const std::string &sdRoot, bool on)
+{
+    std::ofstream out(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/auto.conf", std::ios::trunc);
+    if (out) out << (on ? 1 : 0) << "\n";
+}
+
+static void startAssetDownload(const std::string &sdRoot, const std::string &system,
+                               std::vector<std::string> titles)
+{
+    if (g_downloading.exchange(true)) {
+        return;
+    }
+    g_downloadDone = false;
+    std::thread([sdRoot, system, titles]() {
+        retrou::assets::downloadAll(sdRoot, system, titles);
+        g_downloading = false;
+        g_downloadDone = true;
+    }).detach();
+}
+
 // ---- UI audio: 16-bit retro background loop + navigation blip (queue-based) ----
 static SDL_AudioDeviceID g_uiDevice = 0;
 static std::vector<int16_t> g_loop;
@@ -405,6 +440,25 @@ int main()
     g_uiVolume = uiVolume;
     g_bgMusicOn = bgMusicOn;
     g_sfxOn = sfxOn;
+    bool autoDownload = loadAutoDownload(library.sd_root);
+
+    {
+        const std::string countPath =
+            library.sd_root + "/retrou/config/" RETROU_CORE_SYSTEM "/rom-count.txt";
+        int stored = -1;
+        {
+            std::ifstream in(countPath);
+            in >> stored;
+        }
+        const int now = static_cast<int>(library.roms.size());
+        if (autoDownload && stored != now) {
+            std::vector<std::string> titles;
+            for (const auto &rom : library.roms) titles.push_back(rom.title);
+            startAssetDownload(library.sd_root, RETROU_CORE_SYSTEM, titles);
+            std::ofstream out(countPath, std::ios::trunc);
+            if (out) out << now << "\n";
+        }
+    }
     int settingsSection = -1; // -1 = section list, 0..4 = inside a section
     int sectionCursor = 0;
     int settingsItem = 0;
@@ -466,16 +520,25 @@ int main()
     int lastColumns = columns;
 
     std::map<int, Texture> coverCache;
+    static Texture thumbTex = -2;
+    if (thumbTex == -2) {
+        thumbTex = image::loadFromFile(
+            (library.sd_root + "/retrou/thumb_" + RETROU_CORE_SYSTEM + ".png").c_str());
+    }
     auto getCover = [&](int romIndex) -> Texture {
         auto it = coverCache.find(romIndex);
         if (it != coverCache.end()) return it->second;
         std::string cp = coverPath(library.sd_root, RETROU_CORE_SYSTEM, library.roms[romIndex].title);
         Texture real = image::loadFromFile(cp.c_str());
         if (real < 0) {
-            const uint8_t r = static_cast<uint8_t>(30 + (romIndex * 37) % 160);
-            const uint8_t g = static_cast<uint8_t>(60 + (romIndex * 29) % 140);
-            const uint8_t b = static_cast<uint8_t>(120 - (romIndex * 23) % 100);
-            real = makeCover(r, g, b, 10, 14, 24);
+            if (thumbTex >= 0) {
+                real = thumbTex;
+            } else {
+                const uint8_t r = static_cast<uint8_t>(30 + (romIndex * 37) % 160);
+                const uint8_t g = static_cast<uint8_t>(60 + (romIndex * 29) % 140);
+                const uint8_t b = static_cast<uint8_t>(120 - (romIndex * 23) % 100);
+                real = makeCover(r, g, b, 10, 14, 24);
+            }
         }
         coverCache[romIndex] = real;
         return real;
@@ -669,6 +732,7 @@ int main()
                 } else {
                     int itemCount = 1;
                     if (settingsSection == 0) itemCount = 2;
+                    else if (settingsSection == 1) itemCount = 3;
                     else if (settingsSection == 2) itemCount = 2;
                     else if (settingsSection == 3) itemCount = 2;
                     else if (settingsSection == 4) itemCount = 2;
@@ -687,6 +751,10 @@ int main()
                             remapMode = true;
                             remapIndex = 0;
                             remapListening = false;
+                        } else if (settingsSection == 1 && settingsItem == 2) {
+                            std::vector<std::string> titles;
+                            for (const auto &rom : library.roms) titles.push_back(rom.title);
+                            startAssetDownload(library.sd_root, RETROU_CORE_SYSTEM, titles);
                         }
                     } else if ((vpad.trigger & VPAD_BUTTON_LEFT) || (vpad.trigger & VPAD_BUTTON_RIGHT)) {
                         const int dir = (vpad.trigger & VPAD_BUTTON_RIGHT) ? 1 : -1;
@@ -699,6 +767,9 @@ int main()
                         } else if (settingsSection == 1 && settingsItem == 0) {
                             showCovers = !showCovers;
                             saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn);
+                        } else if (settingsSection == 1 && settingsItem == 1) {
+                            autoDownload = !autoDownload;
+                            saveAutoDownload(library.sd_root, autoDownload);
                         } else if (settingsSection == 3 && settingsItem == 0) {
                             sfxOn = !sfxOn;
                             g_sfxOn = sfxOn;
@@ -807,9 +878,10 @@ int main()
                         focused = std::max(0, focused - columns);
                         navBlip();
                     }
-                    const int cellsNow = columns * rows;
-                    if (focused < scroll) scroll = focused;
-                    if (focused >= scroll + cellsNow) scroll = focused - cellsNow + 1;
+                    const int focusedRow = focused / columns;
+                    int scrollRow = focusedRow - (rows - 1);
+                    if (scrollRow < 0) scrollRow = 0;
+                    scroll = scrollRow * columns;
                 }
             }
         }
@@ -899,9 +971,18 @@ int main()
                     if (settingsItem == 1) drawRoundRect(50.0f, y1 - 8.0f, 520.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
                     text::drawText(("Columnas: " + std::to_string(columns)).c_str(), 60.0f, y1, 22, settingsItem == 1 ? white : muted);
                 } else if (settingsSection == 1) {
-                    const float y = 120.0f;
-                    if (settingsItem == 0) drawRoundRect(50.0f, y - 8.0f, 520.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                    text::drawText(("Carátulas: " + std::string(showCovers ? "Sí" : "No")).c_str(), 60.0f, y, 22, settingsItem == 0 ? white : muted);
+                    const char *labels[3] = {"Carátulas", "Auto-descarga", "Descargar ahora (A)"};
+                    std::string vals[3] = {showCovers ? "Sí" : "No", autoDownload ? "Sí" : "No", ""};
+                    for (int i = 0; i < 3; ++i) {
+                        const float y = 120.0f + i * 70.0f;
+                        if (settingsItem == i) drawRoundRect(50.0f, y - 8.0f, 760.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                        std::string line = labels[i];
+                        if (!vals[i].empty()) line += ": " + vals[i];
+                        text::drawText(line.c_str(), 60.0f, y, 22, settingsItem == i ? white : muted);
+                    }
+                    if (g_downloading) {
+                        text::drawText("Descargando...", 60.0f, 400.0f, 20, accent);
+                    }
                 } else if (settingsSection == 2) {
                     const float y0 = 120.0f, y1 = 190.0f;
                     if (settingsItem == 0) drawRoundRect(50.0f, y0 - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});

@@ -256,8 +256,10 @@ void RplCore::pollInput()
         if (wpad_ports_[port] >= 0) {
             WpadSnapshot pad = wpad_input_state(wpad_ports_[port]);
             if (pad.connected) {
-                if (pad.buttons & WPAD_PRO_BUTTON_A) state |= 1u << RETRO_DEVICE_ID_JOYPAD_A;
-                if (pad.buttons & WPAD_PRO_BUTTON_B) state |= 1u << RETRO_DEVICE_ID_JOYPAD_B;
+                const uint32_t pA = swap_ab_ ? WPAD_PRO_BUTTON_B : WPAD_PRO_BUTTON_A;
+                const uint32_t pB = swap_ab_ ? WPAD_PRO_BUTTON_A : WPAD_PRO_BUTTON_B;
+                if (pad.buttons & pA) state |= 1u << RETRO_DEVICE_ID_JOYPAD_A;
+                if (pad.buttons & pB) state |= 1u << RETRO_DEVICE_ID_JOYPAD_B;
                 if (pad.buttons & WPAD_PRO_BUTTON_X) state |= 1u << RETRO_DEVICE_ID_JOYPAD_X;
                 if (pad.buttons & WPAD_PRO_BUTTON_Y) state |= 1u << RETRO_DEVICE_ID_JOYPAD_Y;
                 if (pad.buttons & WPAD_PRO_BUTTON_L) state |= 1u << RETRO_DEVICE_ID_JOYPAD_L;
@@ -275,8 +277,10 @@ void RplCore::pollInput()
             VPADReadError vpadError = VPAD_READ_NO_SAMPLES;
             VPADRead(VPAD_CHAN_0, &vpad, 1, &vpadError);
             if (vpadError == VPAD_READ_SUCCESS) {
-                if (vpad.hold & VPAD_BUTTON_A) state |= 1u << RETRO_DEVICE_ID_JOYPAD_A;
-                if (vpad.hold & VPAD_BUTTON_B) state |= 1u << RETRO_DEVICE_ID_JOYPAD_B;
+                const uint32_t btnA = swap_ab_ ? VPAD_BUTTON_B : VPAD_BUTTON_A;
+                const uint32_t btnB = swap_ab_ ? VPAD_BUTTON_A : VPAD_BUTTON_B;
+                if (vpad.hold & btnA) state |= 1u << RETRO_DEVICE_ID_JOYPAD_A;
+                if (vpad.hold & btnB) state |= 1u << RETRO_DEVICE_ID_JOYPAD_B;
                 if (vpad.hold & VPAD_BUTTON_X) state |= 1u << RETRO_DEVICE_ID_JOYPAD_X;
                 if (vpad.hold & VPAD_BUTTON_Y) state |= 1u << RETRO_DEVICE_ID_JOYPAD_Y;
                 if (vpad.hold & VPAD_BUTTON_L) state |= 1u << RETRO_DEVICE_ID_JOYPAD_L;

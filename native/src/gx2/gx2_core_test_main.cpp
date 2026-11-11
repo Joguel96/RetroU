@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <cstdint>
 #include <fstream>
 #include <map>
@@ -143,25 +144,98 @@ static void saveVideoOptions(const std::string &sdRoot, int aspect, int scale, i
     }
 }
 
-static void loadControlOptions(const std::string &sdRoot, int &player1)
+static void loadControlOptions(const std::string &sdRoot, int &player1, bool &swapAB)
 {
     std::ifstream in(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/control-map.conf");
-    if (in >> player1) return;
+    int sw = 0;
+    if (in >> player1 >> sw) {
+        swapAB = (sw != 0);
+        return;
+    }
     player1 = 0;
+    swapAB = false;
 }
 
-static void saveControlOptions(const std::string &sdRoot, int player1)
+static void saveControlOptions(const std::string &sdRoot, int player1, bool swapAB)
 {
     std::ofstream out(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/control-map.conf", std::ios::trunc);
     if (out) {
-        out << player1 << "\n";
+        out << player1 << " " << (swapAB ? 1 : 0) << "\n";
     }
+}
+
+// ---- UI audio: 16-bit retro background loop + navigation blip ----
+static SDL_AudioDeviceID g_uiDevice = 0;
+static std::vector<int16_t> g_bgMusic;
+static std::vector<int16_t> g_navBlip;
+static int g_navBlipPos = -1;
+static size_t g_bgPos = 0;
+
+static void uiAudioCallback(void *, uint8_t *stream, int len)
+{
+    int16_t *out = reinterpret_cast<int16_t *>(stream);
+    const int frames = len / static_cast<int>(sizeof(int16_t));
+    for (int i = 0; i < frames; ++i) {
+        int32_t s = 0;
+        if (!g_bgMusic.empty()) {
+            s += g_bgMusic[g_bgPos];
+            g_bgPos = (g_bgPos + 1) % g_bgMusic.size();
+        }
+        if (g_navBlipPos >= 0 && g_navBlipPos < static_cast<int>(g_navBlip.size())) {
+            s += g_navBlip[g_navBlipPos];
+            ++g_navBlipPos;
+            if (g_navBlipPos >= static_cast<int>(g_navBlip.size())) g_navBlipPos = -1;
+        }
+        if (s > 32767) s = 32767;
+        if (s < -32768) s = -32768;
+        out[i] = static_cast<int16_t>(s);
+    }
+}
+
+static void initUiAudio()
+{
+    const int rate = 32000;
+    const float notes[] = {261.63f, 329.63f, 392.0f, 523.25f, 392.0f, 329.63f};
+    const float noteLen = 0.12f;
+    for (int rep = 0; rep < 2; ++rep) {
+        for (float f : notes) {
+            const int n = static_cast<int>(rate * noteLen);
+            for (int i = 0; i < n; ++i) {
+                const float t = static_cast<float>(i) / rate;
+                const float w = std::sin(6.2831853f * f * t);
+                g_bgMusic.push_back(static_cast<int16_t>((w >= 0.0f ? 0.12f : -0.12f) * 32767.0f));
+            }
+        }
+    }
+    const int blipFrames = static_cast<int>(rate * 0.045f);
+    for (int i = 0; i < blipFrames; ++i) {
+        const float t = static_cast<float>(i) / rate;
+        const float w = std::sin(6.2831853f * 880.0f * t);
+        g_navBlip.push_back(static_cast<int16_t>((w >= 0.0f ? 0.22f : -0.22f) * 32767.0f));
+    }
+    SDL_AudioSpec want{};
+    want.freq = rate;
+    want.format = AUDIO_S16SYS;
+    want.channels = 1;
+    want.samples = 1024;
+    want.callback = uiAudioCallback;
+    SDL_AudioSpec obtained{};
+    g_uiDevice = SDL_OpenAudioDevice(nullptr, 0, &want, &obtained, 0);
+    if (g_uiDevice) {
+        SDL_PauseAudioDevice(g_uiDevice, 0);
+    }
+}
+
+static void navBlip()
+{
+    g_navBlipPos = 0;
 }
 
 int main()
 {
     OSEnableHomeButtonMenu(TRUE);
     SDL_Init(SDL_INIT_AUDIO);
+    initUiAudio();
 
     if (!init()) return 1;
     if (!text::loadFont(_binary_ui_ttf_start,
@@ -179,7 +253,8 @@ int main()
     int videoFilter = 1;
     loadVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter);
     int player1Device = 0;
-    loadControlOptions(library.sd_root, player1Device);
+    bool swapAB = false;
+    loadControlOptions(library.sd_root, player1Device, swapAB);
     int settingsSection = -1; // -1 = section list, 0..4 = inside a section
     int sectionCursor = 0;
     int settingsItem = 0;
@@ -298,6 +373,7 @@ int main()
     text::prewarm("GamePad", 22);
     text::prewarm("Pro 1", 22);
     text::prewarm("Pro 2", 22);
+    text::prewarm("Intercambiar A/B", 22);
     text::prewarm("ESP", 16);
     text::prewarm("BORR", 16);
     text::prewarm("OK", 16);
@@ -332,6 +408,7 @@ int main()
         else if (player1Device == 1) { p0 = pro0; p1 = pro1; }
         else { p0 = pro1; p1 = pro0; }
         core.setWpadPorts(p0, p1);
+        core.setSwapAB(swapAB);
     };
     applyControllers();
 
@@ -393,6 +470,7 @@ int main()
                 } else {
                     int itemCount = 1;
                     if (settingsSection == 0) itemCount = 1;
+                    else if (settingsSection == 2) itemCount = 2;
                     else if (settingsSection == 4) itemCount = 2;
 
                     if (vpad.trigger & VPAD_BUTTON_B) {
@@ -419,7 +497,11 @@ int main()
                             core.setVideoOptions(videoAspect, videoScale, videoFilter);
                         } else if (settingsSection == 2 && settingsItem == 0) {
                             player1Device = (player1Device + dir + 3) % 3;
-                            saveControlOptions(library.sd_root, player1Device);
+                            saveControlOptions(library.sd_root, player1Device, swapAB);
+                            applyControllers();
+                        } else if (settingsSection == 2 && settingsItem == 1) {
+                            swapAB = !swapAB;
+                            saveControlOptions(library.sd_root, player1Device, swapAB);
                             applyControllers();
                         }
                     }
@@ -460,8 +542,10 @@ int main()
                     sidebarOpen = false;
                 } else if (vpad.trigger & VPAD_BUTTON_DOWN) {
                     sidebarIndex = (sidebarIndex + 1) % 4;
+                    navBlip();
                 } else if (vpad.trigger & VPAD_BUTTON_UP) {
                     sidebarIndex = (sidebarIndex + 3) % 4;
+                    navBlip();
                 } else if (vpad.trigger & VPAD_BUTTON_A) {
                     if (sidebarIndex == 0) {
                         searchActive = true;
@@ -495,12 +579,16 @@ int main()
                         saveFavorites(library, RETROU_CORE_SYSTEM);
                     } else if (vpad.trigger & VPAD_BUTTON_RIGHT) {
                         focused = (focused + 1) % rc;
+                        navBlip();
                     } else if (vpad.trigger & VPAD_BUTTON_LEFT) {
                         focused = (focused + rc - 1) % rc;
+                        navBlip();
                     } else if (vpad.trigger & VPAD_BUTTON_DOWN) {
                         focused = std::min(rc - 1, focused + columns);
+                        navBlip();
                     } else if (vpad.trigger & VPAD_BUTTON_UP) {
                         focused = std::max(0, focused - columns);
+                        navBlip();
                     }
                 }
             }
@@ -579,12 +667,13 @@ int main()
                                    60.0f, y, 22, settingsItem == 0 ? white : muted);
                 } else if (settingsSection == 2) {
                     const char *devOpts[] = {"GamePad", "Pro 1", "Pro 2"};
-                    const float y = 120.0f;
-                    if (settingsItem == 0) {
-                        drawRoundRect(50.0f, y - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                    }
+                    const float y0 = 120.0f, y1 = 190.0f;
+                    if (settingsItem == 0) drawRoundRect(50.0f, y0 - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
                     text::drawText(("Mando 1: " + std::string(devOpts[player1Device])).c_str(),
-                                   60.0f, y, 22, settingsItem == 0 ? white : muted);
+                                   60.0f, y0, 22, settingsItem == 0 ? white : muted);
+                    if (settingsItem == 1) drawRoundRect(50.0f, y1 - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                    text::drawText(("Intercambiar A/B: " + std::string(swapAB ? "Sí" : "No")).c_str(),
+                                   60.0f, y1, 22, settingsItem == 1 ? white : muted);
                 } else if (settingsSection == 4) {
                     const char *labels[2] = {"Aspecto", "Escala"};
                     const char *vals[2] = {aspectOpts[videoAspect], scaleOpts[videoScale]};

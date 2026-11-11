@@ -5,6 +5,7 @@
 #include "rpl_core.hpp"
 
 #include <SDL.h>
+#include <coreinit/systeminfo.h>
 #include <libretro.h>
 #include <vpad/input.h>
 
@@ -78,6 +79,7 @@ static int detectRegion(const std::string &title)
 
 int main()
 {
+    OSEnableHomeButtonMenu(TRUE);
     SDL_Init(SDL_INIT_AUDIO);
 
     if (!init()) return 1;

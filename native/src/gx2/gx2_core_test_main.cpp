@@ -3,6 +3,7 @@
 #include "gx2/gx2_image.hpp"
 #include "gx2/retrou_data.hpp"
 #include "rpl_core.hpp"
+#include "wpad_input.hpp"
 
 #include <SDL.h>
 #include <coreinit/systeminfo.h>
@@ -78,6 +79,16 @@ static int detectRegion(const std::string &title)
     return 0;
 }
 
+static std::string toLower(const std::string &s)
+{
+    std::string r;
+    r.reserve(s.size());
+    for (char c : s) r += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return r;
+}
+
+static const char *kbChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // 36
+
 struct Theme {
     const char *name;
     Color bgTop;
@@ -132,6 +143,21 @@ static void saveVideoOptions(const std::string &sdRoot, int aspect, int scale, i
     }
 }
 
+static void loadControlOptions(const std::string &sdRoot, int &player1)
+{
+    std::ifstream in(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/control-map.conf");
+    if (in >> player1) return;
+    player1 = 0;
+}
+
+static void saveControlOptions(const std::string &sdRoot, int player1)
+{
+    std::ofstream out(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/control-map.conf", std::ios::trunc);
+    if (out) {
+        out << player1 << "\n";
+    }
+}
+
 int main()
 {
     OSEnableHomeButtonMenu(TRUE);
@@ -152,9 +178,14 @@ int main()
     int videoScale = 0;
     int videoFilter = 1;
     loadVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter);
+    int player1Device = 0;
+    loadControlOptions(library.sd_root, player1Device);
     int settingsSection = -1; // -1 = section list, 0..4 = inside a section
     int sectionCursor = 0;
     int settingsItem = 0;
+    bool searchActive = false;
+    std::string searchQuery;
+    int searchCursor = 0;
 
     std::vector<int> visible;
     for (int i = 0; i < static_cast<int>(library.roms.size()); ++i) {
@@ -170,9 +201,13 @@ int main()
 
     auto rebuildVisible = [&]() {
         visible.clear();
+        const std::string q = toLower(searchQuery);
         for (int i = 0; i < static_cast<int>(library.roms.size()); ++i) {
             if (favoritesOnly && !library.roms[i].favorite) continue;
             if (regionFilter != 0 && detectRegion(library.roms[i].title) != regionFilter) {
+                continue;
+            }
+            if (!q.empty() && toLower(library.roms[i].title).find(q) == std::string::npos) {
                 continue;
             }
             visible.push_back(i);
@@ -259,6 +294,15 @@ int main()
     text::prewarm("Aspecto", 22);
     text::prewarm("Escala", 22);
     text::prewarm("Pendiente", 22);
+    text::prewarm("Mando 1", 22);
+    text::prewarm("GamePad", 22);
+    text::prewarm("Pro 1", 22);
+    text::prewarm("Pro 2", 22);
+    text::prewarm("ESP", 16);
+    text::prewarm("BORR", 16);
+    text::prewarm("OK", 16);
+    text::prewarm("Buscar...", 24);
+    text::prewarm("A  TECLA    B  BORRAR    X  ACEPTAR    L  CANCELAR", 15);
     text::prewarm("A  ABRIR    L/B  BIBLIOTECA", 15);
     text::prewarm("IZQ/DER  CAMBIAR    B  ATRÁS    L  BIBLIOTECA", 15);
     text::prewarm("Sin ROMs", 24);
@@ -277,6 +321,19 @@ int main()
     core.setControllers(nullptr, nullptr);
     core.setVpadEnabled(true);
     core.setVideoOptions(videoAspect, videoScale, videoFilter);
+
+    wpad_input_init();
+    std::vector<int> proChannels = wpad_input_channels();
+    const int pro0 = proChannels.size() > 0 ? proChannels[0] : -1;
+    const int pro1 = proChannels.size() > 1 ? proChannels[1] : -1;
+    auto applyControllers = [&]() {
+        int p0 = -1, p1 = -1;
+        if (player1Device == 0) { p0 = -1; p1 = pro0; }
+        else if (player1Device == 1) { p0 = pro0; p1 = pro1; }
+        else { p0 = pro1; p1 = pro0; }
+        core.setWpadPorts(p0, p1);
+    };
+    applyControllers();
 
     bool inGame = false;
     bool coreMenu = false;
@@ -360,8 +417,43 @@ int main()
                             videoScale = (videoScale + dir + 3) % 3;
                             saveVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter);
                             core.setVideoOptions(videoAspect, videoScale, videoFilter);
+                        } else if (settingsSection == 2 && settingsItem == 0) {
+                            player1Device = (player1Device + dir + 3) % 3;
+                            saveControlOptions(library.sd_root, player1Device);
+                            applyControllers();
                         }
                     }
+                }
+            } else if (searchActive) {
+                if (vpad.trigger & VPAD_BUTTON_B) {
+                    if (!searchQuery.empty()) searchQuery.pop_back();
+                    rebuildVisible();
+                } else if (vpad.trigger & VPAD_BUTTON_X) {
+                    searchActive = false;
+                    rebuildVisible();
+                } else if (vpad.trigger & VPAD_BUTTON_L) {
+                    searchActive = false;
+                    searchQuery.clear();
+                    rebuildVisible();
+                } else if (vpad.trigger & VPAD_BUTTON_LEFT) {
+                    searchCursor = (searchCursor + 38) % 39;
+                } else if (vpad.trigger & VPAD_BUTTON_RIGHT) {
+                    searchCursor = (searchCursor + 1) % 39;
+                } else if (vpad.trigger & VPAD_BUTTON_UP) {
+                    searchCursor = (searchCursor + 33) % 39;
+                } else if (vpad.trigger & VPAD_BUTTON_DOWN) {
+                    searchCursor = (searchCursor + 6) % 39;
+                } else if (vpad.trigger & VPAD_BUTTON_A) {
+                    if (searchCursor < 36) {
+                        searchQuery += kbChars[searchCursor];
+                    } else if (searchCursor == 36) {
+                        searchQuery += ' ';
+                    } else if (searchCursor == 37) {
+                        if (!searchQuery.empty()) searchQuery.pop_back();
+                    } else {
+                        searchActive = false;
+                    }
+                    rebuildVisible();
                 }
             } else if (sidebarOpen) {
                 if (vpad.trigger & VPAD_BUTTON_B) {
@@ -371,7 +463,10 @@ int main()
                 } else if (vpad.trigger & VPAD_BUTTON_UP) {
                     sidebarIndex = (sidebarIndex + 3) % 4;
                 } else if (vpad.trigger & VPAD_BUTTON_A) {
-                    if (sidebarIndex == 1) {
+                    if (sidebarIndex == 0) {
+                        searchActive = true;
+                        searchCursor = 0;
+                    } else if (sidebarIndex == 1) {
                         sortMode = (sortMode + 1) % 2;
                         rebuildVisible();
                     } else if (sidebarIndex == 2) {
@@ -482,6 +577,14 @@ int main()
                     }
                     text::drawText(("Tema: " + std::string(themeOpts[themeIndex])).c_str(),
                                    60.0f, y, 22, settingsItem == 0 ? white : muted);
+                } else if (settingsSection == 2) {
+                    const char *devOpts[] = {"GamePad", "Pro 1", "Pro 2"};
+                    const float y = 120.0f;
+                    if (settingsItem == 0) {
+                        drawRoundRect(50.0f, y - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                    }
+                    text::drawText(("Mando 1: " + std::string(devOpts[player1Device])).c_str(),
+                                   60.0f, y, 22, settingsItem == 0 ? white : muted);
                 } else if (settingsSection == 4) {
                     const char *labels[2] = {"Aspecto", "Escala"};
                     const char *vals[2] = {aspectOpts[videoAspect], scaleOpts[videoScale]};
@@ -547,6 +650,29 @@ int main()
                 text::drawText("A  SELECCIONAR    B  CERRAR", 28.0f, 672.0f, 15, muted);
             } else {
                 text::drawText("A  JUGAR    X  FAVORITO    +  FILTROS", 28.0f, 672.0f, 15, muted);
+            }
+
+            if (searchActive) {
+                drawRect(0.0f, 0.0f, 1280.0f, 720.0f, Color{0, 0, 0, 180});
+                text::drawText(searchQuery.empty() ? "Buscar..." : searchQuery.c_str(),
+                               200.0f, 60.0f, 24, white);
+                const float kbX = 150.0f, kbY = 130.0f, keyW = 90.0f, keyH = 48.0f, gap = 10.0f;
+                for (int i = 0; i < 39; ++i) {
+                    const int row = i / 6, col = i % 6;
+                    const float x = kbX + col * (keyW + gap);
+                    const float y = kbY + row * (keyH + gap);
+                    const bool sel = i == searchCursor;
+                    drawRoundRect(x, y, keyW, keyH, 8.0f, sel ? accent : cardPanel);
+                    char single[2] = {0, 0};
+                    const char *lbl;
+                    if (i < 36) { single[0] = kbChars[i]; lbl = single; }
+                    else if (i == 36) lbl = "ESP";
+                    else if (i == 37) lbl = "BORR";
+                    else lbl = "OK";
+                    text::drawText(lbl, x + 14.0f, y + 13.0f, 16, sel ? white : muted);
+                }
+                text::drawText("A  TECLA    B  BORRAR    X  ACEPTAR    L  CANCELAR",
+                               200.0f, 580.0f, 15, muted);
             }
         }
 

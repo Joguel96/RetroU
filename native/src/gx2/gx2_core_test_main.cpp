@@ -99,6 +99,7 @@ int main()
     }
     bool favoritesOnly = false;
     bool sidebarOpen = false;
+    bool settingsOpen = false;
     int sidebarIndex = 0;
     int focused = 0;
     int sortMode = 0;      // 0 name, 1 region
@@ -176,6 +177,13 @@ int main()
     text::prewarm("Japón", 15);
     text::prewarm("Sí", 15);
     text::prewarm("No", 15);
+    text::prewarm("Ajustes", 34);
+    text::prewarm("PERSONALIZAR", 24);
+    text::prewarm("ASSETS", 24);
+    text::prewarm("CONTROLES", 24);
+    text::prewarm("SONIDO", 24);
+    text::prewarm("VÍDEO", 24);
+    text::prewarm("L  BIBLIOTECA", 15);
     text::prewarm("Sin ROMs", 24);
     text::prewarm("A  JUGAR    B  VOLVER    X  FAVORITO    +  FILTROS", 15);
     text::prewarm("MENU", 26);
@@ -232,6 +240,10 @@ int main()
                         coreMenuIndex = 0;
                     }
                 }
+            } else if (settingsOpen) {
+                if (vpad.trigger & VPAD_BUTTON_L) {
+                    settingsOpen = false;
+                }
             } else if (sidebarOpen) {
                 if (vpad.trigger & VPAD_BUTTON_B) {
                     sidebarOpen = false;
@@ -253,7 +265,9 @@ int main()
                 }
             } else {
                 const int rc = std::min(10, static_cast<int>(visible.size()));
-                if (vpad.trigger & VPAD_BUTTON_PLUS) {
+                if (vpad.trigger & VPAD_BUTTON_R) {
+                    settingsOpen = true;
+                } else if (vpad.trigger & VPAD_BUTTON_PLUS) {
                     sidebarOpen = true;
                     sidebarIndex = 0;
                 } else if (rc > 0) {
@@ -305,6 +319,15 @@ int main()
                                coreMenuIndex == 1 ? accent : muted);
                 text::drawText("A  Aceptar    B  Volver", 430.0f, 440.0f, 15, muted);
             }
+        } else if (settingsOpen) {
+            text::drawText("Ajustes", 28.0f, 18.0f, 34, white);
+            const char *sections[] = {"PERSONALIZAR", "ASSETS", "CONTROLES", "SONIDO", "VÍDEO"};
+            for (int i = 0; i < 5; ++i) {
+                const float y = 130.0f + i * 90.0f;
+                text::drawText(sections[i], 60.0f, y, 24, muted);
+                drawRect(60.0f, y + 36.0f, 1160.0f, 2.0f, Color{40, 46, 62, 255});
+            }
+            text::drawText("L  BIBLIOTECA", 28.0f, 672.0f, 15, muted);
         } else {
             text::drawText("Biblioteca", 28.0f, 18.0f, 34, white);
 

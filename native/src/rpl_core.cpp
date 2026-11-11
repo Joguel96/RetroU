@@ -212,7 +212,9 @@ void RplCore::stopAudio()
         SDL_CloseAudioDevice(audio_device_);
         audio_device_ = 0;
     }
-    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+    // Note: do not SDL_QuitSubSystem(SDL_INIT_AUDIO) here; the subsystem is
+    // initialized once and cleaned up by SDL_Quit() at app exit. Quitting it
+    // mid-session could hang on hardware.
 }
 
 void RplCore::inputPollCallback()
@@ -446,7 +448,6 @@ bool RplCore::loadGame(const std::string &rom_path, std::string &error)
         error = "Core no cargado";
         return false;
     }
-
     retro_game_info game{};
     rom_path_ = rom_path;
     log("RplCore loadGame " + rom_path_);
@@ -467,6 +468,21 @@ bool RplCore::loadGame(const std::string &rom_path, std::string &error)
     startAudio();
 
     return true;
+}
+
+void RplCore::unloadGame()
+{
+    if (game_loaded_ && unload_game_) {
+        unload_game_();
+    }
+    game_loaded_ = false;
+    if (audio_device_) {
+        SDL_ClearQueuedAudio(audio_device_);
+    }
+    frame_data_ = nullptr;
+    frame_width_ = 0;
+    frame_height_ = 0;
+    frame_pitch_ = 0;
 }
 
 void RplCore::runFrame()

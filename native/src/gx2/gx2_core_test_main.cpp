@@ -153,11 +153,7 @@ int main()
         if (vpadError == VPAD_READ_SUCCESS) {
             if ((vpad.hold & VPAD_BUTTON_MINUS) && (vpad.hold & VPAD_BUTTON_PLUS)) {
                 if (inGame) {
-                    core.unload();
-                    core.loadStaticCore(nullptr, nullptr, error);
-                    core.setSaveDirectory("/vol/external01/retrou/saves/" RETROU_CORE_SYSTEM "/save");
-                    core.setControllers(nullptr, nullptr);
-                    core.setVpadEnabled(true);
+                    core.unloadGame();
                     inGame = false;
                 } else {
                     break;
@@ -266,7 +262,6 @@ int main()
         endFrame();
     }
 
-    core.unload();
     SDL_Quit();
     return 0;
 }

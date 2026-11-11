@@ -21,6 +21,9 @@ public:
               std::string &error);
     void unload();
     bool loadGame(const std::string &rom_path, std::string &error);
+    // Unloads only the running game (keeps the core initialized and audio open).
+    // Used when returning to the library so we don't deinit/reinit the core.
+    void unloadGame();
     void runFrame();
     void present(SDL_Renderer *renderer, int width, int height) const;
     // Frame access for a GX2 frontend: the core exposes the last rendered

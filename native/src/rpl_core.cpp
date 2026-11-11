@@ -472,17 +472,17 @@ bool RplCore::loadGame(const std::string &rom_path, std::string &error)
 
 void RplCore::unloadGame()
 {
+    log("unloadGame: start");
     if (game_loaded_ && unload_game_) {
         unload_game_();
     }
+    log("unloadGame: after unload_game_");
     game_loaded_ = false;
-    if (audio_device_) {
-        SDL_ClearQueuedAudio(audio_device_);
-    }
     frame_data_ = nullptr;
     frame_width_ = 0;
     frame_height_ = 0;
     frame_pitch_ = 0;
+    log("unloadGame: done");
 }
 
 void RplCore::runFrame()

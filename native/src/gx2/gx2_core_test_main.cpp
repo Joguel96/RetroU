@@ -24,6 +24,18 @@ extern const unsigned char _binary_ui_ttf_end[];
 using namespace retrou;
 using namespace retrou::gx2;
 
+#include <cstdio>
+
+static void appLog(const char *msg)
+{
+    FILE *f = fopen("/vol/external01/retrou/retrou_rpx.log", "a");
+    if (f) {
+        fputs(msg, f);
+        fputc('\n', f);
+        fclose(f);
+    }
+}
+
 #ifndef RETROU_CORE_SYSTEM
 #define RETROU_CORE_SYSTEM "nes"
 #endif
@@ -153,9 +165,12 @@ int main()
         if (vpadError == VPAD_READ_SUCCESS) {
             if ((vpad.hold & VPAD_BUTTON_MINUS) && (vpad.hold & VPAD_BUTTON_PLUS)) {
                 if (inGame) {
+                    appLog("app: unloadGame call");
                     core.unloadGame();
+                    appLog("app: unloadGame return");
                     inGame = false;
                 } else {
+                    appLog("app: exit");
                     break;
                 }
             } else if (inGame) {
@@ -262,6 +277,7 @@ int main()
         endFrame();
     }
 
-    SDL_Quit();
+    // Exit without SDL_Quit: SDL audio teardown can hang on hardware.
+    appLog("app: return");
     return 0;
 }

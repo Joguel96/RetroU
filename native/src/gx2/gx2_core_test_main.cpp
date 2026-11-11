@@ -83,8 +83,8 @@ int main()
     };
 
     const int columns = 5, rows = 2;
-    const float gridX = 344.0f, gridY = 88.0f;
-    const float gridW = 1280.0f - gridX - 28.0f, gridH = 560.0f;
+    const float gridX = 24.0f, gridY = 88.0f;
+    const float gridW = 1280.0f - 48.0f, gridH = 560.0f;
     const float gap = 14.0f;
     const float cardW = (gridW - gap * (columns - 1)) / columns;
     const float cardH = (gridH - gap * (rows - 1)) / rows;
@@ -246,19 +246,22 @@ int main()
             }
         } else {
             text::drawText("Biblioteca", 28.0f, 18.0f, 34, white);
-            drawRoundRect(24.0f, 88.0f, 300.0f, 560.0f, 18.0f, panel);
-            text::drawText("FILTRAR Y ORGANIZAR", 44.0f, 106.0f, 16, muted);
 
-            const char *filters[] = {"Buscar", "Ordenar por", "Región", "Favoritos"};
-            for (int i = 0; i < 4; ++i) {
-                const float y = 150.0f + i * 44.0f;
-                if (sidebarOpen && i == sidebarIndex) {
-                    drawRoundRect(36.0f, y - 8.0f, 276.0f, 34.0f, 8.0f, Color{245, 217, 127, 40});
+            if (sidebarOpen) {
+                drawRoundRect(24.0f, 88.0f, 300.0f, 560.0f, 18.0f, panel);
+                text::drawText("FILTRAR Y ORGANIZAR", 44.0f, 106.0f, 16, muted);
+
+                const char *filters[] = {"Buscar", "Ordenar por", "Región", "Favoritos"};
+                for (int i = 0; i < 4; ++i) {
+                    const float y = 150.0f + i * 44.0f;
+                    if (i == sidebarIndex) {
+                        drawRoundRect(36.0f, y - 8.0f, 276.0f, 34.0f, 8.0f, Color{245, 217, 127, 40});
+                    }
+                    text::drawText(filters[i], 50.0f, y, 15, (i == sidebarIndex) ? white : muted);
                 }
-                text::drawText(filters[i], 50.0f, y, 15, (sidebarOpen && i == sidebarIndex) ? white : muted);
-            }
-            if (favoritesOnly) {
-                text::drawText("Solo favoritos", 50.0f, 340.0f, 13, gold);
+                if (favoritesOnly) {
+                    text::drawText("Solo favoritos", 50.0f, 340.0f, 13, gold);
+                }
             }
 
             const int count = std::min(10, static_cast<int>(visible.size()));
@@ -284,8 +287,11 @@ int main()
                     }
                 }
             }
-            text::drawText("A  JUGAR    B  VOLVER    X  FAVORITO    +  FILTROS",
-                           28.0f, 672.0f, 15, muted);
+            if (sidebarOpen) {
+                text::drawText("A  SELECCIONAR    B  CERRAR", 28.0f, 672.0f, 15, muted);
+            } else {
+                text::drawText("A  JUGAR    X  FAVORITO    +  FILTROS", 28.0f, 672.0f, 15, muted);
+            }
         }
 
         endFrame();

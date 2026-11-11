@@ -9,6 +9,7 @@
 #include <vpad/input.h>
 
 #include <algorithm>
+#include <cctype>
 #include <cstdint>
 #include <map>
 #include <string>
@@ -49,6 +50,32 @@ static Texture makeCover(uint8_t r0, uint8_t g0, uint8_t b0,
     return createTexture(w, h, px.data());
 }
 
+// Region id: 0 unknown, 1 USA, 2 Europe, 3 Japan.
+static int detectRegion(const std::string &title)
+{
+    std::string t;
+    t.reserve(title.size());
+    for (char c : title) {
+        t += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    }
+    if (t.find("(usa)") != std::string::npos || t.find("[usa]") != std::string::npos ||
+        t.find("(u)") != std::string::npos) {
+        return 1;
+    }
+    if (t.find("(europe)") != std::string::npos || t.find("(spain)") != std::string::npos ||
+        t.find("(france)") != std::string::npos || t.find("(germany)") != std::string::npos ||
+        t.find("(italy)") != std::string::npos || t.find("(australia)") != std::string::npos ||
+        t.find("(world)") != std::string::npos || t.find("(scandinavia)") != std::string::npos ||
+        t.find("(europe") != std::string::npos) {
+        return 2;
+    }
+    if (t.find("(japan)") != std::string::npos || t.find("[japan]") != std::string::npos ||
+        t.find("(j)") != std::string::npos) {
+        return 3;
+    }
+    return 0;
+}
+
 int main()
 {
     SDL_Init(SDL_INIT_AUDIO);
@@ -72,12 +99,31 @@ int main()
     bool sidebarOpen = false;
     int sidebarIndex = 0;
     int focused = 0;
+    int sortMode = 0;      // 0 name, 1 region
+    int regionFilter = 0;  // 0 all, 1 USA, 2 Europe, 3 Japan
 
     auto rebuildVisible = [&]() {
         visible.clear();
         for (int i = 0; i < static_cast<int>(library.roms.size()); ++i) {
             if (favoritesOnly && !library.roms[i].favorite) continue;
+            if (regionFilter != 0 && detectRegion(library.roms[i].title) != regionFilter) {
+                continue;
+            }
             visible.push_back(i);
+        }
+        if (sortMode == 0) {
+            std::sort(visible.begin(), visible.end(), [&](int a, int b) {
+                return library.roms[a].title < library.roms[b].title;
+            });
+        } else {
+            std::sort(visible.begin(), visible.end(), [&](int a, int b) {
+                const int ka = detectRegion(library.roms[a].title);
+                const int kb = detectRegion(library.roms[b].title);
+                const int oa = ka == 0 ? 4 : ka;
+                const int ob = kb == 0 ? 4 : kb;
+                if (oa != ob) return oa < ob;
+                return library.roms[a].title < library.roms[b].title;
+            });
         }
         if (focused >= static_cast<int>(visible.size())) focused = 0;
     };
@@ -121,6 +167,13 @@ int main()
     text::prewarm("Ordenar por", 15);
     text::prewarm("Región", 15);
     text::prewarm("Favoritos", 15);
+    text::prewarm("Nombre", 15);
+    text::prewarm("Todas", 15);
+    text::prewarm("USA", 15);
+    text::prewarm("Europa", 15);
+    text::prewarm("Japón", 15);
+    text::prewarm("Sí", 15);
+    text::prewarm("No", 15);
     text::prewarm("Sin ROMs", 24);
     text::prewarm("A  JUGAR    B  VOLVER    X  FAVORITO    +  FILTROS", 15);
     text::prewarm("MENU", 26);
@@ -185,7 +238,13 @@ int main()
                 } else if (vpad.trigger & VPAD_BUTTON_UP) {
                     sidebarIndex = (sidebarIndex + 3) % 4;
                 } else if (vpad.trigger & VPAD_BUTTON_A) {
-                    if (sidebarIndex == 3) {
+                    if (sidebarIndex == 1) {
+                        sortMode = (sortMode + 1) % 2;
+                        rebuildVisible();
+                    } else if (sidebarIndex == 2) {
+                        regionFilter = (regionFilter + 1) % 4;
+                        rebuildVisible();
+                    } else if (sidebarIndex == 3) {
                         favoritesOnly = !favoritesOnly;
                         rebuildVisible();
                     }
@@ -274,16 +333,19 @@ int main()
                 drawRoundRect(24.0f, 88.0f, 300.0f, 560.0f, 18.0f, panel);
                 text::drawText("FILTRAR Y ORGANIZAR", 44.0f, 106.0f, 16, muted);
 
-                const char *filters[] = {"Buscar", "Ordenar por", "Región", "Favoritos"};
+                const char *regionNames[] = {"Todas", "USA", "Europa", "Japón"};
+                std::string labels[4] = {
+                    "Buscar",
+                    std::string("Ordenar por: ") + (sortMode == 0 ? "Nombre" : "Región"),
+                    std::string("Región: ") + regionNames[regionFilter],
+                    std::string("Favoritos: ") + (favoritesOnly ? "Sí" : "No"),
+                };
                 for (int i = 0; i < 4; ++i) {
                     const float y = 150.0f + i * 44.0f;
                     if (i == sidebarIndex) {
                         drawRoundRect(36.0f, y - 8.0f, 276.0f, 34.0f, 8.0f, Color{245, 217, 127, 40});
                     }
-                    text::drawText(filters[i], 50.0f, y, 15, (i == sidebarIndex) ? white : muted);
-                }
-                if (favoritesOnly) {
-                    text::drawText("Solo favoritos", 50.0f, 340.0f, 13, gold);
+                    text::drawText(labels[i].c_str(), 50.0f, y, 15, (i == sidebarIndex) ? white : muted);
                 }
             }
             if (sidebarOpen) {

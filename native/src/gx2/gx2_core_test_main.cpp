@@ -247,23 +247,6 @@ int main()
         } else {
             text::drawText("Biblioteca", 28.0f, 18.0f, 34, white);
 
-            if (sidebarOpen) {
-                drawRoundRect(24.0f, 88.0f, 300.0f, 560.0f, 18.0f, panel);
-                text::drawText("FILTRAR Y ORGANIZAR", 44.0f, 106.0f, 16, muted);
-
-                const char *filters[] = {"Buscar", "Ordenar por", "Región", "Favoritos"};
-                for (int i = 0; i < 4; ++i) {
-                    const float y = 150.0f + i * 44.0f;
-                    if (i == sidebarIndex) {
-                        drawRoundRect(36.0f, y - 8.0f, 276.0f, 34.0f, 8.0f, Color{245, 217, 127, 40});
-                    }
-                    text::drawText(filters[i], 50.0f, y, 15, (i == sidebarIndex) ? white : muted);
-                }
-                if (favoritesOnly) {
-                    text::drawText("Solo favoritos", 50.0f, 340.0f, 13, gold);
-                }
-            }
-
             const int count = std::min(10, static_cast<int>(visible.size()));
             if (count == 0) {
                 text::drawText("Sin ROMs", 100.0f, 340.0f, 24, white);
@@ -285,6 +268,22 @@ int main()
                     if (library.roms[romIndex].favorite) {
                         drawRoundRect(x + cardW - 22.0f, y + 10.0f, 14.0f, 14.0f, 7.0f, gold);
                     }
+                }
+            }
+            if (sidebarOpen) {
+                drawRoundRect(24.0f, 88.0f, 300.0f, 560.0f, 18.0f, panel);
+                text::drawText("FILTRAR Y ORGANIZAR", 44.0f, 106.0f, 16, muted);
+
+                const char *filters[] = {"Buscar", "Ordenar por", "Región", "Favoritos"};
+                for (int i = 0; i < 4; ++i) {
+                    const float y = 150.0f + i * 44.0f;
+                    if (i == sidebarIndex) {
+                        drawRoundRect(36.0f, y - 8.0f, 276.0f, 34.0f, 8.0f, Color{245, 217, 127, 40});
+                    }
+                    text::drawText(filters[i], 50.0f, y, 15, (i == sidebarIndex) ? white : muted);
+                }
+                if (favoritesOnly) {
+                    text::drawText("Solo favoritos", 50.0f, 340.0f, 13, gold);
                 }
             }
             if (sidebarOpen) {

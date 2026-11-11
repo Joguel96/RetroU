@@ -24,18 +24,6 @@ extern const unsigned char _binary_ui_ttf_end[];
 using namespace retrou;
 using namespace retrou::gx2;
 
-#include <cstdio>
-
-static void appLog(const char *msg)
-{
-    FILE *f = fopen("/vol/external01/retrou/retrou_rpx.log", "a");
-    if (f) {
-        fputs(msg, f);
-        fputc('\n', f);
-        fclose(f);
-    }
-}
-
 #ifndef RETROU_CORE_SYSTEM
 #define RETROU_CORE_SYSTEM "nes"
 #endif
@@ -135,6 +123,9 @@ int main()
     text::prewarm("Favoritos", 15);
     text::prewarm("Sin ROMs", 24);
     text::prewarm("A  JUGAR    B  VOLVER    X  FAVORITO    +  FILTROS", 15);
+    text::prewarm("MENU", 26);
+    text::prewarm("Continuar", 20);
+    text::prewarm("Cerrar core", 20);
     text::prewarm(RETROU_CORE_LABEL, 12);
 
     RplCore core;
@@ -147,6 +138,8 @@ int main()
     core.setVpadEnabled(true);
 
     bool inGame = false;
+    bool coreMenu = false;
+    int coreMenuIndex = 0;
     Texture frameTex = -1;
 
     const Color bg{8, 11, 18, 255};
@@ -163,18 +156,27 @@ int main()
         VPADReadError vpadError = VPAD_READ_NO_SAMPLES;
         VPADRead(VPAD_CHAN_0, &vpad, 1, &vpadError);
         if (vpadError == VPAD_READ_SUCCESS) {
-            if ((vpad.hold & VPAD_BUTTON_MINUS) && (vpad.hold & VPAD_BUTTON_PLUS)) {
-                if (inGame) {
-                    appLog("app: unloadGame call");
-                    core.unloadGame();
-                    appLog("app: unloadGame return");
-                    inGame = false;
+            if (inGame) {
+                if (coreMenu) {
+                    if (vpad.trigger & (VPAD_BUTTON_UP | VPAD_BUTTON_DOWN)) {
+                        coreMenuIndex = 1 - coreMenuIndex;
+                    } else if (vpad.trigger & VPAD_BUTTON_A) {
+                        if (coreMenuIndex == 0) {
+                            coreMenu = false;
+                        } else {
+                            core.unloadGame();
+                            inGame = false;
+                            coreMenu = false;
+                        }
+                    } else if (vpad.trigger & (VPAD_BUTTON_B | VPAD_BUTTON_MINUS | VPAD_BUTTON_PLUS)) {
+                        coreMenu = false;
+                    }
                 } else {
-                    appLog("app: exit");
-                    break;
+                    if ((vpad.trigger & VPAD_BUTTON_MINUS) && (vpad.trigger & VPAD_BUTTON_PLUS)) {
+                        coreMenu = true;
+                        coreMenuIndex = 0;
+                    }
                 }
-            } else if (inGame) {
-                // Buttons reach the core through the SDL controller.
             } else if (sidebarOpen) {
                 if (vpad.trigger & VPAD_BUTTON_B) {
                     sidebarOpen = false;
@@ -215,20 +217,32 @@ int main()
             }
         }
 
-        if (inGame) {
+        if (inGame && !coreMenu) {
             core.runFrame();
         }
 
         beginFrame(bg);
 
-        if (inGame && core.hasFrame()) {
-            const bool rgb565 = core.pixelFormat() == RETRO_PIXEL_FORMAT_RGB565;
-            frameTex = uploadFrame(frameTex, core.frameData(),
-                                   static_cast<int>(core.frameWidth()),
-                                   static_cast<int>(core.frameHeight()),
-                                   static_cast<int>(core.framePitch()), rgb565);
-            if (frameTex >= 0) {
-                drawTexture(frameTex, 0.0f, 0.0f, 1280.0f, 720.0f);
+        if (inGame) {
+            if (core.hasFrame()) {
+                const bool rgb565 = core.pixelFormat() == RETRO_PIXEL_FORMAT_RGB565;
+                frameTex = uploadFrame(frameTex, core.frameData(),
+                                       static_cast<int>(core.frameWidth()),
+                                       static_cast<int>(core.frameHeight()),
+                                       static_cast<int>(core.framePitch()), rgb565);
+                if (frameTex >= 0) {
+                    drawTexture(frameTex, 0.0f, 0.0f, 1280.0f, 720.0f);
+                }
+            }
+            if (coreMenu) {
+                drawRect(0.0f, 0.0f, 1280.0f, 720.0f, Color{0, 0, 0, 170});
+                drawRoundRect(390.0f, 190.0f, 500.0f, 340.0f, 18.0f, panel);
+                text::drawText("MENU", 430.0f, 230.0f, 26, white);
+                text::drawText("Continuar", 430.0f, 310.0f, 20,
+                               coreMenuIndex == 0 ? accent : muted);
+                text::drawText("Cerrar core", 430.0f, 360.0f, 20,
+                               coreMenuIndex == 1 ? accent : muted);
+                text::drawText("A  Aceptar    B  Volver", 430.0f, 440.0f, 15, muted);
             }
         } else {
             text::drawText("Biblioteca", 28.0f, 18.0f, 34, white);
@@ -277,11 +291,5 @@ int main()
         endFrame();
     }
 
-    // Exit without SDL_Quit: SDL audio teardown can hang on hardware.
-    appLog("app: return");
-    core.unload();
-    appLog("app: shutdown");
-    shutdown();
-    appLog("app: shutdown done");
     return 0;
 }

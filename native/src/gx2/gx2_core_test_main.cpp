@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdint>
+#include <fstream>
 #include <map>
 #include <string>
 #include <vector>
@@ -77,6 +78,41 @@ static int detectRegion(const std::string &title)
     return 0;
 }
 
+struct Theme {
+    const char *name;
+    Color bgTop;
+    Color bgBottom;
+    Color accent;
+};
+
+static const Theme kThemes[5] = {
+    {"Gris",   {28, 34, 48, 255},  {8, 11, 18, 255},   {210, 214, 222, 255}},
+    {"Azul",   {16, 30, 52, 255},  {8, 10, 20, 255},   {92, 160, 255, 255}},
+    {"Verde",  {14, 36, 30, 255},  {6, 12, 12, 255},   {96, 224, 142, 255}},
+    {"Dorado", {38, 30, 16, 255},  {13, 9, 5, 255},    {245, 217, 127, 255}},
+    {"Rosa",   {42, 20, 36, 255},  {15, 7, 13, 255},   {255, 122, 182, 255}},
+};
+
+static int loadThemeIndex(const std::string &sdRoot)
+{
+    std::ifstream in(sdRoot + "/retrou/config/theme.conf");
+    std::string name;
+    if (in >> name) {
+        for (int i = 0; i < 5; ++i) {
+            if (name == kThemes[i].name) return i;
+        }
+    }
+    return 0;
+}
+
+static void saveThemeIndex(const std::string &sdRoot, int idx)
+{
+    std::ofstream out(sdRoot + "/retrou/config/theme.conf", std::ios::trunc);
+    if (out) {
+        out << kThemes[idx].name << "\n";
+    }
+}
+
 int main()
 {
     OSEnableHomeButtonMenu(TRUE);
@@ -92,6 +128,7 @@ int main()
     library.sd_root = mountSd();
     scanRoms(library, RETROU_CORE_SYSTEM);
     loadFavorites(library, RETROU_CORE_SYSTEM);
+    int themeIndex = loadThemeIndex(library.sd_root);
 
     std::vector<int> visible;
     for (int i = 0; i < static_cast<int>(library.roms.size()); ++i) {
@@ -183,7 +220,13 @@ int main()
     text::prewarm("CONTROLES", 24);
     text::prewarm("SONIDO", 24);
     text::prewarm("VÍDEO", 24);
-    text::prewarm("L  BIBLIOTECA", 15);
+    text::prewarm("Tema", 22);
+    text::prewarm("Gris", 22);
+    text::prewarm("Azul", 22);
+    text::prewarm("Verde", 22);
+    text::prewarm("Dorado", 22);
+    text::prewarm("Rosa", 22);
+    text::prewarm("L  BIBLIOTECA    IZQ/DER  TEMA", 15);
     text::prewarm("Sin ROMs", 24);
     text::prewarm("A  JUGAR    B  VOLVER    X  FAVORITO    +  FILTROS", 15);
     text::prewarm("MENU", 26);
@@ -205,8 +248,6 @@ int main()
     int coreMenuIndex = 0;
     Texture frameTex = -1;
 
-    const Color bg{8, 11, 18, 255};
-    const Color accent{245, 217, 127, 255};
     const Color white{255, 255, 255, 255};
     const Color muted{148, 163, 184, 255};
     const Color panel{21, 27, 40, 235};
@@ -215,6 +256,10 @@ int main()
     const Color gold{245, 217, 127, 255};
 
     while (true) {
+        const Color bg = kThemes[themeIndex].bgBottom;
+        const Color bgTop = kThemes[themeIndex].bgTop;
+        const Color accent = kThemes[themeIndex].accent;
+
         VPADStatus vpad{};
         VPADReadError vpadError = VPAD_READ_NO_SAMPLES;
         VPADRead(VPAD_CHAN_0, &vpad, 1, &vpadError);
@@ -243,6 +288,12 @@ int main()
             } else if (settingsOpen) {
                 if (vpad.trigger & VPAD_BUTTON_L) {
                     settingsOpen = false;
+                } else if (vpad.trigger & VPAD_BUTTON_LEFT) {
+                    themeIndex = (themeIndex + 4) % 5;
+                    saveThemeIndex(library.sd_root, themeIndex);
+                } else if (vpad.trigger & VPAD_BUTTON_RIGHT) {
+                    themeIndex = (themeIndex + 1) % 5;
+                    saveThemeIndex(library.sd_root, themeIndex);
                 }
             } else if (sidebarOpen) {
                 if (vpad.trigger & VPAD_BUTTON_B) {
@@ -297,6 +348,7 @@ int main()
         }
 
         beginFrame(bg);
+        drawGradient(0.0f, 0.0f, 1280.0f, 720.0f, bgTop, bg);
 
         if (inGame) {
             if (core.hasFrame()) {
@@ -321,13 +373,15 @@ int main()
             }
         } else if (settingsOpen) {
             text::drawText("Ajustes", 28.0f, 18.0f, 34, white);
+            text::drawText(("Tema: " + std::string(kThemes[themeIndex].name)).c_str(),
+                           60.0f, 80.0f, 22, accent);
             const char *sections[] = {"PERSONALIZAR", "ASSETS", "CONTROLES", "SONIDO", "VÍDEO"};
             for (int i = 0; i < 5; ++i) {
                 const float y = 130.0f + i * 90.0f;
                 text::drawText(sections[i], 60.0f, y, 24, muted);
                 drawRect(60.0f, y + 36.0f, 1160.0f, 2.0f, Color{40, 46, 62, 255});
             }
-            text::drawText("L  BIBLIOTECA", 28.0f, 672.0f, 15, muted);
+            text::drawText("L  BIBLIOTECA    IZQ/DER  TEMA", 28.0f, 672.0f, 15, muted);
         } else {
             text::drawText("Biblioteca", 28.0f, 18.0f, 34, white);
 

@@ -310,7 +310,7 @@ static void initUiAudio()
     SDL_AudioSpec want{};
     want.freq = rate;
     want.format = AUDIO_S16SYS;
-    want.channels = 1;
+    want.channels = 2;
     want.samples = 512;
     want.callback = nullptr;
     SDL_AudioSpec obtained{};
@@ -335,15 +335,13 @@ static void queueScaled(const int16_t *data, size_t samples)
     }
     static std::vector<int16_t> tmp;
     const float gain = g_uiVolume / 100.0f;
-    if (gain >= 0.999f) {
-        SDL_QueueAudio(g_uiDevice, data, static_cast<Uint32>(samples * sizeof(int16_t)));
-        return;
-    }
-    tmp.resize(samples);
+    tmp.resize(samples * 2);
     for (size_t i = 0; i < samples; ++i) {
-        tmp[i] = static_cast<int16_t>(data[i] * gain);
+        const int16_t s = static_cast<int16_t>(data[i] * gain);
+        tmp[i * 2] = s;
+        tmp[i * 2 + 1] = s;
     }
-    SDL_QueueAudio(g_uiDevice, tmp.data(), static_cast<Uint32>(samples * sizeof(int16_t)));
+    SDL_QueueAudio(g_uiDevice, tmp.data(), static_cast<Uint32>(tmp.size() * sizeof(int16_t)));
 }
 
 static void uiAudioTick()
@@ -413,6 +411,7 @@ int main()
     bool searchActive = false;
     std::string searchQuery;
     int searchCursor = 0;
+    int scroll = 0;
 
     std::vector<int> visible;
     for (int i = 0; i < static_cast<int>(library.roms.size()); ++i) {
@@ -454,6 +453,7 @@ int main()
             });
         }
         if (focused >= static_cast<int>(visible.size())) focused = 0;
+        scroll = 0;
     };
 
     const int rows = 2;
@@ -558,6 +558,7 @@ int main()
     core.setControllers(nullptr, nullptr);
     core.setVpadEnabled(true);
     core.setVideoOptions(videoAspect, videoScale, videoFilter);
+    core.setExternalAudioDevice(g_uiDevice);
 
     wpad_input_init();
     std::vector<int> proChannels = wpad_input_channels();
@@ -602,6 +603,7 @@ int main()
             coverH = cardH * 0.62f;
             titleCache.clear();
             lastColumns = columns;
+            scroll = 0;
         }
 
         VPADStatus vpad{};
@@ -777,7 +779,7 @@ int main()
                     }
                 }
             } else {
-                const int rc = std::min(10, static_cast<int>(visible.size()));
+                const int rc = static_cast<int>(visible.size());
                 if (vpad.trigger & VPAD_BUTTON_R) {
                     settingsOpen = true;
                 } else if (vpad.trigger & VPAD_BUTTON_PLUS) {
@@ -805,6 +807,9 @@ int main()
                         focused = std::max(0, focused - columns);
                         navBlip();
                     }
+                    const int cellsNow = columns * rows;
+                    if (focused < scroll) scroll = focused;
+                    if (focused >= scroll + cellsNow) scroll = focused - cellsNow + 1;
                 }
             }
         }
@@ -931,16 +936,18 @@ int main()
         } else {
             text::drawText("Biblioteca", 28.0f, 18.0f, 34, white);
 
-            const int count = std::min(10, static_cast<int>(visible.size()));
-            if (count == 0) {
+            const int cells = columns * rows;
+            if (visible.empty()) {
                 text::drawText("Sin ROMs", 100.0f, 340.0f, 24, white);
             } else {
-                for (int i = 0; i < count; ++i) {
-                    const int romIndex = visible[i];
+                for (int i = 0; i < cells; ++i) {
+                    const int idx = scroll + i;
+                    if (idx >= static_cast<int>(visible.size())) break;
+                    const int romIndex = visible[idx];
                     const int col = i % columns, row = i / columns;
                     const float x = gridX + col * (cardW + gap);
                     const float y = gridY + row * (cardH + gap);
-                    const bool sel = i == focused;
+                    const bool sel = idx == focused;
                     drawRoundRect(x - 3.0f, y - 3.0f, cardW + 6.0f, cardH + 6.0f, 15.0f,
                                   sel ? accent : Color{255, 255, 255, 44});
                     drawRoundRect(x, y, cardW, cardH, 12.0f, cardPanel);

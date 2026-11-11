@@ -182,6 +182,12 @@ void RplCore::startAudio()
                        ? static_cast<int>(av.timing.sample_rate + 0.5)
                        : 44100;
 
+    if (external_audio_) {
+        audio_device_ = external_audio_;
+        log("Audio reusing external device: " + std::to_string(sample_rate_) + " Hz");
+        return;
+    }
+
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) {
         log(std::string("SDL audio init failed: ") + SDL_GetError());
         return;

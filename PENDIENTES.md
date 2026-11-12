@@ -92,6 +92,8 @@ está**. Un cambio compilado pero sin verificar sigue siendo ⬜/🔧.
 
 ## 8. Documentación / cierre
 
+Guía de la ronda en Wii U: `docs/hardware-validation.md`.
+
 | ID | Pendiente | Estado |
 |---|---|---|
 | DOC-1 | Actualizar `README.md` y `native/README.md` con la arquitectura WUHB actual, controles `v2`, guardados, Assets y logs; redactado, pendiente de cierre con pruebas de hardware | 🔧 En curso (Codex, rama main) |

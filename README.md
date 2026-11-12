@@ -103,6 +103,7 @@ prueba en hardware.
 - [Interfaz y mando](docs/ui.md)
 - [Arquitectura y ajustes](docs/settings-roadmap.md)
 - [App nativa](native/README.md)
+- [Validación en Wii U](docs/hardware-validation.md)
 
 ## Guías externas
 

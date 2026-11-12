@@ -516,16 +516,65 @@ static const PadSpot *padSpots()
 //   (acción con el nombre de retroName; máscaras hexadecimales; las
 //   pseudo-máscaras 0x01000000..0x08000000 son las direcciones del stick L).
 // Formats v1 and pre-v1 (one line of 13 ints) are migrated on load.
-static void loadControlOptions(const std::string &sdRoot, int &player1, int &player2,
-                               ActionSources &vpadMap, ActionSources &proMap)
+static std::string controlConfigDir(const std::string &sdRoot)
+{
+    return sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM;
+}
+
+static std::string romControlPath(const std::string &sdRoot, const std::string &romPath)
+{
+    uint64_t hash = 14695981039346656037ULL;
+    for (unsigned char c : romPath) {
+        hash ^= c;
+        hash *= 1099511628211ULL;
+    }
+    char name[24];
+    std::snprintf(name, sizeof(name), "%016llx.conf", static_cast<unsigned long long>(hash));
+    return controlConfigDir(sdRoot) + "/rom-maps/" + name;
+}
+
+static std::string controlProfilePath(const std::string &sdRoot, int device, int slot)
+{
+    return controlConfigDir(sdRoot) + "/profiles/" +
+        (device == 0 ? "gamepad-" : "pro-") + std::to_string(slot + 1) + ".conf";
+}
+
+static bool loadActionProfile(const std::string &path, ActionSources &map)
+{
+    std::ifstream in(path);
+    std::string magic;
+    if (!(in >> magic) || magic != "profile-v1") return false;
+    ActionSources candidate{};
+    for (int i = 0; i < 12; ++i) {
+        unsigned value = 0;
+        if (!(in >> std::hex >> value)) return false;
+        candidate.sources[i] = value;
+    }
+    map = candidate;
+    return true;
+}
+
+static bool saveActionProfile(const std::string &path, const ActionSources &map)
+{
+    std::ofstream out(path, std::ios::trunc);
+    if (!out) return false;
+    out << "profile-v1\n" << std::hex;
+    for (uint32_t value : map.sources) out << value << "\n";
+    out.flush();
+    return static_cast<bool>(out);
+}
+
+static bool loadControlOptions(const std::string &sdRoot, int &player1, int &player2,
+                               ActionSources &vpadMap, ActionSources &proMap,
+                               const std::string &path = {})
 {
     vpadMap = defaultActionMap(kVpadButtons, kVpadBtnCount);
     proMap = defaultActionMap(kProButtons, kProBtnCount);
     player1 = 0;
     player2 = 0;
-    std::ifstream in(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/control-map.conf");
+    std::ifstream in(path.empty() ? controlConfigDir(sdRoot) + "/control-map.conf" : path);
     std::string tok;
-    if (!(in >> tok)) return;
+    if (!(in >> tok)) return false;
     if (tok == "v2") {
         ActionSources *cur = nullptr;
         std::string line;
@@ -561,7 +610,7 @@ static void loadControlOptions(const std::string &sdRoot, int &player1, int &pla
                 cur->sources[action] = sources;
             }
         }
-        return;
+        return true;
     }
     // v1: botón físico -> acción (una acción por botón) + toggle del stick.
     if (tok == "v1") {
@@ -594,7 +643,7 @@ static void loadControlOptions(const std::string &sdRoot, int &player1, int &pla
         }
         assignToActionMap(kVpadButtons, kVpadBtnCount, vpadAssign, vpadStick, vpadMap);
         assignToActionMap(kProButtons, kProBtnCount, proAssign, proStick, proMap);
-        return;
+        return true;
     }
     // Old format migration: p1 followed by 12 masks indexed by core action id.
     player1 = std::atoi(tok.c_str());
@@ -606,13 +655,16 @@ static void loadControlOptions(const std::string &sdRoot, int &player1, int &pla
         if (m != 0) setAssignByMask(vpadAssign, kVpadButtons, kVpadBtnCount, m, id);
     }
     assignToActionMap(kVpadButtons, kVpadBtnCount, vpadAssign, false, vpadMap);
+    return true;
 }
 
-static void saveControlOptions(const std::string &sdRoot, int player1, int player2,
-                               const ActionSources &vpadMap, const ActionSources &proMap)
+static bool saveControlOptions(const std::string &sdRoot, int player1, int player2,
+                               const ActionSources &vpadMap, const ActionSources &proMap,
+                               const std::string &path = {})
 {
-    std::ofstream out(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/control-map.conf", std::ios::trunc);
-    if (!out) return;
+    std::ofstream out(path.empty() ? controlConfigDir(sdRoot) + "/control-map.conf" : path,
+                      std::ios::trunc);
+    if (!out) return false;
     out << "v2\n";
     out << "p1 " << player1 << "\n";
     out << "p2 " << player2 << "\n";
@@ -636,6 +688,8 @@ static void saveControlOptions(const std::string &sdRoot, int player1, int playe
     };
     writeSection("gamepad", vpadMap);
     writeSection("pro", proMap);
+    out.flush();
+    return static_cast<bool>(out);
 }
 
 static std::vector<int> consoleActions()
@@ -926,11 +980,25 @@ int main()
     ActionSources vpadMap;
     ActionSources proMap;
     loadControlOptions(library.sd_root, player1Device, player2Device, vpadMap, proMap);
+    int globalPlayer1 = player1Device;
+    int globalPlayer2 = player2Device;
+    ActionSources globalVpadMap = vpadMap;
+    ActionSources globalProMap = proMap;
+    mkdir((controlConfigDir(library.sd_root) + "/profiles").c_str(), 0777);
+    mkdir((controlConfigDir(library.sd_root) + "/rom-maps").c_str(), 0777);
     auto mapOfDevice = [&](int device) -> ActionSources & {
         return device == 0 ? vpadMap : proMap;
     };
     // CTRL-3: editor de mapeo estilo Our64 (acciones -> botones físicos).
     bool mapMode = false;
+    bool profileMode = false;
+    int profileSlot = 0;
+    std::string profileStatus;
+    bool orderMode = false;
+    int orderPort = 0;
+    bool orderArmed = false;
+    int orderOriginal1 = 0;
+    int orderOriginal2 = 0;
     int mapDevice = 0;      // 0 = GamePad, 1 = Pro/Classic
     int mapRow = 0;         // índice sobre consoleActions()
     int mapTop = 0;         // primera fila visible (paginación, 4 por página)
@@ -1287,6 +1355,30 @@ int main()
     refreshControllers();
 
     bool inGame = false;
+    auto persistControls = [&]() {
+        if (inGame && activeRom >= 0) {
+            bootLog(saveControlOptions(library.sd_root, player1Device, player2Device,
+                                       vpadMap, proMap,
+                                       romControlPath(library.sd_root, library.roms[activeRom].path))
+                        ? "rom_controls_saved" : "rom_controls_save_failed");
+        } else {
+            const bool saved = saveControlOptions(library.sd_root, player1Device, player2Device,
+                                                  vpadMap, proMap);
+            globalPlayer1 = player1Device;
+            globalPlayer2 = player2Device;
+            globalVpadMap = vpadMap;
+            globalProMap = proMap;
+            bootLog(saved ? "global_controls_saved" : "global_controls_save_failed");
+        }
+    };
+    auto restoreGlobalControls = [&]() {
+        player1Device = globalPlayer1;
+        player2Device = globalPlayer2;
+        vpadMap = globalVpadMap;
+        proMap = globalProMap;
+        refreshControllers();
+        bootLog("global_controls_restored");
+    };
     bool coreMenu = false;
     int coreMenuIndex = 0;
     int slotMode = 0; // 0 = menú, 1 = guardar, 2 = cargar
@@ -1388,17 +1480,20 @@ int main()
             const bool down = touch.touched != 0;
             if (down && !touchHeld) {
                 const float tx = touch.x, ty = touch.y;
-                if (tx < 155 && ty < 85 && (coreMenu || mapMode || settingsOpen || sidebarOpen || searchActive)) {
+                if (tx < 155 && ty < 85 && (coreMenu || mapMode || orderMode || settingsOpen || sidebarOpen || searchActive)) {
                     navTrigger |= VPAD_BUTTON_B;
-                } else if (inGame && coreMenu) {
+                } else if (inGame && coreMenu && !mapMode) {
                     if (slotMode != 0 && tx >= 315 && tx < 965 && ty >= 195 && ty < 555) {
                         slotIndex = std::min(3, static_cast<int>((ty - 195) / 88));
                         navTrigger |= VPAD_BUTTON_A;
-                    } else if (slotMode == 0 && tx >= 390 && tx < 890 && ty >= 260 && ty < 450) {
-                        coreMenuIndex = std::min(3, static_cast<int>((ty - 260) / 44));
+                    } else if (slotMode == 0 && tx >= 390 && tx < 890 && ty >= 260 && ty < 480) {
+                        coreMenuIndex = std::min(4, static_cast<int>((ty - 260) / 44));
                         navTrigger |= VPAD_BUTTON_A;
                     }
-                } else if (mapMode && !mapCapture && tx >= 120 && tx < 930 && ty >= 100 && ty < 440) {
+                } else if (mapMode && profileMode && tx >= 120 && tx < 930 && ty >= 190 && ty < 460) {
+                    profileSlot = std::min(2, static_cast<int>((ty - 190) / 90));
+                    navTrigger |= VPAD_BUTTON_A;
+                } else if (mapMode && !profileMode && !mapCapture && tx >= 120 && tx < 930 && ty >= 100 && ty < 440) {
                     const int index = mapTop + static_cast<int>((ty - 100) / 64);
                     if (index < static_cast<int>(consoleActions().size())) {
                         mapRow = index;
@@ -1414,11 +1509,11 @@ int main()
                         sectionCursor = std::min(4, static_cast<int>((ty - 105) / 80));
                         navTrigger |= VPAD_BUTTON_A;
                     } else if (settingsSection >= 0 && ty < 520) {
-                        const int counts[] = {4, 5, hasSecondCorePort() ? 3 : 2, 3, 2};
+                        const int counts[] = {4, 5, hasSecondCorePort() ? 4 : 3, 3, 2};
                         settingsItem = std::min(counts[settingsSection] - 1,
                                                 static_cast<int>((ty - 105) / 70));
                         navTrigger |= settingsSection == 1 && settingsItem >= 3 ? VPAD_BUTTON_A : VPAD_BUTTON_RIGHT;
-                        if (settingsSection == 2 && settingsItem == (hasSecondCorePort() ? 2 : 1))
+                        if (settingsSection == 2 && settingsItem >= (hasSecondCorePort() ? 2 : 1))
                             navTrigger |= VPAD_BUTTON_A;
                     }
                 } else if (sidebarOpen && tx >= 36 && tx < 350 && ty >= 140 && ty < 330) {
@@ -1450,8 +1545,8 @@ int main()
             }
             touchHeld = down;
         }
-        if (vpadError == VPAD_READ_SUCCESS) {
-            if (inGame) {
+        if (vpadError == VPAD_READ_SUCCESS || !proChannels.empty()) {
+            if (inGame && !mapMode && !orderMode) {
                 if (coreMenu) {
                     if (slotMode != 0) {
                         if (navTrigger & VPAD_BUTTON_DOWN) slotIndex = (slotIndex + 1) % 4;
@@ -1469,9 +1564,9 @@ int main()
                             slotMode = 0;
                         }
                     } else if (navTrigger & VPAD_BUTTON_DOWN) {
-                        coreMenuIndex = (coreMenuIndex + 1) % 4;
+                        coreMenuIndex = (coreMenuIndex + 1) % 5;
                     } else if (navTrigger & VPAD_BUTTON_UP) {
-                        coreMenuIndex = (coreMenuIndex + 3) % 4;
+                        coreMenuIndex = (coreMenuIndex + 4) % 5;
                     } else if (navTrigger & VPAD_BUTTON_A) {
                         if (coreMenuIndex == 0) {
                             coreMenu = false;
@@ -1485,10 +1580,20 @@ int main()
                             slotMode = 2;
                             slotIndex = 0;
                             refreshSlotThumbs();
+                        } else if (coreMenuIndex == 3) {
+                            mapMode = true;
+                            profileMode = false;
+                            profileStatus.clear();
+                            mapRow = 0;
+                            mapTop = 0;
+                            mapDevice = 0;
+                            mapCapture = 0;
                         } else {
                             core.unloadGame();
                             inGame = false;
                             coreMenu = false;
+                            activeRom = -1;
+                            restoreGlobalControls();
                         }
                     } else if (navTrigger & VPAD_BUTTON_B) {
                         coreMenu = false;
@@ -1509,7 +1614,30 @@ int main()
                 const int nRows = static_cast<int>(acts.size());
                 constexpr int kMapShown = 4;
                 ActionSources &m = mapOfDevice(mapDevice);
-                if (mapCapture) {
+                if (profileMode) {
+                    if (navTrigger & VPAD_BUTTON_B) {
+                        profileMode = false;
+                    } else if (navTrigger & VPAD_BUTTON_UP) {
+                        profileSlot = (profileSlot + 2) % 3;
+                    } else if (navTrigger & VPAD_BUTTON_DOWN) {
+                        profileSlot = (profileSlot + 1) % 3;
+                    } else if (navTrigger & VPAD_BUTTON_A) {
+                        if (loadActionProfile(controlProfilePath(library.sd_root, mapDevice, profileSlot), m)) {
+                            persistControls();
+                            applyControlMaps();
+                            bootLog("control_profile_loaded");
+                            profileStatus = "Perfil cargado";
+                        } else {
+                            bootLog("control_profile_load_failed");
+                            profileStatus = "No se pudo cargar el perfil";
+                        }
+                    } else if (navTrigger & VPAD_BUTTON_Y) {
+                        const bool saved = saveActionProfile(
+                            controlProfilePath(library.sd_root, mapDevice, profileSlot), m);
+                        bootLog(saved ? "control_profile_saved" : "control_profile_save_failed");
+                        profileStatus = saved ? "Perfil guardado" : "No se pudo guardar el perfil";
+                    }
+                } else if (mapCapture) {
                     // Captura: cualquier mando del tipo editado puede pulsar
                     // (GamePad para device 0; cualquier Pro/Classic para 1).
                     uint32_t held = 0;
@@ -1555,8 +1683,7 @@ int main()
                             m.sources[row] = one;
                             if (displaced >= 0 && old != 0) m.sources[displaced] = old;
                         }
-                        saveControlOptions(library.sd_root, player1Device, player2Device,
-                                           vpadMap, proMap);
+                        persistControls();
                         applyControlMaps();
                         navBlip();
                         mapCapture = 0;
@@ -1581,6 +1708,10 @@ int main()
                         mapRow = 0;
                         mapTop = 0;
                         navBlip();
+                    } else if (navTrigger & VPAD_BUTTON_PLUS) {
+                        profileMode = true;
+                        profileSlot = 0;
+                        profileStatus.clear();
                     } else if (navTrigger & VPAD_BUTTON_A) {
                         mapCapture = 1;
                         mapCaptureUntil = SDL_GetTicks() / 1000.0 + 5.0;
@@ -1593,18 +1724,60 @@ int main()
                         navBlip();
                     } else if (navTrigger & VPAD_BUTTON_X) {
                         m.sources[acts[mapRow]] = 0;
-                        saveControlOptions(library.sd_root, player1Device, player2Device,
-                                           vpadMap, proMap);
+                        persistControls();
                         applyControlMaps();
                         navBlip();
                     } else if (navTrigger & VPAD_BUTTON_MINUS) {
                         m = mapDevice == 0
                             ? defaultActionMap(kVpadButtons, kVpadBtnCount)
                             : defaultActionMap(kProButtons, kProBtnCount);
-                        saveControlOptions(library.sd_root, player1Device, player2Device,
-                                           vpadMap, proMap);
+                        persistControls();
                         applyControlMaps();
                         navBlip();
+                    }
+                }
+            } else if (orderMode) {
+                bool anyA = vpadError == VPAD_READ_SUCCESS && (vpad.hold & VPAD_BUTTON_A);
+                for (const WpadSnapshot &s : wpadStates) {
+                    if (!s.connected) continue;
+                    const uint32_t a = (s.type == WPAD_TYPE_PRO || s.type == WPAD_TYPE_CLASSIC)
+                        ? static_cast<uint32_t>(WPAD_PRO_BUTTON_A)
+                        : static_cast<uint32_t>(WPAD_BUTTON_A);
+                    anyA |= (s.buttons & a) != 0;
+                }
+                if (navTrigger & VPAD_BUTTON_B) {
+                    player1Device = orderOriginal1;
+                    player2Device = orderOriginal2;
+                    refreshControllers();
+                    orderMode = false;
+                } else if (!orderArmed) {
+                    if (!anyA) orderArmed = true;
+                } else if (anyA) {
+                    int selected = -1;
+                    if (vpad.trigger & VPAD_BUTTON_A) selected = orderPort == 0 ? 0 : 1;
+                    if (selected < 0) {
+                        for (int i = 0; i < static_cast<int>(proChannels.size()); ++i) {
+                            const WpadSnapshot &s = wpadStates[proChannels[i]];
+                            const uint32_t a = (s.type == WPAD_TYPE_PRO || s.type == WPAD_TYPE_CLASSIC)
+                                ? static_cast<uint32_t>(WPAD_PRO_BUTTON_A)
+                                : static_cast<uint32_t>(WPAD_BUTTON_A);
+                            if (s.buttons & a) {
+                                selected = i + (orderPort == 0 ? 1 : 2);
+                                break;
+                            }
+                        }
+                    }
+                    if (selected >= 0) {
+                        if (orderPort == 0) player1Device = selected;
+                        else player2Device = selected;
+                        ++orderPort;
+                        orderArmed = false;
+                        if (orderPort >= (hasSecondCorePort() ? 2 : 1)) {
+                            refreshControllers();
+                            persistControls();
+                            bootLog("controller_order_saved");
+                            orderMode = false;
+                        }
                     }
                 }
             } else if (settingsOpen) {
@@ -1624,7 +1797,7 @@ int main()
                     int itemCount = 1;
                     if (settingsSection == 0) itemCount = 4;
                     else if (settingsSection == 1) itemCount = 5;
-                    else if (settingsSection == 2) itemCount = hasSecondCorePort() ? 3 : 2;
+                    else if (settingsSection == 2) itemCount = hasSecondCorePort() ? 4 : 3;
                     else if (settingsSection == 3) itemCount = 3;
                     else if (settingsSection == 4) itemCount = 2;
 
@@ -1639,8 +1812,16 @@ int main()
                             dynamicBg = !dynamicBg;
                             saveViewOptions();
                         } else if (settingsSection == 2 && settingsItem == (hasSecondCorePort() ? 2 : 1)) {
+                            orderMode = true;
+                            orderPort = 0;
+                            orderArmed = false;
+                            orderOriginal1 = player1Device;
+                            orderOriginal2 = player2Device;
+                        } else if (settingsSection == 2 && settingsItem == (hasSecondCorePort() ? 3 : 2)) {
                             // CTRL-3: editor de mapeo estilo Our64.
                             mapMode = true;
+                            profileMode = false;
+                            profileStatus.clear();
                             mapRow = 0;
                             mapTop = 0;
                             mapDevice = 0;
@@ -1702,14 +1883,12 @@ int main()
                         } else if (settingsSection == 2 && settingsItem == 0) {
                             const int n = static_cast<int>(devOpts.size());
                             if (n > 0) player1Device = (player1Device + dir + n) % n;
-                            saveControlOptions(library.sd_root, player1Device, player2Device,
-                                               vpadMap, proMap);
+                            persistControls();
                             refreshControllers();
                         } else if (settingsSection == 2 && settingsItem == 1 && hasSecondCorePort()) {
                             const int n = static_cast<int>(p2Opts.size());
                             if (n > 0) player2Device = (player2Device + dir + n) % n;
-                            saveControlOptions(library.sd_root, player1Device, player2Device,
-                                               vpadMap, proMap);
+                            persistControls();
                             refreshControllers();
                         }
                     }
@@ -1790,6 +1969,23 @@ int main()
                     if (navTrigger & VPAD_BUTTON_A) {
                         if (core.loadGame(library.roms[visible[focused]].path, error)) {
                             activeRom = visible[focused];
+                            player1Device = globalPlayer1;
+                            player2Device = globalPlayer2;
+                            vpadMap = globalVpadMap;
+                            proMap = globalProMap;
+                            if (loadControlOptions(library.sd_root, player1Device, player2Device,
+                                                   vpadMap, proMap,
+                                                   romControlPath(library.sd_root,
+                                                                  library.roms[activeRom].path)))
+                                bootLog("rom_controls_loaded");
+                            else {
+                                player1Device = globalPlayer1;
+                                player2Device = globalPlayer2;
+                                vpadMap = globalVpadMap;
+                                proMap = globalProMap;
+                                bootLog("global_controls_used_for_rom");
+                            }
+                            refreshControllers();
                             inGame = true;
                             slotMode = 0;
                         }
@@ -1823,7 +2019,10 @@ int main()
             }
         }
 
-        if (waitingRelease && !coreMenu && vpadError == VPAD_READ_SUCCESS && vpad.hold == 0) {
+        bool wpadReleased = true;
+        for (const WpadSnapshot &s : wpadStates) wpadReleased &= !s.connected || s.buttons == 0;
+        if (waitingRelease && !coreMenu &&
+            (vpadError != VPAD_READ_SUCCESS || vpad.hold == 0) && wpadReleased) {
             core.setInputEnabled(true);
             waitingRelease = false;
         }
@@ -1845,7 +2044,7 @@ int main()
             }
         }
 
-        if (inGame) {
+        if (inGame && !mapMode && !orderMode) {
             if (core.hasFrame()) {
                 const bool rgb565 = core.pixelFormat() == RETRO_PIXEL_FORMAT_RGB565;
                 frameTex = uploadFrame(frameTex, core.frameData(),
@@ -1893,9 +2092,9 @@ int main()
                 } else {
                     drawRoundRect(390.0f, 170.0f, 500.0f, 380.0f, 18.0f, panel);
                     text::drawText("MENU", 430.0f, 200.0f, 26, white);
-                    const char *items[4] = {"Continuar", "Guardar estado", "Cargar estado",
-                                            "Salir del juego"};
-                    for (int i = 0; i < 4; ++i) {
+                    const char *items[5] = {"Continuar", "Guardar estado", "Cargar estado",
+                                            "Controles", "Salir del juego"};
+                    for (int i = 0; i < 5; ++i) {
                         text::drawText(items[i], 430.0f, 270.0f + i * 44.0f, 20,
                                        coreMenuIndex == i ? accent : muted);
                     }
@@ -1959,7 +2158,28 @@ int main()
                                   Color{64, 230, 96, 170});
                 }
             }
-            if (mapCapture) {
+            if (profileMode) {
+                drawRect(0.0f, 0.0f, 1280.0f, 720.0f, Color{10, 12, 16, 210});
+                drawRoundRect(250.0f, 110.0f, 780.0f, 470.0f, 18.0f, panel);
+                text::drawText((std::string("Perfiles: ") +
+                                (mapDevice == 0 ? "GamePad" : "Pro / Classic")).c_str(),
+                               290.0f, 145.0f, 28, white);
+                for (int i = 0; i < 3; ++i) {
+                    const float y = 210.0f + i * 90.0f;
+                    if (profileSlot == i) drawRoundRect(280.0f, y - 12.0f, 720.0f, 65.0f,
+                                                        10.0f, Color{245, 217, 127, 40});
+                    struct stat info{};
+                    const bool exists = stat(controlProfilePath(library.sd_root, mapDevice, i).c_str(),
+                                             &info) == 0;
+                    text::drawText(("Perfil " + std::to_string(i + 1) +
+                                    (exists ? " · Guardado" : " · Vacío")).c_str(),
+                                   310.0f, y, 22, profileSlot == i ? white : muted);
+                }
+                text::drawText("A  CARGAR    Y  GUARDAR    B  VOLVER",
+                               290.0f, 525.0f, 16, accent);
+                if (!profileStatus.empty())
+                    text::drawText(profileStatus.c_str(), 700.0f, 525.0f, 16, white);
+            } else if (mapCapture) {
                 // Diálogo de captura con cuenta atrás (5 s), como Our64.
                 drawRect(0.0f, 0.0f, 1280.0f, 720.0f, Color{10, 12, 16, 170});
                 drawRoundRect(340.0f, 272.0f, 600.0f, 176.0f, 14.0f,
@@ -1975,8 +2195,27 @@ int main()
                 text::drawText(std::to_string(left).c_str(), 620.0f, 376.0f, 40, accent);
             } else {
                 text::drawText("A  CAMBIAR    Y  AÑADIR    X  DESASIGNAR    -  REINICIAR    "
-                               "L/R  DISPOSITIVO    B  VOLVER", 28.0f, 688.0f, 14, muted);
+                               "L/R  DISPOSITIVO    +  PERFILES    B  VOLVER", 28.0f, 688.0f, 14, muted);
             }
+        } else if (orderMode) {
+            text::drawText("Orden de mandos", 28.0f, 18.0f, 34, white);
+            text::drawText(("Pulsa A en el mando para Mando " + std::to_string(orderPort + 1)).c_str(),
+                           28.0f, 70.0f, 22, accent);
+            const int count = hasSecondCorePort() ? 2 : 1;
+            for (int i = 0; i < count; ++i) {
+                const float x = 80.0f + i * 580.0f;
+                drawRoundRect(x, 170.0f, 540.0f, 330.0f, 18.0f,
+                              i == orderPort ? panel : cardPanel);
+                text::drawText(("Mando " + std::to_string(i + 1)).c_str(),
+                               x + 35.0f, 205.0f, 28, white);
+                const int device = i == 0 ? player1Device : player2Device;
+                const auto &labels = i == 0 ? devOpts : p2Opts;
+                const std::string label = i < orderPort && device < static_cast<int>(labels.size())
+                    ? labels[device] : "Pulsa A";
+                text::drawText(label.c_str(), x + 35.0f, 335.0f, 22,
+                               i == orderPort ? accent : muted);
+            }
+            text::drawText("B  CANCELAR", 28.0f, 672.0f, 16, muted);
         } else if (settingsOpen) {
             const char *sections[] = {"PERSONALIZAR", "ASSETS", "CONTROLES", "SONIDO", "VÍDEO"};
             const char *sectionHelp[] = {"Vistas, tema y fondo", "Portadas y datos", "Mandos y botones", "Volumen y efectos", "Imagen del juego"};
@@ -2050,8 +2289,13 @@ int main()
                         text::drawText(("Mando 2: " + p2Opts[player2Device]).c_str(),
                                        60.0f, y1, 22, settingsItem == 1 ? white : muted);
                     }
-                    const float mapY = hasSecondCorePort() ? y2 : y1;
-                    const int mapItem = hasSecondCorePort() ? 2 : 1;
+                    const float orderY = hasSecondCorePort() ? y2 : y1;
+                    const int orderItem = hasSecondCorePort() ? 2 : 1;
+                    if (settingsItem == orderItem) drawRoundRect(50.0f, orderY - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                    text::drawText("Cambiar orden de mandos  (A)", 60.0f, orderY, 22,
+                                   settingsItem == orderItem ? white : muted);
+                    const float mapY = orderY + 70.0f;
+                    const int mapItem = orderItem + 1;
                     if (settingsItem == mapItem) drawRoundRect(50.0f, mapY - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
                     text::drawText("Mapear botones  (A)", 60.0f, mapY, 22, settingsItem == mapItem ? white : muted);
                 } else if (settingsSection == 4) {

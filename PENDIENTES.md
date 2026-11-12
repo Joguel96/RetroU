@@ -43,11 +43,11 @@ está**. Un cambio compilado pero sin verificar sigue siendo ⬜/🔧.
 
 | ID | Pendiente | Estado |
 |---|---|---|
-| CTRL-1 | Remapping desde el menú del core (Minus+Plus durante partida), con perfiles y configuración por ROM | ⬜ |
-| CTRL-2 | Perfiles de control guardados y cargables (por dispositivo/consola) | ⬜ |
-| CTRL-3 | Visual del apartado de asignación y mapeo similar a Our64. **Decisión 2026-11-11: se adopta el mismo modelo de mapeo de Our64** (acción del core ← botones físicos, varios botones por acción, `Y Add`/`X Unmap`/`- Reset`, captura con cuenta atrás) para todas las consolas, con la UI de RetroU y la **imagen del control de cada consola proporcionada por el usuario** (no generar). Referencias en `ejemplos/Our64/`: `button_mapping_1..3.png`, `button_stick_assignment.png`, `button_assignment.png`, `controllers_1.png`, `controllers_order.png`. Implementado en GX2 con formato `v2`, persistencia explícita de acciones `none`, imagen completa para NES/SNES, un solo puerto para GBA y fuentes separadas `Stick L`/`Stick R`; falta probar en hardware | 🔧 En curso (Codex, rama main) |
+| CTRL-1 | Remapeo desde «Controles» en el menú de partida (Minus+Plus), con configuración propia por ROM en `rom-maps/<hash>.conf` y restauración del mapa global al salir. Compilado; falta probar en hardware | 🔧 En curso (Codex, rama main) |
+| CTRL-2 | Tres perfiles guardables/cargables para GamePad y Pro/Classic por consola en `profiles/`; `Plus` desde el editor abre la lista, `A` carga y `Y` guarda. Compilado; falta probar en hardware | 🔧 En curso (Codex, rama main) |
+| CTRL-3 | Visual de asignación y mapeo estilo Our64 con UI RetroU, imágenes aportadas, formato `v2`, acciones `none`, un puerto en GBA y fuentes `Stick L`/`Stick R`. Se añadió «Cambiar orden de mandos»: pulsar A en el mando físico para asignar cada puerto. Compilado; falta probar flujo y detalles visuales en hardware. Referencias en `ejemplos/Our64/` | 🔧 En curso (Codex, rama main) |
 | CTRL-4 | Que los mandos externos (Pro, Classic, Wii Remote...) también naveguen la UI (biblioteca/ajustes/menú del core), no solo el GamePad. Implementación: `wpadNavBits()` traduce sus botones a las constantes VPAD (Pro/Classic: A,B,X,Y,L,R,ZL→L,ZR→R,+,-,D-pad; Wii Remote: A,B,+,-,D-pad) y el stick se comporta como D-Pad edge-triggered | ✅ 2026-11-11 |
-| CTRL-5 | Diagnóstico temporal de input en el log (`input diag`, `input vpad bind`): quitar o minimizar cuando VER-1..5 estén confirmados | ⬜ |
+| CTRL-5 | Diagnóstico temporal de input reducido a un resumen compacto por ROM tras confirmar VER-1..5; se conservan logs de carga y guardado de mapas/perfiles. Compilado; falta verificar log en hardware | 🔧 En curso (Codex, rama main) |
 | CTRL-6 | GamePad asignable a **cualquier mando del core** (Mando 1 y Mando 2). `setVpadPort()` + opciones de Mando 2 con GamePad. Extendido: se listan **todos** los mandos conectados (4 canales KPAD + GamePad, sin límite de 2) y se nombran por tipo (Wii U Pro Controller, Classic Controller, Wii Remote, Wii Remote + Nunchuk) con sufijo numérico solo si hay varios del mismo tipo | ✅ 2026-11-11 |
 
 ## 4. UI / Apariencia

@@ -189,6 +189,7 @@ private:
     std::array<SDL_GameController *, 2> controllers_ = {nullptr, nullptr};
     uint16_t input_state_ = 0;
     std::array<uint16_t, 2> input_states_ = {0, 0};
+    bool input_diag_pending_ = true;
     int control_profile_ = 0;
     std::array<std::array<int, 8>, 2> control_maps_ = {{
         {SDL_CONTROLLER_BUTTON_A, SDL_CONTROLLER_BUTTON_B, SDL_CONTROLLER_BUTTON_X,

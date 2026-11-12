@@ -33,6 +33,8 @@ sd:/retrou/config/nes/nes.conf
 sd:/retrou/config/nes/control-map.conf
 sd:/retrou/config/nes/video.conf
 sd:/retrou/config/nes/view.conf
+sd:/retrou/config/nes/profiles/
+sd:/retrou/config/nes/rom-maps/
 ...
 sd:/retrou/saves/<consola>/save/
 sd:/retrou/snap/<consola>/
@@ -51,6 +53,9 @@ Cada app crea sus carpetas y archivos de configuración si no existen.
   en `view.conf`.
 - El touch del GamePad selecciona juegos y opciones en la UI.
 - **Minus + Plus** abre el menú superpuesto durante el core.
+- «Controles» en ese menú edita el mapa de la ROM; al salir se restablece el
+  mapa general. El archivo de la ROM se identifica con un hash estable de su
+  ruta y se guarda en `rom-maps/`.
 - El render de la UI es bajo demanda: solo repinta cuando hay entrada o cambia
   el estado, no a 60 FPS constante.
 
@@ -65,6 +70,9 @@ No hay selector de cores: cada app es un sistema.
   acciones desasignadas en `control-map.conf`. NES y SNES muestran su imagen
   completa en el editor, GBA usa un solo puerto y las fuentes distinguen
   `Stick L` de `Stick R`.
+- En Controles, «Cambiar orden de mandos» espera A en el mando físico para
+  cada puerto. Desde el editor, Plus abre tres perfiles por dispositivo:
+  A carga el seleccionado, Y guarda el mapa actual.
 - Verificar en hardware la descarga separada de portadas/backdrops, metadatos
   automáticos y barra de progreso.
 
@@ -113,6 +121,8 @@ sd:/retrou/snap/<consola>/
 
 - `sd:/retrou/retrou_rpx.log`: arranque, carga y ejecución del core estático;
   las tres ejecuciones anteriores quedan en `.1`, `.2` y `.3`.
+- El log registra carga/restauración/guardado de mapas y perfiles, y un
+  resumen de entrada por ROM. Los logs de compilación quedan en `native/build/logs/`.
 - El RPL queda en la rama `experiment/rpl-loader`; no se compila en `main`.
 
 ## Input

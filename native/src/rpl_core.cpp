@@ -339,42 +339,23 @@ void RplCore::pollInput()
         if (port == 0) input_state_ = state;
     }
 
-    // Temporary diagnostics: the first polls after a game load show what the
-    // core actually receives (sd:/retrou/retrou_rpx.log).
-    static int diag = 0;
-    if (diag < 10) {
-        ++diag;
+    // One compact input summary per ROM keeps the runtime log useful.
+    if (input_diag_pending_) {
+        input_diag_pending_ = false;
+        int vpadBound = 0;
+        int wpadBound = 0;
+        for (int a = 0; a < CoreActionMap::kMaxActions; ++a) {
+            vpadBound += vpad_map_.sources[a] != 0 ? 1 : 0;
+            wpadBound += wpad_map_.sources[a] != 0 ? 1 : 0;
+        }
         char buf[192];
         std::snprintf(buf, sizeof(buf),
-                      "input diag %d: st0=0x%04x st1=0x%04x vpadErr=%d vpadOn=%d wpad=[%d,%d]",
-                      diag, input_states_[0], input_states_[1],
+                      "input summary: st0=0x%04x st1=0x%04x vpadErr=%d vpadOn=%d wpad=[%d,%d] maps=[%d,%d]",
+                      input_states_[0], input_states_[1],
                       static_cast<int>(last_vpad_error_),
-                      static_cast<int>(vpad_enabled_), wpad_ports_[0], wpad_ports_[1]);
+                      static_cast<int>(vpad_enabled_), wpad_ports_[0], wpad_ports_[1],
+                      vpadBound, wpadBound);
         log(buf);
-        if (diag == 1) {
-            int vpadBound = 0;
-            int wpadBound = 0;
-            for (int a = 0; a < CoreActionMap::kMaxActions; ++a) {
-                vpadBound += vpad_map_.sources[a] != 0 ? 1 : 0;
-                wpadBound += wpad_map_.sources[a] != 0 ? 1 : 0;
-            }
-            std::snprintf(buf, sizeof(buf),
-                          "input action map: vpad acciones=%d | wpad acciones=%d",
-                          vpadBound, wpadBound);
-            log(buf);
-            for (int a = 0; a < CoreActionMap::kMaxActions; ++a) {
-                if (vpad_map_.sources[a] == 0) continue;
-                std::snprintf(buf, sizeof(buf),
-                              "input vpad bind: accion=%d fuentes=0x%x", a, vpad_map_.sources[a]);
-                log(buf);
-            }
-            for (int a = 0; a < CoreActionMap::kMaxActions; ++a) {
-                if (wpad_map_.sources[a] == 0) continue;
-                std::snprintf(buf, sizeof(buf),
-                              "input wpad bind: accion=%d fuentes=0x%x", a, wpad_map_.sources[a]);
-                log(buf);
-            }
-        }
     }
 }
 
@@ -554,6 +535,7 @@ bool RplCore::loadGame(const std::string &rom_path, std::string &error)
 
     log("retro_load_game ok");
     game_loaded_ = true;
+    input_diag_pending_ = true;
     loadSram();
 
     startAudio();

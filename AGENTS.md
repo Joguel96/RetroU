@@ -98,6 +98,8 @@ sd:/retrou/config/nes/
   control-map.conf
   video.conf
   view.conf
+  profiles/
+  rom-maps/
 sd:/retrou/config/snes/
   snes.conf
   control-map.conf
@@ -125,6 +127,10 @@ varias máscaras de botones físicos): secciones `[gamepad]` y `[pro]`, líneas
 `none`, para que `X Unmap` sobreviva al reinicio. Los conf en formato `v1` o
 viejo (una línea de 13 ints) se migran al cargar y se reescriben al primer
 cambio.
+
+`profiles/` contiene tres mapas por GamePad o Pro/Classic y consola.
+`rom-maps/` guarda los cambios de cada ROM por hash FNV-1a de su ruta; el mapa
+general se restaura al cerrar el juego.
 
 Ya no se usa `sd:/retrou/cores`, HBL, Mocha ni `launch/last.txt`.
 
@@ -195,6 +201,8 @@ No extender el RPL sin petición explícita. Si se retoma, hacerlo en su rama.
 - `Minus` abre el sidebar de filtros solo en cards; en lista/carrusel abre
   el buscador. Las cards permiten entre 3 y 6 columnas.
 - `Minus + Plus` abre el menú superpuesto durante el core.
+- «Controles» en ese menú abre el editor de la ROM. En Ajustes → Controles,
+  «Cambiar orden de mandos» asigna los puertos al pulsar A en cada dispositivo.
 - El menú de juego pausa el core.
 - El render de la UI es bajo demanda (`ui_dirty`), no a 60 FPS constantes.
 - Las fuentes Lato van embebidas en los WUHB con `objcopy`.
@@ -224,6 +232,8 @@ sd:/retrou/config/<consola>/<consola>.conf
 sd:/retrou/config/<consola>/control-map.conf
 sd:/retrou/config/<consola>/video.conf
 sd:/retrou/config/<consola>/view.conf
+sd:/retrou/config/<consola>/profiles/
+sd:/retrou/config/<consola>/rom-maps/
 
 sd:/retrou/saves/<consola>/save/
 sd:/retrou/snap/<consola>/
@@ -281,7 +291,8 @@ solo mantiene el estado general.
 - **Controles implementado**: asignación de mandos a los 2 puertos del core
   (Mando 1/Mando 2) y remapeo estilo Our64 por acción del core, con múltiples
   botones por acción, `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás y
-  migración de `v1`/conf viejo. Sin verificar aún en hardware.
+  migración de `v1`/conf viejo. VER-1..5 fueron confirmados por el usuario;
+  el nuevo flujo de orden, perfiles y mapas por ROM espera prueba en hardware.
 - SRAM automática al abrir/guardar/salir y cuatro slots con miniatura:
   implementados, pendientes de verificar en hardware (SAVE-1/2).
 - Touch, búsqueda y descargas separadas de portadas/backdrops con progreso:

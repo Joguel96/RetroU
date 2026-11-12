@@ -24,7 +24,8 @@ de RetroU.
   (varias rondas; registrado como pendiente). No probado en hardware.
 - **Mapeo de controles GX2**: editor estilo Our64 por acción del core, con varias
   asignaciones por acción, `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás
-  y persistencia explícita de acciones `none` en `control-map.conf`.
+  y persistencia explícita de acciones `none` en `control-map.conf`. El menú de
+  partida permite ajustar cada ROM; hay tres perfiles por dispositivo y consola.
 - **Guardados y Assets**: cuatro slots de savestate con miniatura, SRAM al
   abrir/guardar/salir y descargas separadas de portadas y backdrops con
   progreso. Estas mejoras están pendientes de comprobar en hardware.

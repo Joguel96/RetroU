@@ -36,8 +36,9 @@ fallo. El arranque rota esos archivos.
    Con L/R, recorre «All», la estrella de Favoritos, «#» y A–Z; la estrella
    también debe responder al touch. Comprueba que Favoritos muestra solo las
    ROMs marcadas y que «All» restaura la lista completa.
-8. En GBA Cards, recorre hasta P y continúa más allá. Si se cierra, conserva
-   `retrou_rpx.log` y `.1`; compara las últimas líneas `gba_cards_focus`,
+8. En GBA Cards, recorre hasta P, incluidos los títulos «Pokémon», y continúa
+   más allá. Si se cierra, conserva `retrou_rpx.log` y `.1`; compara el título
+   de las últimas líneas `gba_cards_focus`,
    `gba_cover_load`/`gba_cover_ready` y la presencia de `main_exit_clean`.
 
 ## Controles
@@ -103,6 +104,7 @@ tanda y no se tocó.
 | `7fdf860` | Reinicio del temporizador al cambiar de ROM | `native/build/logs/build-20261112-091305.log` |
 | `a2d87ae` | Carrusel NES/SNES, Favoritos en Lista/Carrusel, recarga de portadas y atajos del menú por mando | `native/build/logs/build-20261112-130827.log` |
 | `9bfce0e` | Favoritos junto a All, progreso de imágenes pendientes y diagnóstico de cierre GBA | `native/build/logs/build-20261112-142320.log` |
+| `2838306` | Recorte de títulos UTF-8 y traza del título enfocado en GBA P | `native/build/logs/build-20261112-143059.log` |
 
 Los logs y WUHB están ignorados por Git: conserva una copia antes de limpiar
 `native/build/` o `dist/`. Para retirar un cambio, revierte su commit con Git,

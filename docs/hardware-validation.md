@@ -102,6 +102,7 @@ tanda y no se tocó.
 | `62317fc` | Lectura segura de máscaras de controles | `native/build/logs/build-20261112-090940.log` |
 | `7fdf860` | Reinicio del temporizador al cambiar de ROM | `native/build/logs/build-20261112-091305.log` |
 | `a2d87ae` | Carrusel NES/SNES, Favoritos en Lista/Carrusel, recarga de portadas y atajos del menú por mando | `native/build/logs/build-20261112-130827.log` |
+| `9bfce0e` | Favoritos junto a All, progreso de imágenes pendientes y diagnóstico de cierre GBA | `native/build/logs/build-20261112-142320.log` |
 
 Los logs y WUHB están ignorados por Git: conserva una copia antes de limpiar
 `native/build/` o `dist/`. Para retirar un cambio, revierte su commit con Git,

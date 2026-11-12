@@ -208,7 +208,7 @@ No extender el RPL sin petición explícita. Si se retoma, hacerlo en su rama.
 - «Controles» en ese menú abre el editor de la ROM. En Ajustes → Controles,
   «Cambiar orden de mandos» asigna los puertos al pulsar A en cada dispositivo.
 - El menú de juego pausa el core.
-- El render de la UI es bajo demanda (`ui_dirty`), no a 60 FPS constantes.
+- La UI se dibuja en el bucle principal cuando la app está en primer plano.
 - Las fuentes Lato van embebidas en los WUHB con `objcopy`.
 
 ## 8. Logs

@@ -57,8 +57,7 @@ Cada app crea sus carpetas y archivos de configuración si no existen.
 - «Controles» en ese menú edita el mapa de la ROM; al salir se restablece el
   mapa general. El archivo de la ROM se identifica con un hash estable de su
   ruta y se guarda en `rom-maps/`.
-- El render de la UI es bajo demanda: solo repinta cuando hay entrada o cambia
-  el estado, no a 60 FPS constante.
+- La UI se dibuja en el bucle principal mientras la app está en primer plano.
 
 No hay selector de cores: cada app es un sistema.
 
@@ -142,9 +141,7 @@ sd:/retrou/snap/<consola>/
 | Minus | filtros en cards; buscador en lista/carrusel |
 | L/R | filtro alfabético en lista/carrusel |
 | Plus | Ajustes |
+| Minus+Plus durante partida | menú de juego |
 
 El menú durante el juego se abre con Minus+Plus. El touch del GamePad permite
 seleccionar elementos visibles. Ver `PENDIENTES.md` para lo que falta validar.
-| Y | favorito (placeholder) |
-| Start | test (solo build Test) |
-| Minus | menú de RetroU en juego |

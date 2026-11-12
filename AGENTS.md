@@ -128,6 +128,9 @@ varias máscaras de botones físicos): secciones `[gamepad]` y `[pro]`, líneas
 viejo (una línea de 13 ints) se migran al cargar y se reescriben al primer
 cambio.
 
+Una máscara inválida en un mapa `v2` produce el valor predeterminado y
+`control_map_parse_failed` en `retrou_rpx.log`, sin cerrar la app.
+
 `profiles/` contiene tres mapas por GamePad o Pro/Classic y consola.
 `rom-maps/` guarda los cambios de cada ROM por hash FNV-1a de su ruta; el mapa
 general se restaura al cerrar el juego.

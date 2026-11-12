@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cerrno>
 #include <cctype>
 #include <cmath>
 #include <cstdint>
@@ -605,7 +606,19 @@ static bool loadControlOptions(const std::string &sdRoot, int &player1, int &pla
                 std::string m;
                 while (ls >> m) {
                     if (m == "none") continue;
-                    sources |= static_cast<uint32_t>(std::stoul(m, nullptr, 0));
+                    char *end = nullptr;
+                    errno = 0;
+                    const unsigned long value = std::strtoul(m.c_str(), &end, 0);
+                    if (m[0] == '-' || errno == ERANGE || end == m.c_str() || *end != '\0' ||
+                        value > 0xffffffffUL) {
+                        vpadMap = defaultActionMap(kVpadButtons, kVpadBtnCount);
+                        proMap = defaultActionMap(kProButtons, kProBtnCount);
+                        player1 = 0;
+                        player2 = 0;
+                        bootLog("control_map_parse_failed");
+                        return false;
+                    }
+                    sources |= static_cast<uint32_t>(value);
                 }
                 cur->sources[action] = sources;
             }

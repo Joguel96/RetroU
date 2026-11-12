@@ -76,6 +76,7 @@ tanda y no se tocó.
 | `5ff602b` | Controles por ROM, perfiles y orden | `native/build/logs/build-20261112-081407.log` |
 | `d2d3ad7` | Espera configurable del fondo | `native/build/logs/build-20261112-084054.log` |
 | `6cd6789` | Creación de carpetas de configuración en SD limpia | `native/build/logs/build-20261112-084956.log` |
+| `98c3d79` | Diagnóstico y reemplazo de descargas | `native/build/logs/build-20261112-085535.log` |
 
 Los logs y WUHB están ignorados por Git: conserva una copia antes de limpiar
 `native/build/` o `dist/`. Para retirar un cambio, revierte su commit con Git,

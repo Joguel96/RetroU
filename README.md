@@ -26,11 +26,16 @@ de RetroU.
   asignaciones por acción, `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás
   y persistencia explícita de acciones `none` en `control-map.conf`. El menú de
   partida permite ajustar cada ROM; hay tres perfiles por dispositivo y consola.
+  En Ajustes → Controles se elige por familia de mando cómo abrir el menú;
+  `Minus + Plus` sigue disponible en todos.
 - **Guardados y Assets**: cuatro slots de savestate con miniatura, SRAM al
   abrir/guardar/salir y descargas separadas de portadas y backdrops con
-  progreso. Estas mejoras están pendientes de comprobar en hardware.
+  progreso y actualización de portadas visibles al terminar la descarga.
+  Estas mejoras están pendientes de comprobar en hardware.
 - **Biblioteca GX2**: vistas cards, lista y carrusel; las dos últimas ofrecen
-  filtro alfabético. Personalizar permite activar el fondo dinámico y elegir
+  filtro alfabético y un acceso superior a Favoritos. El carrusel NES presenta
+  portadas verticales y el de SNES muestra las imágenes completas.
+  Personalizar permite activar el fondo dinámico y elegir
   su espera (0, 1, 3, 5 o 10 s; 3 s iniciales). Las
   opciones de vista se guardan por consola en `view.conf` y esperan prueba
   visual en hardware.

@@ -92,6 +92,7 @@ sd:/retrou/roms/snes/
 sd:/retrou/roms/gba/
 
 sd:/retrou/config/theme.conf              tema compartido
+sd:/retrou/config/menu-shortcut.conf      apertura del menú compartida
 
 sd:/retrou/config/nes/
   nes.conf
@@ -118,8 +119,8 @@ sd:/retrou/snap/<consola>/                slots de guardado de la app
 Las carpetas de ROMs se aceptan en minúscula (`nes`, `snes`, `gba`) y también
 en mayúscula por compatibilidad. La ruta canónica es minúscula.
 
-`theme.conf` es común. `<consola>.conf`, `control-map.conf`, `video.conf` y
-`view.conf` son independientes por app.
+`theme.conf` y `menu-shortcut.conf` son comunes. `<consola>.conf`,
+`control-map.conf`, `video.conf` y `view.conf` son independientes por app.
 
 `control-map.conf` usa el formato `v2` estilo Our64 (acción del core → una o
 varias máscaras de botones físicos): secciones `[gamepad]` y `[pro]`, líneas
@@ -200,11 +201,15 @@ No extender el RPL sin petición explícita. Si se retoma, hacerlo en su rama.
 - Navegación con D-Pad/stick, A, B, Plus.
 - No hay barra lateral de consolas; `Plus` abre Ajustes en dos paneles.
 - La biblioteca ofrece cards, lista y carrusel; lista/carrusel tienen filtro
-  alfabético con L/R. La vista, el fondo dinámico y su espera configurable
+  alfabético con L/R, Favoritos con Y o touch y estrellas en sus ROMs. NES usa
+  portadas verticales en carrusel y SNES presenta la imagen completa.
+  La vista, el fondo dinámico y su espera configurable
   (0/1/3/5/10 s; 3 s por defecto) se guardan en `view.conf`.
 - `Minus` abre el sidebar de filtros solo en cards; en lista/carrusel abre
   el buscador. Las cards permiten entre 3 y 6 columnas.
-- `Minus + Plus` abre el menú superpuesto durante el core.
+- Ajustes → Controles configura la combinación de apertura del menú para
+  GamePad, Pro/Classic y Wii Remote/Nunchuk. `Minus + Plus` sigue disponible
+  en cada mando como acceso de emergencia.
 - «Controles» en ese menú abre el editor de la ROM. En Ajustes → Controles,
   «Cambiar orden de mandos» asigna los puertos al pulsar A en cada dispositivo.
 - El menú de juego pausa el core.
@@ -303,7 +308,7 @@ solo mantiene el estado general.
 - SRAM automática al abrir/guardar/salir y cuatro slots con miniatura:
   implementados, pendientes de verificar en hardware (SAVE-1/2).
 - Touch, búsqueda y descargas separadas de portadas/backdrops con progreso:
-  implementados, pendientes de verificar en hardware (NAV-1/7, AS-1..4).
+  implementados, pendientes de verificar en hardware (NAV-1/7, AS-1..5).
 - Referencias visuales de UI en `ejemplos/` (raíz del proyecto).
 - No afirmar que algo está probado en hardware si no lo está.
 

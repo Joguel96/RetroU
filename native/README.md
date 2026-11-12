@@ -29,6 +29,7 @@ sd:/retrou/roms/snes/
 sd:/retrou/roms/gba/
 
 sd:/retrou/config/theme.conf
+sd:/retrou/config/menu-shortcut.conf
 sd:/retrou/config/nes/nes.conf
 sd:/retrou/config/nes/control-map.conf
 sd:/retrou/config/nes/video.conf
@@ -51,9 +52,17 @@ Cada app crea sus carpetas y archivos de configuración si no existen.
 - En lista y carrusel, **Minus** abre el buscador y **L/R** recorre el filtro
   alfabético. La vista y la casilla de fondo dinámico se guardan por consola
   en `view.conf`, junto con la espera del backdrop (0, 1, 3, 5 o 10 s;
-  3 s iniciales).
+  3 s iniciales). **Y** o el botón superior «Favoritos» filtra estas vistas;
+  **X** marca la ROM y su estrella se muestra en lista y carrusel.
+- El carrusel NES muestra las portadas verticales; el SNES ajusta las imágenes
+  completas en el centro y en los laterales, sin recortarlas.
 - El touch del GamePad selecciona juegos y opciones en la UI.
-- **Minus + Plus** abre el menú superpuesto durante el core.
+- En Ajustes → Controles se elige la combinación de apertura del menú por
+  GamePad, Pro/Classic y Wii Remote/Nunchuk. Es global para NES, SNES y GBA;
+  se guarda en `sd:/retrou/config/menu-shortcut.conf` (`v1`). **Minus + Plus**
+  siempre abre el menú como acceso de emergencia desde el mismo mando.
+- Las portadas de la biblioteca se recargan al completar una descarga, sin
+  reiniciar la app.
 - «Controles» en ese menú edita el mapa de la ROM; al salir se restablece el
   mapa general. El archivo de la ROM se identifica con un hash estable de su
   ruta y se guarda en `rom-maps/`.
@@ -123,6 +132,8 @@ sd:/retrou/snap/<consola>/
   las tres ejecuciones anteriores quedan en `.1`, `.2` y `.3`.
 - El log registra carga/restauración/guardado de mapas y perfiles, y un
   resumen de entrada por ROM. Los logs de compilación quedan en `native/build/logs/`.
+- El log registra `menu_shortcut_loaded`, `menu_shortcut_saved`, fallos de
+  lectura/escritura y `core_menu_shortcut_opened`; también `covers_refreshed`.
 - Si una máscara de `control-map.conf` no se puede leer, se usan los controles
   predeterminados y el log registra `control_map_parse_failed`.
 - Las descargas escriben líneas `GX2 asset` de inicio, fin y fallos por recurso
@@ -138,10 +149,12 @@ sd:/retrou/snap/<consola>/
 | A | abrir juego u opción |
 | B | volver un nivel; borrar en buscador |
 | X | favorito en biblioteca; aceptar en buscador |
+| Y en lista/carrusel | mostrar u ocultar Favoritos |
 | Minus | filtros en cards; buscador en lista/carrusel |
 | L/R | filtro alfabético en lista/carrusel |
 | Plus | Ajustes |
-| Minus+Plus durante partida | menú de juego |
+| Combinación configurada o Minus+Plus durante partida | menú de juego |
 
-El menú durante el juego se abre con Minus+Plus. El touch del GamePad permite
+El menú durante el juego se abre con la combinación elegida para ese tipo de
+mando o con Minus+Plus en el mismo mando. El touch del GamePad permite
 seleccionar elementos visibles. Ver `PENDIENTES.md` para lo que falta validar.

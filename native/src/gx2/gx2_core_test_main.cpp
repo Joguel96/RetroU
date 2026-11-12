@@ -828,9 +828,73 @@ static void saveAppSettings(const std::string &sdRoot, int columns, bool showCov
     }
 }
 
+// CTRL-7: acceso al menú durante el core. Es global para las tres apps y se
+// configura por familia física, nunca por ROM ni por puerto del core.
+struct MenuShortcuts {
+    int choice[3] = {0, 0, 0}; // GamePad, Pro/Classic, Wii Remote/Nunchuk
+};
+
+static const char *kMenuShortcutLabels[3][3] = {
+    {"Minus + Plus", "L + R + Plus", "ZL + ZR + Plus"},
+    {"Minus + Plus", "L + R + Plus", "ZL + ZR + Plus"},
+    {"Minus + Plus", "1 + 2", "A + B + Minus"},
+};
+
+static uint32_t menuShortcutMask(int family, int choice)
+{
+    if (family == 0) {
+        if (choice == 1) return VPAD_BUTTON_L | VPAD_BUTTON_R | VPAD_BUTTON_PLUS;
+        if (choice == 2) return VPAD_BUTTON_ZL | VPAD_BUTTON_ZR | VPAD_BUTTON_PLUS;
+        return VPAD_BUTTON_MINUS | VPAD_BUTTON_PLUS;
+    }
+    if (family == 1) {
+        if (choice == 1) return WPAD_PRO_BUTTON_L | WPAD_PRO_BUTTON_R | WPAD_PRO_BUTTON_PLUS;
+        if (choice == 2) return WPAD_PRO_BUTTON_ZL | WPAD_PRO_BUTTON_ZR | WPAD_PRO_BUTTON_PLUS;
+        return WPAD_PRO_BUTTON_MINUS | WPAD_PRO_BUTTON_PLUS;
+    }
+    if (choice == 1) return WPAD_BUTTON_1 | WPAD_BUTTON_2;
+    if (choice == 2) return WPAD_BUTTON_A | WPAD_BUTTON_B | WPAD_BUTTON_MINUS;
+    return WPAD_BUTTON_MINUS | WPAD_BUTTON_PLUS;
+}
+
+static bool menuShortcutHeld(uint32_t buttons, int family, int choice)
+{
+    const uint32_t selected = menuShortcutMask(family, choice);
+    const uint32_t fallback = menuShortcutMask(family, 0);
+    return (buttons & selected) == selected || (buttons & fallback) == fallback;
+}
+
+static MenuShortcuts loadMenuShortcuts(const std::string &sdRoot)
+{
+    MenuShortcuts shortcuts;
+    std::ifstream in(sdRoot + "/retrou/config/menu-shortcut.conf");
+    if (!in) return shortcuts;
+    std::string version;
+    int values[3] = {0, 0, 0};
+    if (!(in >> version >> values[0] >> values[1] >> values[2]) || version != "v1" ||
+        values[0] < 0 || values[0] > 2 || values[1] < 0 || values[1] > 2 ||
+        values[2] < 0 || values[2] > 2) {
+        bootLog("menu_shortcut_invalid_using_defaults");
+        return shortcuts;
+    }
+    for (int i = 0; i < 3; ++i) shortcuts.choice[i] = values[i];
+    bootLog("menu_shortcut_loaded");
+    return shortcuts;
+}
+
+static bool saveMenuShortcuts(const std::string &sdRoot, const MenuShortcuts &shortcuts)
+{
+    std::ofstream out(sdRoot + "/retrou/config/menu-shortcut.conf", std::ios::trunc);
+    if (out) out << "v1 " << shortcuts.choice[0] << " " << shortcuts.choice[1]
+                 << " " << shortcuts.choice[2] << "\n";
+    out.close();
+    return out.good();
+}
+
 // ---- Asset download (covers/backdrops/metadata) ----
 static std::atomic<bool> g_downloading{false};
 static std::atomic<bool> g_downloadDone{false};
+static std::atomic<unsigned> g_coverGeneration{0};
 static std::atomic<int> g_downloadProgress{0};
 static std::atomic<int> g_downloadTotal{0};
 
@@ -862,6 +926,7 @@ static void startAssetDownload(const std::string &sdRoot, const std::string &sys
     std::thread([sdRoot, system, titles, covers, backdrops, force]() {
         retrou::assets::downloadAll(sdRoot, system, titles, covers, backdrops,
                                     force, &g_downloadProgress);
+        if (covers) ++g_coverGeneration;
         g_downloading = false;
         g_downloadDone = true;
     }).detach();
@@ -996,6 +1061,7 @@ int main()
     ActionSources vpadMap;
     ActionSources proMap;
     loadControlOptions(library.sd_root, player1Device, player2Device, vpadMap, proMap);
+    MenuShortcuts menuShortcuts = loadMenuShortcuts(library.sd_root);
     int globalPlayer1 = player1Device;
     int globalPlayer2 = player2Device;
     ActionSources globalVpadMap = vpadMap;
@@ -1081,6 +1147,7 @@ int main()
     bool settingsOpen = false;
     uint32_t lastStickDir = 0; // última dirección del stick para la navegación UI
     uint32_t wpadNavLastBits[4] = {0, 0, 0, 0}; // CTRL-4: edge por mando externo
+    bool lastMenuShortcutHeld[5] = {false, false, false, false, false};
     int sidebarIndex = 0;
     int focused = 0;
     int sortMode = 0;      // 0 name, 1 region
@@ -1175,6 +1242,13 @@ int main()
         coverCache[romIndex] = real;
         return real;
     };
+    auto clearCoverCache = [&]() {
+        for (auto &entry : coverCache)
+            if (entry.second >= 0 && entry.second != thumbTex)
+                destroyTexture(entry.second);
+        coverCache.clear();
+    };
+    unsigned seenCoverGeneration = 0;
 
     std::map<int, Texture> backdropCache;
     auto getBackdrop = [&](int romIndex) -> Texture {
@@ -1463,11 +1537,16 @@ int main()
             metaYear.clear();
             loadMetaMap(library.sd_root, RETROU_CORE_SYSTEM, "developer", metaDev);
             loadMetaMap(library.sd_root, RETROU_CORE_SYSTEM, "releaseyear", metaYear);
-            coverCache.clear();
             for (auto &entry : backdropCache)
                 if (entry.second >= 0) destroyTexture(entry.second);
             backdropCache.clear();
             metaApplied = true;
+        }
+        const unsigned coverGeneration = g_coverGeneration.load();
+        if (coverGeneration != seenCoverGeneration) {
+            clearCoverCache();
+            seenCoverGeneration = coverGeneration;
+            bootLog("covers_refreshed");
         }
 
         setNearestFilter(videoFilter == 0);
@@ -1496,6 +1575,19 @@ int main()
         const auto &wpadStates = wpad_input_states();
         for (int ch = 0; ch < 4; ++ch) {
             wpadTrigger |= wpadNavBits(wpadStates[ch], wpadNavLastBits[ch]);
+        }
+        int openCoreMenuSource = -1;
+        const bool gamePadCombo = vpadError == VPAD_READ_SUCCESS &&
+            menuShortcutHeld(vpad.hold, 0, menuShortcuts.choice[0]);
+        if (gamePadCombo && !lastMenuShortcutHeld[0]) openCoreMenuSource = 0;
+        lastMenuShortcutHeld[0] = gamePadCombo;
+        for (int ch = 0; ch < 4; ++ch) {
+            const WpadSnapshot &s = wpadStates[ch];
+            const int family = (s.type == WPAD_TYPE_PRO || s.type == WPAD_TYPE_CLASSIC) ? 1 : 2;
+            const bool held = s.connected && menuShortcutHeld(s.buttons, family,
+                                                               menuShortcuts.choice[family]);
+            if (held && !lastMenuShortcutHeld[ch + 1]) openCoreMenuSource = ch + 1;
+            lastMenuShortcutHeld[ch + 1] = held;
         }
         uint32_t navTrigger = vpad.trigger | stickNavBits(vpad, lastStickDir) | wpadTrigger;
         // NAV-1: el touch del GamePad usa las mismas acciones que el mando.
@@ -1534,8 +1626,8 @@ int main()
                     if (settingsSection == -1 && ty < 520) {
                         sectionCursor = std::min(4, static_cast<int>((ty - 105) / 80));
                         navTrigger |= VPAD_BUTTON_A;
-                    } else if (settingsSection >= 0 && ty < 520) {
-                        const int counts[] = {5, 5, hasSecondCorePort() ? 4 : 3, 3, 2};
+                    } else if (settingsSection >= 0 && ty < (settingsSection == 2 ? 610 : 520)) {
+                        const int counts[] = {5, 5, hasSecondCorePort() ? 7 : 6, 3, 2};
                         settingsItem = std::min(counts[settingsSection] - 1,
                                                 static_cast<int>((ty - 105) / 70));
                         navTrigger |= settingsSection == 1 && settingsItem >= 3 ? VPAD_BUTTON_A : VPAD_BUTTON_RIGHT;
@@ -1547,6 +1639,10 @@ int main()
                     navTrigger |= VPAD_BUTTON_A;
                 } else if (!inGame && !settingsOpen && !sidebarOpen && !searchActive && ty > 650) {
                     navTrigger |= tx < 500 ? VPAD_BUTTON_MINUS : VPAD_BUTTON_PLUS;
+                } else if (!inGame && !settingsOpen && !sidebarOpen && !searchActive && viewMode != 0 &&
+                           ty >= 18 && ty < 62 && tx >= 220 && tx < 390) {
+                    favoritesOnly = !favoritesOnly;
+                    rebuildVisible();
                 } else if (!inGame && !settingsOpen && !sidebarOpen && !searchActive && viewMode != 0 &&
                            ty >= 75 && ty < 120 && tx >= 40 && tx < 1244) {
                     alphaFilter = std::min(27, static_cast<int>((tx - 40) / 43));
@@ -1627,9 +1723,13 @@ int main()
                         waitingRelease = true;
                     }
                 } else {
-                    if ((navTrigger & VPAD_BUTTON_MINUS) && (navTrigger & VPAD_BUTTON_PLUS)) {
+                    if (openCoreMenuSource >= 0) {
                         coreMenu = true;
                         coreMenuIndex = 0;
+                        const std::string event = "core_menu_shortcut_opened source=" +
+                            (openCoreMenuSource == 0 ? std::string("gamepad") :
+                             "wpad_ch" + std::to_string(openCoreMenuSource - 1));
+                        bootLog(event.c_str());
                     }
                 }
             } else if (mapMode) {
@@ -1823,7 +1923,7 @@ int main()
                     int itemCount = 1;
                     if (settingsSection == 0) itemCount = 5;
                     else if (settingsSection == 1) itemCount = 5;
-                    else if (settingsSection == 2) itemCount = hasSecondCorePort() ? 4 : 3;
+                    else if (settingsSection == 2) itemCount = hasSecondCorePort() ? 7 : 6;
                     else if (settingsSection == 3) itemCount = 3;
                     else if (settingsSection == 4) itemCount = 2;
 
@@ -1852,6 +1952,14 @@ int main()
                             mapTop = 0;
                             mapDevice = 0;
                             mapCapture = 0;
+                        } else if (settingsSection == 2 && settingsItem >= (hasSecondCorePort() ? 4 : 3)) {
+                            const int family = settingsItem - (hasSecondCorePort() ? 4 : 3);
+                            menuShortcuts.choice[family] = (menuShortcuts.choice[family] + 1) % 3;
+                            const bool saved = saveMenuShortcuts(library.sd_root, menuShortcuts);
+                            const std::string event = std::string(saved ? "menu_shortcut_saved" :
+                                "menu_shortcut_save_failed") + " family=" + std::to_string(family) +
+                                " choice=" + std::to_string(menuShortcuts.choice[family]);
+                            bootLog(event.c_str());
                         } else if (settingsSection == 1 && (settingsItem == 3 || settingsItem == 4)) {
                             std::vector<std::string> titles;
                             for (const auto &rom : library.roms) titles.push_back(rom.title);
@@ -1919,6 +2027,14 @@ int main()
                             if (n > 0) player2Device = (player2Device + dir + n) % n;
                             persistControls();
                             refreshControllers();
+                        } else if (settingsSection == 2 && settingsItem >= (hasSecondCorePort() ? 4 : 3)) {
+                            const int family = settingsItem - (hasSecondCorePort() ? 4 : 3);
+                            menuShortcuts.choice[family] = (menuShortcuts.choice[family] + dir + 3) % 3;
+                            const bool saved = saveMenuShortcuts(library.sd_root, menuShortcuts);
+                            const std::string event = std::string(saved ? "menu_shortcut_saved" :
+                                "menu_shortcut_save_failed") + " family=" + std::to_string(family) +
+                                " choice=" + std::to_string(menuShortcuts.choice[family]);
+                            bootLog(event.c_str());
                         }
                     }
                 }
@@ -1991,6 +2107,9 @@ int main()
                 } else if (viewMode != 0 && (navTrigger & VPAD_BUTTON_MINUS)) {
                     searchActive = true;
                     searchCursor = 0;
+                } else if (viewMode != 0 && (navTrigger & VPAD_BUTTON_Y)) {
+                    favoritesOnly = !favoritesOnly;
+                    rebuildVisible();
                 } else if (viewMode != 0 && (navTrigger & (VPAD_BUTTON_L | VPAD_BUTTON_R))) {
                     alphaFilter = (alphaFilter + ((navTrigger & VPAD_BUTTON_R) ? 1 : 27)) % 28;
                     rebuildVisible();
@@ -2022,6 +2141,7 @@ int main()
                         RomEntry &rom = library.roms[visible[focused]];
                         rom.favorite = !rom.favorite;
                         saveFavorites(library, RETROU_CORE_SYSTEM);
+                        if (favoritesOnly || sortMode == 4) rebuildVisible();
                     } else if (navTrigger & VPAD_BUTTON_RIGHT) {
                         focused = (focused + 1) % rc;
                         navBlip();
@@ -2329,6 +2449,18 @@ int main()
                     const int mapItem = orderItem + 1;
                     if (settingsItem == mapItem) drawRoundRect(50.0f, mapY - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
                     text::drawText("Mapear botones  (A)", 60.0f, mapY, 22, settingsItem == mapItem ? white : muted);
+                    const char *deviceLabels[3] = {"GamePad", "Pro / Classic", "Wii Remote / Nunchuk"};
+                    for (int family = 0; family < 3; ++family) {
+                        const int item = mapItem + 1 + family;
+                        const float y = mapY + 70.0f * (family + 1);
+                        if (settingsItem == item)
+                            drawRoundRect(50.0f, y - 8.0f, 760.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                        const std::string label = std::string("Menú ") + deviceLabels[family] +
+                            ": " + kMenuShortcutLabels[family][menuShortcuts.choice[family]];
+                        text::drawText(label.c_str(), 60.0f, y, 19,
+                                       settingsItem == item ? white : muted);
+                    }
+                    text::drawText("Minus + Plus siempre abre el menú", 870.0f, 290.0f, 15, muted);
                 } else if (settingsSection == 4) {
                     const char *labels[2] = {"Aspecto", "Escala"};
                     const char *vals[2] = {aspectOpts[videoAspect], scaleOpts[videoScale]};
@@ -2356,6 +2488,13 @@ int main()
             }
         } else {
             text::drawText("Biblioteca", 28.0f, 18.0f, 34, white);
+            if (viewMode != 0) {
+                drawRoundRect(220.0f, 20.0f, 170.0f, 42.0f, 10.0f,
+                              favoritesOnly ? Color{245, 217, 127, 95} : cardPanel);
+                drawStar(240.0f, 41.0f, 10.0f, 4.5f, gold);
+                text::drawText("Favoritos", 257.0f, 28.0f, 18,
+                               favoritesOnly ? white : muted);
+            }
             if (!visible.empty()) {
                 const std::string &full = library.roms[visible[focused]].title;
                 if (getTitle(visible[focused]).size() < full.size()) {
@@ -2426,6 +2565,8 @@ int main()
                 drawRoundRect(42.0f, 130.0f, 425.0f, 470.0f, 16.0f, panel);
                 const int selected = visible[focused];
                 if (showCovers) drawTextureCover(getCover(selected), 75.0f, 160.0f, 355.0f, 380.0f);
+                if (library.roms[selected].favorite)
+                    drawStar(441.0f, 161.0f, 12.0f, 5.0f, gold);
                 for (int i = 0; i < 5 && scroll + i < static_cast<int>(visible.size()); ++i) {
                     const int index = scroll + i;
                     const float y = 142.0f + i * 90.0f;
@@ -2436,16 +2577,40 @@ int main()
                     text::drawText(text::fitText(title.c_str(), 22, 670.0f).c_str(),
                                    522.0f, y + 12.0f, 22, selectedRow ? white : muted);
                     text::drawText(titleYear(title).c_str(), 522.0f, y + 46.0f, 14, muted);
+                    if (library.roms[visible[index]].favorite)
+                        drawStar(1195.0f, y + 25.0f, 12.0f, 5.0f, gold);
                 }
             } else {
                 drawAlphaBar();
                 const int count = static_cast<int>(visible.size());
-                if (focused > 0 && showCovers)
-                    drawTextureCover(getCover(visible[focused - 1]), 40.0f, 185.0f, 230.0f, 330.0f);
-                if (focused + 1 < count && showCovers)
-                    drawTextureCover(getCover(visible[focused + 1]), 1010.0f, 185.0f, 230.0f, 330.0f);
+                const bool nesCarousel = std::string(RETROU_CORE_SYSTEM) == "nes";
+                const bool snesCarousel = std::string(RETROU_CORE_SYSTEM) == "snes";
+                const float sideX = 40.0f;
+                const float sideY = snesCarousel ? 230.0f : 185.0f;
+                const float sideW = snesCarousel ? 270.0f : 230.0f;
+                const float sideH = snesCarousel ? 260.0f : 330.0f;
+                const float rightX = snesCarousel ? 970.0f : 1010.0f;
+                if (focused > 0 && showCovers) {
+                    const Texture cover = getCover(visible[focused - 1]);
+                    if (nesCarousel || snesCarousel) drawTextureContain(cover, sideX, sideY, sideW, sideH);
+                    else drawTextureCover(cover, sideX, sideY, sideW, sideH);
+                }
+                if (focused + 1 < count && showCovers) {
+                    const Texture cover = getCover(visible[focused + 1]);
+                    if (nesCarousel || snesCarousel) drawTextureContain(cover, rightX, sideY, sideW, sideH);
+                    else drawTextureCover(cover, rightX, sideY, sideW, sideH);
+                }
                 drawRoundRect(295.0f, 130.0f, 690.0f, 450.0f, 20.0f, panel);
-                if (showCovers) drawTextureCover(getCover(visible[focused]), 308.0f, 143.0f, 664.0f, 424.0f);
+                if (showCovers) {
+                    const Texture cover = getCover(visible[focused]);
+                    if (nesCarousel)
+                        drawTextureContain(cover, 438.0f, 143.0f, 404.0f, 424.0f);
+                    else if (snesCarousel)
+                        drawTextureContain(cover, 308.0f, 143.0f, 664.0f, 424.0f);
+                    else drawTextureCover(cover, 308.0f, 143.0f, 664.0f, 424.0f);
+                }
+                if (library.roms[visible[focused]].favorite)
+                    drawStar(950.0f, 162.0f, 13.0f, 5.5f, gold);
                 drawRoundRect(300.0f, 590.0f, 680.0f, 64.0f, 12.0f, cardPanel);
                 text::drawText(text::fitText(library.roms[visible[focused]].title.c_str(), 24, 630.0f).c_str(),
                                325.0f, 605.0f, 24, white);
@@ -2477,7 +2642,7 @@ int main()
             } else {
                 text::drawText(viewMode == 0
                                    ? "A  JUGAR    X  FAVORITO    -  FILTROS    +  AJUSTES"
-                                   : "A  JUGAR    X  FAVORITO    -  BUSCAR    +  AJUSTES",
+                                   : "A  JUGAR    X  FAVORITO    Y  FAVORITOS    -  BUSCAR    +  AJUSTES",
                                28.0f, 672.0f, 15, muted);
             }
 

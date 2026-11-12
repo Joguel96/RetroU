@@ -29,6 +29,12 @@ fallo. El arranque rota esos archivos.
 5. Activa y desactiva Fondo dinámico. Prueba sus esperas de 0, 1, 3, 5 y
    10 segundos dejando fija la selección; el fondo de la ROM debe aparecer
    aproximadamente tras el valor elegido. Comprueba también el Carrusel.
+6. En NES, comprueba que las portadas del carrusel conservan su orientación
+   vertical. En SNES, revisa que la portada central y las laterales muestran
+   la imagen completa, incluidos los bordes de las cajas.
+7. En Lista y Carrusel, marca una ROM con X: debe aparecer su estrella.
+   Activa Favoritos con Y y con el botón superior táctil; comprueba que solo
+   aparecen las ROMs marcadas y que puedes volver a la lista completa.
 
 ## Controles
 
@@ -45,6 +51,12 @@ fallo. El arranque rota esos archivos.
    para esa ROM. Otra ROM debe conservar el mapa general.
 5. Tras una partida, el log debe incluir `input summary` y los eventos
    `rom_controls_*`, `global_controls_*` o `control_profile_*` que correspondan.
+6. En Ajustes → Controles cambia por separado las combinaciones «Menú GamePad»,
+   «Menú Pro / Classic» y «Menú Wii Remote / Nunchuk». Reinicia otra app y
+   confirma que el ajuste global persiste. Prueba cada combinación durante una
+   partida; Minus+Plus debe seguir abriendo el menú desde el mismo mando.
+   Pulsar Minus en un mando y Plus en otro no debe abrirlo. Comprueba en el log
+   `menu_shortcut_saved` y `core_menu_shortcut_opened` con su origen.
 
 ## Guardados y Assets
 
@@ -60,6 +72,9 @@ fallo. El arranque rota esos archivos.
    `sd:/retrou/thumbnails/<consola>/` y
    `sd:/retrou/backdrops/<consola>/`. Si una descarga falla, localiza la línea
    `GX2 asset: fallo` en `retrou_rpx.log` para identificar el recurso.
+5. Descarga portadas con la app abierta y vuelve a Cards, Lista y Carrusel sin
+   reiniciarla. Cada vista debe mostrar las nuevas imágenes cuando termine el
+   trabajo. Confirma `covers_refreshed` en `retrou_rpx.log`.
 
 ## N64
 

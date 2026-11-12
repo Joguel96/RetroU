@@ -584,6 +584,18 @@ void drawTextureCover(Texture texture, float x, float y, float w, float h)
     pushTexVertex(x, y + h, u0, v1, white, texture);
 }
 
+void drawTextureContain(Texture texture, float x, float y, float w, float h)
+{
+    if (!g_ready || !g_inFrame || w <= 0.0f || h <= 0.0f) return;
+    TextureRecord *record = getTexture(texture);
+    if (!record || record->width <= 0 || record->height <= 0) return;
+    const float scale = std::min(w / record->width, h / record->height);
+    const float fitW = record->width * scale;
+    const float fitH = record->height * scale;
+    drawTexture(texture, x + (w - fitW) * 0.5f,
+                y + (h - fitH) * 0.5f, fitW, fitH);
+}
+
 void setScissor(int, int, int, int) {}
 void clearScissor() {}
 void setNearestFilter(bool on) { g_nearest = on; }

@@ -79,6 +79,9 @@ void drawTextureTinted(Texture texture, float x, float y, float w, float h, Colo
 // cropping (cover) instead of stretching.
 void drawTextureCover(Texture texture, float x, float y, float w, float h);
 
+// Fits the whole image inside the destination box without cropping.
+void drawTextureContain(Texture texture, float x, float y, float w, float h);
+
 // Restricts drawing to a rectangular region.
 void setScissor(int x, int y, int w, int h);
 void clearScissor();

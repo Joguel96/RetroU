@@ -17,6 +17,11 @@ como terminado aquí (y en `AGENTS.md` si cambia el estado general).
 Regla del proyecto: **no afirmar que algo está probado en hardware si no lo
 está**. Un cambio compilado pero sin verificar sigue siendo ⬜/🔧.
 
+Ronda en Cemu del 2026-11-12: el usuario confirmó el flujo de navegación y
+biblioteca (pasos 1–5), controles (1–5), guardados y Assets (1–4). La
+distribución visual de Ajustes queda pendiente de su próxima referencia.
+Estas confirmaciones no cambian el estado de las pruebas en Wii U.
+
 ---
 
 ## 1. Confirmado por el usuario (hardware)
@@ -49,17 +54,20 @@ está**. Un cambio compilado pero sin verificar sigue siendo ⬜/🔧.
 | CTRL-4 | Que los mandos externos (Pro, Classic, Wii Remote...) también naveguen la UI (biblioteca/ajustes/menú del core), no solo el GamePad. Implementación: `wpadNavBits()` traduce sus botones a las constantes VPAD (Pro/Classic: A,B,X,Y,L,R,ZL→L,ZR→R,+,-,D-pad; Wii Remote: A,B,+,-,D-pad) y el stick se comporta como D-Pad edge-triggered | ✅ 2026-11-11 |
 | CTRL-5 | Diagnóstico temporal de input reducido a un resumen compacto por ROM tras confirmar VER-1..5; se conservan logs de carga y guardado de mapas/perfiles. Compilado; falta verificar log en hardware | 🔧 En curso (Codex, rama main) |
 | CTRL-6 | GamePad asignable a **cualquier mando del core** (Mando 1 y Mando 2). `setVpadPort()` + opciones de Mando 2 con GamePad. Extendido: se listan **todos** los mandos conectados (4 canales KPAD + GamePad, sin límite de 2) y se nombran por tipo (Wii U Pro Controller, Classic Controller, Wii Remote, Wii Remote + Nunchuk) con sufijo numérico solo si hay varios del mismo tipo | ✅ 2026-11-11 |
+| CTRL-7 | Configurar por tipo de mando la combinación global que abre el menú durante el core, con opciones compatibles para GamePad, Pro/Classic y Wii Remote/Nunchuk; conservar Minus+Plus como emergencia y persistir el ajuste. Compilado; falta probar en hardware | 🔧 En curso (Codex, rama main) |
 
 ## 4. UI / Apariencia
 
 | ID | Pendiente | Estado |
 |---|---|---|
 | UI-1 | Redondeo de cards: **bordes superiores rectos, base redondeada** (primera versión estaba invertida; corregida según `ejemplos/Retrou_resultados/error_cards.png`) | ✅ 2026-11-11 |
-| UI-2 | Ajustes en dos paneles: opciones a la izquierda y contexto de sección a la derecha. Compilado; falta revisar presentación en hardware | 🔧 En curso (Codex, rama main) |
+| UI-2 | Ajustes en dos paneles: opciones a la izquierda y contexto a la derecha. El usuario confirmó el flujo, pero la distribución visual requiere una referencia adicional que aportará en `ejemplos/`. Falta revisión final en hardware | 🔧 En curso (Codex, rama main) |
 | UI-3 | Tres vistas de juegos: cards, lista y carrusel, elegibles en Personalizar; lista/carrusel con filtro alfabético y navegación propia. Compilado; falta revisar presentación y flujo en hardware. Referencias: `ejemplos/Our64/carrousel.png` y `list.png` | 🔧 En curso (Codex, rama main) |
 | UI-4 | Casilla de «Fondo dinámico» en Ajustes → Personalizar; valor guardado por consola en `view.conf`. Compilado; falta probar en hardware | 🔧 En curso (Codex, rama main) |
 | UI-5 | Carrusel y lista usan el backdrop de la ROM enfocada cuando el fondo dinámico está activo. Compilado; falta comprobar en hardware | 🔧 En curso (Codex, rama main) |
 | UI-6 | Tiempo de aparición del backdrop configurable en Personalizar: 0, 1, 3, 5 o 10 segundos sin cambio de selección; 3 s por defecto y lectura compatible con `view.conf` anterior. Compilado; falta probar el tiempo elegido en hardware | 🔧 En curso (Codex, rama main) |
+| UI-7 | Carrusel NES con portadas verticales y SNES con carátulas completas sin recorte, incluida la imagen central y las laterales. Compilado; falta comprobar en hardware | 🔧 En curso (Codex, rama main) |
+| UI-8 | En Lista y Carrusel, mostrar estrella en juegos favoritos y acceso a Favoritos en la zona superior. Compilado; falta comprobar en hardware | 🔧 En curso (Codex, rama main) |
 | ART-1 | Nuevos iconos y splash (icon/tv-splash/drc-splash) por consola (NES/SNES/GBA/N64) desde `assets/RetroU_consolas_12_PNG/` → `assets/console/<consola>/`; N64 además en `C:/proyectos/Our64/assets/console/n64/` y regenerar `RetroN64U.wuhb` | ✅ 2026-11-12 |
 
 ## 5. Navegación / Input UI
@@ -89,6 +97,7 @@ está**. Un cambio compilado pero sin verificar sigue siendo ⬜/🔧.
 | AS-2 | Metadata se actualiza al iniciar aun con auto-descarga apagada. Falta probar red en hardware | 🔧 En curso (Codex, rama main) |
 | AS-3 | Modo «Solo faltantes» / «Descargar todo» para descarga manual; auto-descarga usa solo faltantes. Falta probar en hardware | 🔧 En curso (Codex, rama main) |
 | AS-4 | Barra y contador de progreso de descarga en Assets. Falta probar en hardware | 🔧 En curso (Codex, rama main) |
+| AS-5 | Actualizar las portadas visibles en Cards, Lista y Carrusel al terminar una descarga, sin reiniciar la app. Compilado; falta probar en hardware | 🔧 En curso (Codex, rama main) |
 
 ## 8. Documentación / cierre
 

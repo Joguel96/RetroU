@@ -1205,6 +1205,7 @@ int main()
 
     uint32_t focusedTick = SDL_GetTicks();
     int lastFocused = -1;
+    int lastFocusedRom = -1;
     int activeRom = -1;
 
     const std::string saveRoot = library.sd_root + "/retrou/saves/" RETROU_CORE_SYSTEM;
@@ -1471,8 +1472,11 @@ int main()
 
         setNearestFilter(videoFilter == 0);
 
-        if (focused != lastFocused) {
+        const int focusedRom = !visible.empty() && focused >= 0 &&
+            focused < static_cast<int>(visible.size()) ? visible[focused] : -1;
+        if (focused != lastFocused || focusedRom != lastFocusedRom) {
             lastFocused = focused;
+            lastFocusedRom = focusedRom;
             focusedTick = SDL_GetTicks();
         }
 

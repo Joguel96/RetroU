@@ -197,7 +197,8 @@ No extender el RPL sin petición explícita. Si se retoma, hacerlo en su rama.
 - Navegación con D-Pad/stick, A, B, Plus.
 - No hay barra lateral de consolas; `Plus` abre Ajustes en dos paneles.
 - La biblioteca ofrece cards, lista y carrusel; lista/carrusel tienen filtro
-  alfabético con L/R. La vista y el fondo dinámico se guardan en `view.conf`.
+  alfabético con L/R. La vista, el fondo dinámico y su espera configurable
+  (0/1/3/5/10 s; 3 s por defecto) se guardan en `view.conf`.
 - `Minus` abre el sidebar de filtros solo en cards; en lista/carrusel abre
   el buscador. Las cards permiten entre 3 y 6 columnas.
 - `Minus + Plus` abre el menú superpuesto durante el core.

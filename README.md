@@ -30,7 +30,8 @@ de RetroU.
   abrir/guardar/salir y descargas separadas de portadas y backdrops con
   progreso. Estas mejoras están pendientes de comprobar en hardware.
 - **Biblioteca GX2**: vistas cards, lista y carrusel; las dos últimas ofrecen
-  filtro alfabético. Personalizar permite activar el fondo dinámico. Las
+  filtro alfabético. Personalizar permite activar el fondo dinámico y elegir
+  su espera (0, 1, 3, 5 o 10 s; 3 s iniciales). Las
   opciones de vista se guardan por consola en `view.conf` y esperan prueba
   visual en hardware.
 

@@ -50,7 +50,8 @@ Cada app crea sus carpetas y archivos de configuración si no existen.
 - **Plus** abre Ajustes; **Minus** abre el sidebar de filtros en cards.
 - En lista y carrusel, **Minus** abre el buscador y **L/R** recorre el filtro
   alfabético. La vista y la casilla de fondo dinámico se guardan por consola
-  en `view.conf`.
+  en `view.conf`, junto con la espera del backdrop (0, 1, 3, 5 o 10 s;
+  3 s iniciales).
 - El touch del GamePad selecciona juegos y opciones en la UI.
 - **Minus + Plus** abre el menú superpuesto durante el core.
 - «Controles» en ese menú edita el mapa de la ROM; al salir se restablece el

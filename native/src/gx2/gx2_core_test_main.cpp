@@ -1014,17 +1014,23 @@ int main()
     loadAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn, coreVolume);
     int viewMode = 0; // cards, lista, carrusel
     bool dynamicBg = true;
+    constexpr int backdropDelaysMs[] = {0, 1000, 3000, 5000, 10000};
+    int backdropDelayIndex = 2;
     {
         std::ifstream viewIn(library.sd_root + "/retrou/config/" RETROU_CORE_SYSTEM "/view.conf");
         int backdrop = 1;
         if (viewIn >> viewMode >> backdrop) {
             viewMode = std::max(0, std::min(2, viewMode));
             dynamicBg = backdrop != 0;
+            int savedDelay = 2;
+            if (viewIn >> savedDelay)
+                backdropDelayIndex = std::max(0, std::min(4, savedDelay));
         }
     }
     auto saveViewOptions = [&]() {
         std::ofstream viewOut(library.sd_root + "/retrou/config/" RETROU_CORE_SYSTEM "/view.conf", std::ios::trunc);
-        if (viewOut) viewOut << viewMode << " " << (dynamicBg ? 1 : 0) << "\n";
+        if (viewOut) viewOut << viewMode << " " << (dynamicBg ? 1 : 0) << " "
+                             << backdropDelayIndex << "\n";
     };
     g_uiVolume = uiVolume;
     g_bgMusicOn = bgMusicOn;
@@ -1509,7 +1515,7 @@ int main()
                         sectionCursor = std::min(4, static_cast<int>((ty - 105) / 80));
                         navTrigger |= VPAD_BUTTON_A;
                     } else if (settingsSection >= 0 && ty < 520) {
-                        const int counts[] = {4, 5, hasSecondCorePort() ? 4 : 3, 3, 2};
+                        const int counts[] = {5, 5, hasSecondCorePort() ? 4 : 3, 3, 2};
                         settingsItem = std::min(counts[settingsSection] - 1,
                                                 static_cast<int>((ty - 105) / 70));
                         navTrigger |= settingsSection == 1 && settingsItem >= 3 ? VPAD_BUTTON_A : VPAD_BUTTON_RIGHT;
@@ -1795,7 +1801,7 @@ int main()
                     }
                 } else {
                     int itemCount = 1;
-                    if (settingsSection == 0) itemCount = 4;
+                    if (settingsSection == 0) itemCount = 5;
                     else if (settingsSection == 1) itemCount = 5;
                     else if (settingsSection == 2) itemCount = hasSecondCorePort() ? 4 : 3;
                     else if (settingsSection == 3) itemCount = 3;
@@ -1851,6 +1857,9 @@ int main()
                             saveViewOptions();
                         } else if (settingsSection == 0 && settingsItem == 3) {
                             dynamicBg = !dynamicBg;
+                            saveViewOptions();
+                        } else if (settingsSection == 0 && settingsItem == 4) {
+                            backdropDelayIndex = (backdropDelayIndex + dir + 5) % 5;
                             saveViewOptions();
                         } else if (settingsSection == 1 && settingsItem == 0) {
                             showCovers = !showCovers;
@@ -2036,7 +2045,8 @@ int main()
         drawGradient(0.0f, 0.0f, 1280.0f, 720.0f, bgTop, bg);
 
         if (dynamicBg && !inGame && !mapMode && !settingsOpen && !sidebarOpen && !searchActive &&
-            !visible.empty() && SDL_GetTicks() - focusedTick >= 3000) {
+            !visible.empty() && SDL_GetTicks() - focusedTick >=
+                static_cast<uint32_t>(backdropDelaysMs[backdropDelayIndex])) {
             Texture bd = getBackdrop(visible[focused]);
             if (bd >= 0) {
                 drawTexture(bd, 0.0f, 0.0f, 1280.0f, 720.0f);
@@ -2245,13 +2255,14 @@ int main()
                 text::drawText(sections[settingsSection], 28.0f, 18.0f, 34, white);
                 if (settingsSection == 0) {
                     const char *views[] = {"Cards", "Lista", "Carrusel"};
-                    const std::string options[4] = {
+                    const std::string options[5] = {
                         "Tema: " + std::string(themeOpts[themeIndex]),
                         "Columnas: " + std::to_string(columns),
                         "Vista: " + std::string(views[viewMode]),
-                        "Fondo dinámico: " + std::string(dynamicBg ? "Sí" : "No")
+                        "Fondo dinámico: " + std::string(dynamicBg ? "Sí" : "No"),
+                        "Aparición del fondo: " + std::to_string(backdropDelaysMs[backdropDelayIndex] / 1000) + " s"
                     };
-                    for (int i = 0; i < 4; ++i) {
+                    for (int i = 0; i < 5; ++i) {
                         const float y = 120.0f + i * 70.0f;
                         if (settingsItem == i) drawRoundRect(50.0f, y - 8.0f, 740.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
                         text::drawText(options[i].c_str(), 60.0f, y, 22, settingsItem == i ? white : muted);

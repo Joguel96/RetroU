@@ -59,7 +59,7 @@ está**. Un cambio compilado pero sin verificar sigue siendo ⬜/🔧.
 | UI-3 | Tres vistas de juegos: cards, lista y carrusel, elegibles en Personalizar; lista/carrusel con filtro alfabético y navegación propia. Compilado; falta revisar presentación y flujo en hardware. Referencias: `ejemplos/Our64/carrousel.png` y `list.png` | 🔧 En curso (Codex, rama main) |
 | UI-4 | Casilla de «Fondo dinámico» en Ajustes → Personalizar; valor guardado por consola en `view.conf`. Compilado; falta probar en hardware | 🔧 En curso (Codex, rama main) |
 | UI-5 | Carrusel y lista usan el backdrop de la ROM enfocada cuando el fondo dinámico está activo. Compilado; falta comprobar en hardware | 🔧 En curso (Codex, rama main) |
-| UI-6 | Backdrop: el código espera exactamente 3000 ms sin cambio de selección; falta acordar con el usuario si debe cambiar ese tiempo y probarlo en hardware | ⬜ |
+| UI-6 | Tiempo de aparición del backdrop configurable en Personalizar: 0, 1, 3, 5 o 10 segundos sin cambio de selección; 3 s por defecto y lectura compatible con `view.conf` anterior. Compilado; falta probar el tiempo elegido en hardware | 🔧 En curso (Codex, rama main) |
 | ART-1 | Nuevos iconos y splash (icon/tv-splash/drc-splash) por consola (NES/SNES/GBA/N64) desde `assets/RetroU_consolas_12_PNG/` → `assets/console/<consola>/`; N64 además en `C:/proyectos/Our64/assets/console/n64/` y regenerar `RetroN64U.wuhb` | ✅ 2026-11-12 |
 
 ## 5. Navegación / Input UI

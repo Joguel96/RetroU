@@ -108,6 +108,7 @@ tanda y no se tocó.
 | `a2d87ae` | Carrusel NES/SNES, Favoritos en Lista/Carrusel, recarga de portadas y atajos del menú por mando | `native/build/logs/build-20261112-130827.log` |
 | `9bfce0e` | Favoritos junto a All, progreso de imágenes pendientes y diagnóstico de cierre GBA | `native/build/logs/build-20261112-142320.log` |
 | `2838306` | Recorte de títulos UTF-8 y traza del título enfocado en GBA P | `native/build/logs/build-20261112-143059.log` |
+| `67f44e5` | Rutas seguras GBA, índice de assets y cola de descargas manuales | `native/build/logs/build-20261112-150558.log` |
 
 Los logs y WUHB están ignorados por Git: conserva una copia antes de limpiar
 `native/build/` o `dist/`. Para retirar un cambio, revierte su commit con Git,

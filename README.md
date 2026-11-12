@@ -30,8 +30,9 @@ de RetroU.
   `Minus + Plus` sigue disponible en todos.
 - **Guardados y Assets**: cuatro slots de savestate con miniatura, SRAM al
   abrir/guardar/salir y descargas separadas de portadas y backdrops con
-  progreso de imágenes realmente pendientes, conteo de fallos y actualización
-  de portadas visibles al terminar la descarga.
+  progreso de imágenes realmente pendientes, conteo de fallos, búsqueda en el
+  índice de nombres de Libretro, cola para solicitudes durante la actualización
+  de metadata y actualización de portadas visibles al terminar.
   Estas mejoras están pendientes de comprobar en hardware.
 - **Biblioteca GX2**: vistas cards, lista y carrusel; las dos últimas ofrecen
   filtro alfabético con Favoritos junto a «All», navegable con L/R. El carrusel NES presenta

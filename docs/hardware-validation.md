@@ -36,10 +36,10 @@ fallo. El arranque rota esos archivos.
    Con L/R, recorre «All», la estrella de Favoritos, «#» y A–Z; la estrella
    también debe responder al touch. Comprueba que Favoritos muestra solo las
    ROMs marcadas y que «All» restaura la lista completa.
-8. En GBA Cards, recorre hasta P, incluidos los títulos «Pokémon», y continúa
-   más allá. Si se cierra, conserva `retrou_rpx.log` y `.1`; compara el título
-   de las últimas líneas `gba_cards_focus`,
-   `gba_cover_load`/`gba_cover_ready` y la presencia de `main_exit_clean`.
+8. En GBA Cards, recorre hasta P y el juego 144; continúa más allá. Si se
+   cierra, conserva `retrou_rpx.log` antes de volver a abrir la app. Compara
+   `gba_cards_focus` (índice, memoria libre y título), `gba_cover_load`/
+   `gba_cover_ready`, `gba_cards_rendered` y `main_exit_clean`.
 
 ## Controles
 
@@ -76,10 +76,13 @@ fallo. El arranque rota esos archivos.
 4. Prueba «Solo faltantes» y «Descargar todo» con conexión. Comprueba en la SD
    `sd:/retrou/thumbnails/<consola>/` y
    `sd:/retrou/backdrops/<consola>/`. Si una descarga falla, localiza la línea
-   `GX2 asset: fallo` en `retrou_rpx.log` para identificar el recurso.
+   `GX2 asset: fallo` en `retrou_rpx.log` para identificar el recurso y el
+   error HTTP/red; `GX2 asset: indice` debe indicar entradas mayores que cero.
    Interrumpe una tanda y reanúdala: el nuevo total debe contar las imágenes
    que aún faltan, sin metadata ni archivos presentes. «Procesadas» incluye
    intentos fallidos; comprueba el contador «Fallos» y `pendientes=` en el log.
+   Pulsa Descargar inmediatamente después de abrir la app: debe indicar
+   «En cola» si sigue actualizando metadata y luego iniciar las imágenes.
 5. Descarga portadas con la app abierta y vuelve a Cards, Lista y Carrusel sin
    reiniciarla. Cada vista debe mostrar las nuevas imágenes cuando termine el
    trabajo. Confirma `covers_refreshed` en `retrou_rpx.log`.

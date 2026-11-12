@@ -1,4 +1,5 @@
 #include "retrou_data.hpp"
+#include "asset_names.hpp"
 
 #include <whb/sdcard.h>
 
@@ -93,7 +94,7 @@ void scanRoms(Library &library, const std::string &system)
             continue;
         }
         RomEntry rom;
-        rom.title = stripExtension(name);
+        rom.title = displayUtf8(stripExtension(name));
         rom.path = joinPath(romRoot, name);
         rom.system = system;
         library.roms.push_back(rom);
@@ -112,12 +113,7 @@ std::string coverPath(const std::string &sdRoot, const std::string &system,
     if (sdRoot.empty()) {
         return {};
     }
-    std::string safe = title;
-    for (char &c : safe) {
-        if (c == '/' || c == '\\') {
-            c = '_';
-        }
-    }
+    const std::string safe = assetFileStem(title);
     return joinPath(joinPath(joinPath(sdRoot, "retrou"), "thumbnails"), system) +
            "/" + safe + ".png";
 }

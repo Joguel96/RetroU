@@ -2,6 +2,7 @@
 #include "gx2/gx2_text.hpp"
 #include "gx2/gx2_image.hpp"
 #include "gx2/retrou_data.hpp"
+#include "asset_names.hpp"
 #include "retrou_assets.hpp"
 #include "rpl_core.hpp"
 #include "wpad_input.hpp"
@@ -9,6 +10,8 @@
 #include <SDL.h>
 #include <atomic>
 #include <coreinit/foreground.h>
+#include <coreinit/memexpheap.h>
+#include <coreinit/memheap.h>
 #include <coreinit/systeminfo.h>
 #include <coreinit/thread.h>
 #include <libretro.h>
@@ -26,8 +29,10 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <deque>
 #include <fstream>
 #include <map>
+#include <mutex>
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
@@ -898,6 +903,17 @@ static std::atomic<unsigned> g_coverGeneration{0};
 static std::atomic<int> g_downloadProgress{0};
 static std::atomic<int> g_downloadTotal{0};
 static std::atomic<int> g_downloadFailures{0};
+static std::atomic<int> g_downloadQueued{0};
+struct AssetJob {
+    std::string sdRoot;
+    std::string system;
+    std::vector<std::string> titles;
+    bool covers;
+    bool backdrops;
+    bool force;
+};
+static std::mutex g_downloadMutex;
+static std::deque<AssetJob> g_assetQueue;
 
 static bool loadAutoDownload(const std::string &sdRoot)
 {
@@ -917,20 +933,43 @@ static void startAssetDownload(const std::string &sdRoot, const std::string &sys
                                std::vector<std::string> titles, bool covers,
                                bool backdrops, bool force)
 {
-    if (g_downloading.exchange(true)) {
+    AssetJob job{sdRoot, system, std::move(titles), covers, backdrops, force};
+    bool queued = false;
+    {
+        std::lock_guard<std::mutex> lock(g_downloadMutex);
+        if (g_downloading) {
+            g_assetQueue.push_back(std::move(job));
+            g_downloadQueued = static_cast<int>(g_assetQueue.size());
+            queued = true;
+        } else {
+            g_downloading = true;
+        }
+    }
+    if (queued) {
+        bootLog("asset_download_queued");
         return;
     }
-    g_downloadDone = false;
-    g_downloadProgress = 0;
-    g_downloadFailures = 0;
-    g_downloadTotal = retrou::assets::pendingAssetCount(sdRoot, system, titles,
-                                                        covers, backdrops, force);
-    std::thread([sdRoot, system, titles, covers, backdrops, force]() {
-        retrou::assets::downloadAll(sdRoot, system, titles, covers, backdrops,
-                                    force, &g_downloadProgress, &g_downloadFailures);
-        if (covers) ++g_coverGeneration;
-        g_downloading = false;
-        g_downloadDone = true;
+    std::thread([job = std::move(job)]() mutable {
+        for (;;) {
+            g_downloadDone = false;
+            g_downloadProgress = 0;
+            g_downloadFailures = 0;
+            g_downloadTotal = retrou::assets::pendingAssetCount(
+                job.sdRoot, job.system, job.titles, job.covers, job.backdrops, job.force);
+            retrou::assets::downloadAll(job.sdRoot, job.system, job.titles,
+                                        job.covers, job.backdrops, job.force,
+                                        &g_downloadProgress, &g_downloadFailures);
+            if (job.covers) ++g_coverGeneration;
+            std::lock_guard<std::mutex> lock(g_downloadMutex);
+            if (g_assetQueue.empty()) {
+                g_downloading = false;
+                g_downloadDone = true;
+                break;
+            }
+            job = std::move(g_assetQueue.front());
+            g_assetQueue.pop_front();
+            g_downloadQueued = static_cast<int>(g_assetQueue.size());
+        }
     }).detach();
 }
 
@@ -1152,7 +1191,8 @@ int main()
     bool lastMenuShortcutHeld[5] = {false, false, false, false, false};
     int sidebarIndex = 0;
     int focused = 0;
-    char lastLoggedGbaLetter = '\0';
+    int lastLoggedGbaRom = -1;
+    int lastRenderedGbaRom = -1;
     int sortMode = 0;      // 0 name, 1 region
     int regionFilter = 0;  // 0 all, 1 USA, 2 Europe, 3 Japan
     int alphaFilter = 0;   // 0 = All, 1 = favoritos, 2 = #, 3..28 = A..Z
@@ -1227,6 +1267,8 @@ int main()
             thumbTex = image::loadFromFile(
                 (library.sd_root + "/retrou/thumb_" + RETROU_CORE_SYSTEM + ".png").c_str());
         }
+        if (thumbTex < 0) thumbTex = makeCover(54, 72, 120, 10, 14, 24);
+        bootLog(thumbTex >= 0 ? "cover_fallback_ready" : "cover_fallback_failed");
     }
     auto getCover = [&](int romIndex) -> Texture {
         auto it = coverCache.find(romIndex);
@@ -1250,16 +1292,7 @@ int main()
         if (diagnoseGbaP) bootLog(("gba_cover_load title=" + title).c_str());
         std::string cp = coverPath(library.sd_root, RETROU_CORE_SYSTEM, library.roms[romIndex].title);
         Texture real = image::loadFromFile(cp.c_str());
-        if (real < 0) {
-            if (thumbTex >= 0) {
-                real = thumbTex;
-            } else {
-                const uint8_t r = static_cast<uint8_t>(30 + (romIndex * 37) % 160);
-                const uint8_t g = static_cast<uint8_t>(60 + (romIndex * 29) % 140);
-                const uint8_t b = static_cast<uint8_t>(120 - (romIndex * 23) % 100);
-                real = makeCover(r, g, b, 10, 14, 24);
-            }
-        }
+        if (real < 0) real = thumbTex;
         coverCache[romIndex] = real;
         coverOrder.push_back(romIndex);
         if (diagnoseGbaP) bootLog(("gba_cover_ready title=" + title).c_str());
@@ -1278,10 +1311,7 @@ int main()
     auto getBackdrop = [&](int romIndex) -> Texture {
         auto it = backdropCache.find(romIndex);
         if (it != backdropCache.end()) return it->second;
-        std::string safe = library.roms[romIndex].title;
-        for (char &c : safe) {
-            if (std::string("&*/:`<>?\\|\"").find(c) != std::string::npos) c = '_';
-        }
+        const std::string safe = assetFileStem(library.roms[romIndex].title);
         const std::string path = library.sd_root + "/retrou/backdrops/" +
                                  RETROU_CORE_SYSTEM + "/" + safe + ".png";
         Texture bd = image::loadFromFileBlurred(path.c_str(), 64, 36);
@@ -1577,21 +1607,6 @@ int main()
 
         const int focusedRom = !visible.empty() && focused >= 0 &&
             focused < static_cast<int>(visible.size()) ? visible[focused] : -1;
-        if (std::string(RETROU_CORE_SYSTEM) == "gba" && viewMode == 0 &&
-            !inGame && focusedRom >= 0) {
-            const std::string &title = library.roms[focusedRom].title;
-            const char letter = title.empty() ? '#' :
-                static_cast<char>(std::toupper(static_cast<unsigned char>(title.front())));
-            if (letter != lastLoggedGbaLetter ||
-                (letter == 'P' && focusedRom != lastFocusedRom)) {
-                const std::string event = "gba_cards_focus letter=" + std::string(1, letter) +
-                    " index=" + std::to_string(focused) +
-                    " cached=" + std::to_string(coverCache.size()) +
-                    " title=" + title;
-                bootLog(event.c_str());
-                lastLoggedGbaLetter = letter;
-            }
-        }
         if (focused != lastFocused || focusedRom != lastFocusedRom) {
             lastFocused = focused;
             lastFocusedRom = focusedRom;
@@ -2219,6 +2234,23 @@ int main()
         }
 
         uiAudioTick();
+        const int drawRom = !visible.empty() && focused >= 0 &&
+            focused < static_cast<int>(visible.size()) ? visible[focused] : -1;
+        if (std::string(RETROU_CORE_SYSTEM) == "gba" && viewMode == 0 &&
+            !inGame && drawRom >= 0 && drawRom != lastLoggedGbaRom) {
+            const std::string &title = library.roms[drawRom].title;
+            const char letter = title.empty() ? '#' :
+                static_cast<char>(std::toupper(static_cast<unsigned char>(title.front())));
+            MEMHeapHandle heap = MEMGetBaseHeapHandle(MEM_BASE_HEAP_MEM2);
+            const uint32_t freeBytes = heap ? MEMGetTotalFreeSizeForExpHeap(heap) : 0;
+            const std::string event = "gba_cards_focus letter=" + std::string(1, letter) +
+                " index=" + std::to_string(focused) +
+                " cached=" + std::to_string(coverCache.size()) +
+                " mem2_free=" + std::to_string(freeBytes) +
+                " title=" + title;
+            bootLog(event.c_str());
+            lastLoggedGbaRom = drawRom;
+        }
         beginFrame(bg);
         drawGradient(0.0f, 0.0f, 1280.0f, 720.0f, bgTop, bg);
 
@@ -2469,10 +2501,14 @@ int main()
                             const std::string status = std::string(g_downloading ? "Procesadas " :
                                 "Última tanda: ") + std::to_string(done) + "/" +
                                 std::to_string(total) + "  Fallos: " +
-                                std::to_string(g_downloadFailures.load());
+                                std::to_string(g_downloadFailures.load()) +
+                                (g_downloadQueued.load() > 0 ? "  En cola: " +
+                                 std::to_string(g_downloadQueued.load()) : "");
                             text::drawText(status.c_str(), 60.0f, 460.0f, 20, accent);
                         } else {
-                            text::drawText("Actualizando datos; no faltan imágenes", 60.0f,
+                            text::drawText(g_downloadQueued.load() > 0 ?
+                                               "Actualizando datos; descarga en cola" :
+                                               "Actualizando datos; no faltan imágenes", 60.0f,
                                            460.0f, 20, accent);
                         }
                     }
@@ -2716,6 +2752,13 @@ int main()
         }
 
         endFrame();
+        if (std::string(RETROU_CORE_SYSTEM) == "gba" && viewMode == 0 &&
+            !inGame && drawRom >= 0 && drawRom != lastRenderedGbaRom) {
+            const std::string event = "gba_cards_rendered index=" +
+                std::to_string(focused) + " title=" + library.roms[drawRom].title;
+            bootLog(event.c_str());
+            lastRenderedGbaRom = drawRom;
+        }
     }
 
     bootLog("main_exit_clean");

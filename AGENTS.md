@@ -223,8 +223,11 @@ sd:/retrou/retrou_rpx.log      app estática (init/run; .1/.2/.3 anteriores)
 sd:/retrou/retrou_rpl.log      RPL (solo rama experimental)
 ```
 
-`retrou_rpx.log` registra también fallos de descarga por recurso (`GX2 asset`);
-el reemplazo forzado conserva el archivo existente si falla.
+`retrou_rpx.log` registra también el índice de nombres de Libretro y fallos de
+descarga HTTP/red por recurso (`GX2 asset`); el reemplazo forzado conserva el
+archivo existente si falla. GBA registra selección, memoria libre y render de
+Cards para diagnosticar el cierre cercano al juego 144. Las descargas manuales
+solicitadas mientras se actualiza metadata se ponen en cola.
 
 Ya no se usa `launcher.log` ni `launch/last.txt`.
 

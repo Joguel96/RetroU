@@ -10,7 +10,8 @@ namespace retrou::assets {
 std::string libretroSystemFolder(const std::string &system);
 
 // Downloads `url` into `path`. Returns true on success (removes partial files).
-bool downloadToFile(const std::string &url, const std::string &path);
+bool downloadToFile(const std::string &url, const std::string &path,
+                    std::string *error = nullptr);
 
 // Downloads a thumbnail (Named_Boxarts) or backdrop (Named_Snaps) for the title
 // if it is not already present. `kind` is "thumbnails" or "backdrops".

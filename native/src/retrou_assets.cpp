@@ -1,10 +1,15 @@
 #include "retrou_assets.hpp"
+#include "asset_names.hpp"
 
 #include <curl/curl.h>
 
+#include <algorithm>
 #include <cctype>
+#include <cerrno>
 #include <cstdio>
+#include <cstring>
 #include <fstream>
+#include <iterator>
 #include <sys/stat.h>
 
 namespace retrou::assets {
@@ -66,12 +71,7 @@ std::string urlEncode(const std::string &value)
 
 std::string libretroName(std::string title)
 {
-    for (char &c : title) {
-        if (std::string("&*/:`<>?\\|\"").find(c) != std::string::npos) {
-            c = '_';
-        }
-    }
-    return title;
+    return assetFileStem(title);
 }
 
 std::string localAssetPath(const std::string &sdRoot, const std::string &system,
@@ -89,6 +89,137 @@ bool assetExists(const std::string &sdRoot, const std::string &system,
            info.st_size > 0;
 }
 
+std::string stripLegacyTags(std::string title)
+{
+    while (!title.empty()) {
+        while (!title.empty() && title.back() == ' ') title.pop_back();
+        if (title.empty() || title.back() != ']') break;
+        const size_t open = title.find_last_of('[');
+        if (open == std::string::npos || title.size() - open > 12) break;
+        title.erase(open);
+    }
+    return title;
+}
+
+std::string matchKey(const std::string &name, bool catalog)
+{
+    std::string out;
+    const size_t limit = catalog ? name.find(" (") : name.size();
+    for (size_t i = 0; i < std::min(limit, name.size()); ++i) {
+        unsigned char c = static_cast<unsigned char>(name[i]);
+        if (c == 0xC3 && i + 1 < name.size()) {
+            const unsigned char next = static_cast<unsigned char>(name[++i]);
+            if ((next >= 0x80 && next <= 0x85) || (next >= 0xA0 && next <= 0xA5)) c = 'a';
+            else if ((next >= 0x88 && next <= 0x8B) || (next >= 0xA8 && next <= 0xAB)) c = 'e';
+            else if ((next >= 0x8C && next <= 0x8F) || (next >= 0xAC && next <= 0xAF)) c = 'i';
+            else if ((next >= 0x92 && next <= 0x96) || (next >= 0xB2 && next <= 0xB6)) c = 'o';
+            else if ((next >= 0x99 && next <= 0x9C) || (next >= 0xB9 && next <= 0xBC)) c = 'u';
+            else if (next == 0x91 || next == 0xB1) c = 'n';
+            else continue;
+        }
+        if (std::isalnum(c)) {
+            out.push_back(static_cast<char>(std::tolower(c)));
+        } else if (!out.empty() && out.back() != ' ') {
+            out.push_back(' ');
+        }
+    }
+    while (!out.empty() && out.back() == ' ') out.pop_back();
+    return out;
+}
+
+std::string decodeHref(const std::string &href)
+{
+    std::string out;
+    for (size_t i = 0; i < href.size(); ++i) {
+        if (href[i] == '%' && i + 2 < href.size() &&
+            std::isxdigit(static_cast<unsigned char>(href[i + 1])) &&
+            std::isxdigit(static_cast<unsigned char>(href[i + 2]))) {
+            unsigned value = 0;
+            std::sscanf(href.c_str() + i + 1, "%2x", &value);
+            out.push_back(static_cast<char>(value));
+            i += 2;
+        } else if (href.compare(i, 5, "&amp;") == 0) {
+            out.push_back('&');
+            i += 4;
+        } else {
+            out.push_back(href[i]);
+        }
+    }
+    return out;
+}
+
+struct CatalogEntry {
+    std::string href;
+    std::string name;
+    std::string key;
+};
+
+std::vector<CatalogEntry> loadCatalog(const std::string &sdRoot,
+                                      const std::string &system, const char *type)
+{
+    const std::string dir = sdRoot + "/retrou/metadata";
+    ensureDir(dir);
+    const std::string path = dir + "/" + system + "-" + type + "-index.html";
+    const std::string temporary = path + ".tmp";
+    const std::string url = "https://thumbnails.libretro.com/" +
+        urlEncode(libretroSystemFolder(system)) + "/" + type + "/";
+    std::string error;
+    if (downloadToFile(url, temporary, &error)) {
+        if (!replaceDownloadedFile(temporary, path))
+            assetLog(sdRoot, "fallo guardar indice " + std::string(type));
+    } else {
+        assetLog(sdRoot, "fallo indice " + std::string(type) + " " + error);
+    }
+    std::ifstream in(path, std::ios::binary);
+    if (!in) return {};
+    const std::string html((std::istreambuf_iterator<char>(in)),
+                           std::istreambuf_iterator<char>());
+    std::vector<CatalogEntry> entries;
+    size_t pos = 0;
+    while ((pos = html.find("href=\"", pos)) != std::string::npos) {
+        pos += 6;
+        const size_t end = html.find('"', pos);
+        if (end == std::string::npos) break;
+        std::string href = html.substr(pos, end - pos);
+        pos = end + 1;
+        size_t entity = 0;
+        while ((entity = href.find("&amp;", entity)) != std::string::npos)
+            href.replace(entity, 5, "&");
+        const std::string decoded = decodeHref(href);
+        if (decoded.size() < 5 || decoded.compare(decoded.size() - 4, 4, ".png") != 0 ||
+            decoded.find('/') != std::string::npos) continue;
+        const std::string name = decoded.substr(0, decoded.size() - 4);
+        entries.push_back({href, name, matchKey(name, true)});
+    }
+    assetLog(sdRoot, "indice " + std::string(type) + " entradas=" +
+                     std::to_string(entries.size()));
+    return entries;
+}
+
+const CatalogEntry *findCatalogMatch(const std::vector<CatalogEntry> &entries,
+                                     const std::string &title)
+{
+    const std::string key = matchKey(stripLegacyTags(title), false);
+    if (key.size() < 4) return nullptr;
+    const bool europe = title.find("[E]") != std::string::npos;
+    const bool usa = title.find("[U]") != std::string::npos;
+    const CatalogEntry *best = nullptr;
+    int bestScore = 0;
+    for (const CatalogEntry &entry : entries) {
+        int score = 0;
+        if (entry.key == key) score = 1000;
+        else if (key.size() >= 7 && entry.key.size() > key.size() &&
+                 entry.key.compare(0, key.size(), key) == 0 &&
+                 entry.key[key.size()] == ' ') score = 500;
+        if (!score) continue;
+        if (europe && entry.name.find("(Europe)") != std::string::npos) score += 100;
+        if (usa && entry.name.find("(USA)") != std::string::npos) score += 100;
+        if (entry.name.find("Virtual Console") != std::string::npos) score -= 10;
+        if (score > bestScore) { best = &entry; bestScore = score; }
+    }
+    return best;
+}
+
 size_t curlWriteFile(void *ptr, size_t size, size_t nmemb, void *userdata)
 {
     return std::fwrite(ptr, size, nmemb, static_cast<FILE *>(userdata));
@@ -104,10 +235,12 @@ std::string libretroSystemFolder(const std::string &system)
     return "";
 }
 
-bool downloadToFile(const std::string &url, const std::string &path)
+bool downloadToFile(const std::string &url, const std::string &path,
+                    std::string *error)
 {
     FILE *fp = std::fopen(path.c_str(), "wb");
     if (!fp) {
+        if (error) *error = std::strerror(errno);
         return false;
     }
     CURL *curl = curl_easy_init();
@@ -122,8 +255,17 @@ bool downloadToFile(const std::string &url, const std::string &path)
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteFile);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-        ok = curl_easy_perform(curl) == CURLE_OK;
+        const CURLcode result = curl_easy_perform(curl);
+        long http = 0;
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http);
+        ok = result == CURLE_OK;
+        if (!ok && error) {
+            *error = std::string(curl_easy_strerror(result)) +
+                     " http=" + std::to_string(http);
+        }
         curl_easy_cleanup(curl);
+    } else if (error) {
+        *error = "curl_easy_init";
     }
     std::fclose(fp);
     if (!ok) {
@@ -132,8 +274,9 @@ bool downloadToFile(const std::string &url, const std::string &path)
     return ok;
 }
 
-bool downloadIfMissing(const std::string &sdRoot, const std::string &system,
-                       const std::string &title, const char *kind, bool force)
+static bool downloadWithCatalog(const std::string &sdRoot, const std::string &system,
+                                const std::string &title, const char *kind, bool force,
+                                const std::vector<CatalogEntry> *catalog)
 {
     const std::string folder = libretroSystemFolder(system);
     if (folder.empty()) {
@@ -153,15 +296,40 @@ bool downloadIfMissing(const std::string &sdRoot, const std::string &system,
     const char *type = std::string(kind) == "thumbnails" ? "Named_Boxarts" : "Named_Snaps";
     const std::string base = "https://thumbnails.libretro.com/" + urlEncode(folder) +
                              "/" + type + "/";
+    std::string error;
+    if (catalog && !catalog->empty()) {
+        const CatalogEntry *match = findCatalogMatch(*catalog, title);
+        if (!match) {
+            assetLog(sdRoot, "sin coincidencia " + std::string(kind) + " " + system +
+                             " / " + title);
+            return false;
+        }
+        if (downloadToFile(base + match->href, temporary, &error) &&
+            replaceDownloadedFile(temporary, dst)) {
+            assetLog(sdRoot, "descargado " + std::string(kind) + " " + system +
+                             " / " + title + " => " + match->name);
+            return true;
+        }
+        assetLog(sdRoot, "fallo " + std::string(kind) + " " + system + " / " +
+                         title + " => " + match->name + " " + error);
+        return false;
+    }
     const char *suffixes[] = {"", " (USA)", " (Europe)", " (Japan)", " (World)"};
     for (const char *suffix : suffixes) {
         const std::string url = base + urlEncode(safe + suffix) + ".png";
-        if (downloadToFile(url, temporary)) {
+        if (downloadToFile(url, temporary, &error)) {
             if (replaceDownloadedFile(temporary, dst)) return true;
         }
     }
-    assetLog(sdRoot, "fallo " + std::string(kind) + " " + system + " / " + title);
+    assetLog(sdRoot, "fallo " + std::string(kind) + " " + system + " / " +
+                     title + " " + error);
     return false;
+}
+
+bool downloadIfMissing(const std::string &sdRoot, const std::string &system,
+                       const std::string &title, const char *kind, bool force)
+{
+    return downloadWithCatalog(sdRoot, system, title, kind, force, nullptr);
 }
 
 int pendingAssetCount(const std::string &sdRoot, const std::string &system,
@@ -195,8 +363,9 @@ void downloadMetadata(const std::string &sdRoot, const std::string &system,
             "https://raw.githubusercontent.com/libretro/libretro-database/master/metadat/" +
             std::string(kind) + "/" + urlEncode(folder) + ".dat";
         const std::string temporary = path + ".tmp";
-        if (!downloadToFile(url, temporary) || !replaceDownloadedFile(temporary, path))
-            assetLog(sdRoot, "fallo metadata " + system + " / " + kind);
+        std::string error;
+        if (!downloadToFile(url, temporary, &error) || !replaceDownloadedFile(temporary, path))
+            assetLog(sdRoot, "fallo metadata " + system + " / " + kind + " " + error);
         if (progress) ++(*progress);
     }
 }
@@ -212,24 +381,30 @@ void downloadAll(const std::string &sdRoot, const std::string &system,
                      " forzar=" + std::to_string(force) +
                      " pendientes=" + std::to_string(pendingAssetCount(
                          sdRoot, system, titles, covers, backdrops, force)));
-    downloadMetadata(sdRoot, system);
+    const std::vector<CatalogEntry> coverCatalog = covers ?
+        loadCatalog(sdRoot, system, "Named_Boxarts") : std::vector<CatalogEntry>{};
+    const std::vector<CatalogEntry> backdropCatalog = backdrops ?
+        loadCatalog(sdRoot, system, "Named_Snaps") : std::vector<CatalogEntry>{};
     int failures = 0;
     for (const std::string &title : titles) {
         if (covers && (force || !assetExists(sdRoot, system, title, "thumbnails"))) {
-            if (!downloadIfMissing(sdRoot, system, title, "thumbnails", force)) {
+            if (!downloadWithCatalog(sdRoot, system, title, "thumbnails", force,
+                                     &coverCatalog)) {
                 ++failures;
                 if (failed) ++(*failed);
             }
             if (progress) ++(*progress);
         }
         if (backdrops && (force || !assetExists(sdRoot, system, title, "backdrops"))) {
-            if (!downloadIfMissing(sdRoot, system, title, "backdrops", force)) {
+            if (!downloadWithCatalog(sdRoot, system, title, "backdrops", force,
+                                     &backdropCatalog)) {
                 ++failures;
                 if (failed) ++(*failed);
             }
             if (progress) ++(*progress);
         }
     }
+    downloadMetadata(sdRoot, system);
     assetLog(sdRoot, "fin " + system + " fallos=" + std::to_string(failures));
     curl_global_cleanup();
 }

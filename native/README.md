@@ -65,9 +65,13 @@ Cada app crea sus carpetas y archivos de configuración si no existen.
   reiniciar la app.
 - En «Solo faltantes», la barra cuenta solo imágenes aún ausentes en la SD;
   muestra intentos procesados y fallos por separado, sin sumar metadata.
-- Cards conserva un máximo de 16 texturas de portada en memoria. GBA registra
-  los cambios de letra y la carga de portadas P para localizar un posible
-  cierre al recorrer la biblioteca.
+- Las solicitudes manuales hechas mientras se actualiza metadata quedan en
+  cola y comienzan al terminar el trabajo actual; Assets indica «En cola».
+- Cards conserva un máximo de 16 texturas de portada y una sola portada de
+  respaldo. GBA registra cada selección, memoria libre y render completado
+  para localizar un posible cierre al recorrer la biblioteca.
+- Los títulos recibidos en Latin-1 se muestran como UTF-8; portadas y fondos
+  usan el mismo nombre de archivo ASCII seguro al guardar y al cargar.
 - «Controles» en ese menú edita el mapa de la ROM; al salir se restablece el
   mapa general. El archivo de la ROM se identifica con un hash estable de su
   ruta y se guarda en `rom-maps/`.
@@ -141,12 +145,13 @@ sd:/retrou/snap/<consola>/
   lectura/escritura y `core_menu_shortcut_opened`; también `covers_refreshed`.
 - Si una máscara de `control-map.conf` no se puede leer, se usan los controles
   predeterminados y el log registra `control_map_parse_failed`.
-- Las descargas escriben líneas `GX2 asset` de inicio, fin y fallos por recurso
-  en el mismo log. Una actualización forzada conserva el archivo anterior
-  si no puede completar el reemplazo.
+- Las descargas consultan los índices de nombres de Libretro y escriben líneas
+  `GX2 asset` de inicio, coincidencia, errores HTTP/red y fin en el mismo log.
+  Usan el método directo si no hay índice y conservan el archivo anterior
+  cuando falla un reemplazo forzado.
 - `main_exit_clean` distingue el cierre normal de una interrupción; en GBA,
-  `gba_cards_focus` y `gba_cover_load`/`gba_cover_ready` acotan la última
-  portada solicitada al recorrer Cards.
+  `gba_cards_focus`, `gba_cover_load`/`gba_cover_ready` y
+  `gba_cards_rendered` acotan la última selección al recorrer Cards.
 - El RPL queda en la rama `experiment/rpl-loader`; no se compila en `main`.
 
 ## Input

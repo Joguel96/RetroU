@@ -967,6 +967,9 @@ int main()
     Library library;
     library.sd_root = mountSd();
     bootLog("sd_ready");
+    mkdir((library.sd_root + "/retrou").c_str(), 0777);
+    mkdir((library.sd_root + "/retrou/config").c_str(), 0777);
+    mkdir(controlConfigDir(library.sd_root).c_str(), 0777);
     scanRoms(library, RETROU_CORE_SYSTEM);
     bootLog("rom_scan_ready");
     loadFavorites(library, RETROU_CORE_SYSTEM);

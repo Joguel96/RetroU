@@ -74,6 +74,21 @@ std::string libretroName(std::string title)
     return title;
 }
 
+std::string localAssetPath(const std::string &sdRoot, const std::string &system,
+                           const std::string &title, const char *kind)
+{
+    return sdRoot + "/retrou/" + kind + "/" + system + "/" +
+           libretroName(title) + ".png";
+}
+
+bool assetExists(const std::string &sdRoot, const std::string &system,
+                 const std::string &title, const char *kind)
+{
+    struct stat info{};
+    return stat(localAssetPath(sdRoot, system, title, kind).c_str(), &info) == 0 &&
+           info.st_size > 0;
+}
+
 size_t curlWriteFile(void *ptr, size_t size, size_t nmemb, void *userdata)
 {
     return std::fwrite(ptr, size, nmemb, static_cast<FILE *>(userdata));
@@ -129,9 +144,8 @@ bool downloadIfMissing(const std::string &sdRoot, const std::string &system,
     const std::string dir = root + "/" + system;
     ensureDir(dir);
     const std::string safe = libretroName(title);
-    const std::string dst = dir + "/" + safe + ".png";
-    struct stat info;
-    if (!force && stat(dst.c_str(), &info) == 0) {
+    const std::string dst = localAssetPath(sdRoot, system, title, kind);
+    if (!force && assetExists(sdRoot, system, title, kind)) {
         return true;
     }
     const std::string temporary = dst + ".tmp";
@@ -148,6 +162,21 @@ bool downloadIfMissing(const std::string &sdRoot, const std::string &system,
     }
     assetLog(sdRoot, "fallo " + std::string(kind) + " " + system + " / " + title);
     return false;
+}
+
+int pendingAssetCount(const std::string &sdRoot, const std::string &system,
+                      const std::vector<std::string> &titles, bool covers,
+                      bool backdrops, bool force)
+{
+    if (libretroSystemFolder(system).empty()) return 0;
+    int pending = 0;
+    for (const std::string &title : titles) {
+        if (covers && (force || !assetExists(sdRoot, system, title, "thumbnails")))
+            ++pending;
+        if (backdrops && (force || !assetExists(sdRoot, system, title, "backdrops")))
+            ++pending;
+    }
+    return pending;
 }
 
 void downloadMetadata(const std::string &sdRoot, const std::string &system,
@@ -174,22 +203,30 @@ void downloadMetadata(const std::string &sdRoot, const std::string &system,
 
 void downloadAll(const std::string &sdRoot, const std::string &system,
                  const std::vector<std::string> &titles, bool covers, bool backdrops,
-                 bool force, std::atomic<int> *progress)
+                 bool force, std::atomic<int> *progress, std::atomic<int> *failed)
 {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     assetLog(sdRoot, "inicio " + system + " roms=" + std::to_string(titles.size()) +
                      " portadas=" + std::to_string(covers) +
                      " fondos=" + std::to_string(backdrops) +
-                     " forzar=" + std::to_string(force));
-    downloadMetadata(sdRoot, system, progress);
+                     " forzar=" + std::to_string(force) +
+                     " pendientes=" + std::to_string(pendingAssetCount(
+                         sdRoot, system, titles, covers, backdrops, force)));
+    downloadMetadata(sdRoot, system);
     int failures = 0;
     for (const std::string &title : titles) {
-        if (covers) {
-            if (!downloadIfMissing(sdRoot, system, title, "thumbnails", force)) ++failures;
+        if (covers && (force || !assetExists(sdRoot, system, title, "thumbnails"))) {
+            if (!downloadIfMissing(sdRoot, system, title, "thumbnails", force)) {
+                ++failures;
+                if (failed) ++(*failed);
+            }
             if (progress) ++(*progress);
         }
-        if (backdrops) {
-            if (!downloadIfMissing(sdRoot, system, title, "backdrops", force)) ++failures;
+        if (backdrops && (force || !assetExists(sdRoot, system, title, "backdrops"))) {
+            if (!downloadIfMissing(sdRoot, system, title, "backdrops", force)) {
+                ++failures;
+                if (failed) ++(*failed);
+            }
             if (progress) ++(*progress);
         }
     }

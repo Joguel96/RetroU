@@ -17,13 +17,20 @@ bool downloadToFile(const std::string &url, const std::string &path);
 bool downloadIfMissing(const std::string &sdRoot, const std::string &system,
                        const std::string &title, const char *kind, bool force = false);
 
+// Number of images that this job still needs to request. Metadata is excluded.
+int pendingAssetCount(const std::string &sdRoot, const std::string &system,
+                      const std::vector<std::string> &titles, bool covers,
+                      bool backdrops, bool force);
+
 // Downloads the libretro-database metadata .dat files (developer/genre/year).
 void downloadMetadata(const std::string &sdRoot, const std::string &system,
                       std::atomic<int> *progress = nullptr);
 
-// Downloads thumbnails + backdrops + metadata for every given title.
+// Downloads missing thumbnails/backdrops (or all when forced) plus metadata.
+// Progress counts image requests only, matching pendingAssetCount().
 void downloadAll(const std::string &sdRoot, const std::string &system,
                  const std::vector<std::string> &titles, bool covers, bool backdrops,
-                 bool force, std::atomic<int> *progress = nullptr);
+                 bool force, std::atomic<int> *progress = nullptr,
+                 std::atomic<int> *failed = nullptr);
 
 } // namespace retrou::assets

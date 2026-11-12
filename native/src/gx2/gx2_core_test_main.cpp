@@ -897,6 +897,7 @@ static std::atomic<bool> g_downloadDone{false};
 static std::atomic<unsigned> g_coverGeneration{0};
 static std::atomic<int> g_downloadProgress{0};
 static std::atomic<int> g_downloadTotal{0};
+static std::atomic<int> g_downloadFailures{0};
 
 static bool loadAutoDownload(const std::string &sdRoot)
 {
@@ -921,11 +922,12 @@ static void startAssetDownload(const std::string &sdRoot, const std::string &sys
     }
     g_downloadDone = false;
     g_downloadProgress = 0;
-    g_downloadTotal = 3 + static_cast<int>(titles.size()) *
-        (static_cast<int>(covers) + static_cast<int>(backdrops));
+    g_downloadFailures = 0;
+    g_downloadTotal = retrou::assets::pendingAssetCount(sdRoot, system, titles,
+                                                        covers, backdrops, force);
     std::thread([sdRoot, system, titles, covers, backdrops, force]() {
         retrou::assets::downloadAll(sdRoot, system, titles, covers, backdrops,
-                                    force, &g_downloadProgress);
+                                    force, &g_downloadProgress, &g_downloadFailures);
         if (covers) ++g_coverGeneration;
         g_downloading = false;
         g_downloadDone = true;
@@ -1150,9 +1152,10 @@ int main()
     bool lastMenuShortcutHeld[5] = {false, false, false, false, false};
     int sidebarIndex = 0;
     int focused = 0;
+    char lastLoggedGbaLetter = '\0';
     int sortMode = 0;      // 0 name, 1 region
     int regionFilter = 0;  // 0 all, 1 USA, 2 Europe, 3 Japan
-    int alphaFilter = 0;   // 0 = todos, 1 = #, 2..27 = A..Z
+    int alphaFilter = 0;   // 0 = All, 1 = favoritos, 2 = #, 3..28 = A..Z
 
     auto rebuildVisible = [&]() {
         visible.clear();
@@ -1162,12 +1165,12 @@ int main()
             if (regionFilter != 0 && detectRegion(library.roms[i].title) != regionFilter) {
                 continue;
             }
-            if (viewMode != 0 && alphaFilter != 0) {
+            if (viewMode != 0 && alphaFilter >= 2) {
                 const unsigned char first = library.roms[i].title.empty() ? 0 :
                     static_cast<unsigned char>(library.roms[i].title.front());
                 const char letter = static_cast<char>(std::toupper(first));
-                if (alphaFilter == 1 ? (letter >= 'A' && letter <= 'Z')
-                                     : letter != 'A' + alphaFilter - 2) continue;
+                if (alphaFilter == 2 ? (letter >= 'A' && letter <= 'Z')
+                                     : letter != 'A' + alphaFilter - 3) continue;
             }
             if (!q.empty() && toLower(library.roms[i].title).find(q) == std::string::npos) {
                 continue;
@@ -1214,6 +1217,7 @@ int main()
     int lastColumns = columns;
 
     std::map<int, Texture> coverCache;
+    std::vector<int> coverOrder;
     static Texture thumbTex = -2;
     if (thumbTex == -2) {
         thumbTex = image::loadFromMemory(
@@ -1226,7 +1230,24 @@ int main()
     }
     auto getCover = [&](int romIndex) -> Texture {
         auto it = coverCache.find(romIndex);
-        if (it != coverCache.end()) return it->second;
+        if (it != coverCache.end()) {
+            coverOrder.erase(std::remove(coverOrder.begin(), coverOrder.end(), romIndex),
+                             coverOrder.end());
+            coverOrder.push_back(romIndex);
+            return it->second;
+        }
+        constexpr size_t kMaxCachedCovers = 16;
+        if (coverOrder.size() >= kMaxCachedCovers) {
+            const int oldest = coverOrder.front();
+            coverOrder.erase(coverOrder.begin());
+            const Texture oldTexture = coverCache[oldest];
+            if (oldTexture >= 0 && oldTexture != thumbTex) destroyTexture(oldTexture);
+            coverCache.erase(oldest);
+        }
+        const std::string &title = library.roms[romIndex].title;
+        const bool diagnoseGbaP = std::string(RETROU_CORE_SYSTEM) == "gba" &&
+            !title.empty() && std::toupper(static_cast<unsigned char>(title.front())) == 'P';
+        if (diagnoseGbaP) bootLog(("gba_cover_load title=" + title).c_str());
         std::string cp = coverPath(library.sd_root, RETROU_CORE_SYSTEM, library.roms[romIndex].title);
         Texture real = image::loadFromFile(cp.c_str());
         if (real < 0) {
@@ -1240,6 +1261,8 @@ int main()
             }
         }
         coverCache[romIndex] = real;
+        coverOrder.push_back(romIndex);
+        if (diagnoseGbaP) bootLog(("gba_cover_ready title=" + title).c_str());
         return real;
     };
     auto clearCoverCache = [&]() {
@@ -1247,6 +1270,7 @@ int main()
             if (entry.second >= 0 && entry.second != thumbTex)
                 destroyTexture(entry.second);
         coverCache.clear();
+        coverOrder.clear();
     };
     unsigned seenCoverGeneration = 0;
 
@@ -1553,6 +1577,19 @@ int main()
 
         const int focusedRom = !visible.empty() && focused >= 0 &&
             focused < static_cast<int>(visible.size()) ? visible[focused] : -1;
+        if (std::string(RETROU_CORE_SYSTEM) == "gba" && viewMode == 0 &&
+            !inGame && focusedRom >= 0) {
+            const std::string &title = library.roms[focusedRom].title;
+            const char letter = title.empty() ? '#' :
+                static_cast<char>(std::toupper(static_cast<unsigned char>(title.front())));
+            if (letter != lastLoggedGbaLetter) {
+                const std::string event = "gba_cards_focus letter=" + std::string(1, letter) +
+                    " index=" + std::to_string(focused) +
+                    " cached=" + std::to_string(coverCache.size());
+                bootLog(event.c_str());
+                lastLoggedGbaLetter = letter;
+            }
+        }
         if (focused != lastFocused || focusedRom != lastFocusedRom) {
             lastFocused = focused;
             lastFocusedRom = focusedRom;
@@ -1640,12 +1677,9 @@ int main()
                 } else if (!inGame && !settingsOpen && !sidebarOpen && !searchActive && ty > 650) {
                     navTrigger |= tx < 500 ? VPAD_BUTTON_MINUS : VPAD_BUTTON_PLUS;
                 } else if (!inGame && !settingsOpen && !sidebarOpen && !searchActive && viewMode != 0 &&
-                           ty >= 18 && ty < 62 && tx >= 220 && tx < 390) {
-                    favoritesOnly = !favoritesOnly;
-                    rebuildVisible();
-                } else if (!inGame && !settingsOpen && !sidebarOpen && !searchActive && viewMode != 0 &&
-                           ty >= 75 && ty < 120 && tx >= 40 && tx < 1244) {
-                    alphaFilter = std::min(27, static_cast<int>((tx - 40) / 43));
+                           ty >= 75 && ty < 120 && tx >= 40 && tx < 1270) {
+                    alphaFilter = std::min(28, static_cast<int>((tx - 40) / 43));
+                    favoritesOnly = alphaFilter == 1;
                     rebuildVisible();
                 } else if (!inGame && !settingsOpen && !sidebarOpen && !searchActive && viewMode == 1 &&
                            tx >= 500 && ty >= 142 && ty < 592) {
@@ -1978,7 +2012,7 @@ int main()
                             saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn, coreVolume);
                         } else if (settingsSection == 0 && settingsItem == 2) {
                             viewMode = (viewMode + dir + 3) % 3;
-                            alphaFilter = 0;
+                            alphaFilter = viewMode != 0 && favoritesOnly ? 1 : 0;
                             focused = 0;
                             scroll = 0;
                             rebuildVisible();
@@ -2108,10 +2142,12 @@ int main()
                     searchActive = true;
                     searchCursor = 0;
                 } else if (viewMode != 0 && (navTrigger & VPAD_BUTTON_Y)) {
-                    favoritesOnly = !favoritesOnly;
+                    alphaFilter = favoritesOnly ? 0 : 1;
+                    favoritesOnly = alphaFilter == 1;
                     rebuildVisible();
                 } else if (viewMode != 0 && (navTrigger & (VPAD_BUTTON_L | VPAD_BUTTON_R))) {
-                    alphaFilter = (alphaFilter + ((navTrigger & VPAD_BUTTON_R) ? 1 : 27)) % 28;
+                    alphaFilter = (alphaFilter + ((navTrigger & VPAD_BUTTON_R) ? 1 : 28)) % 29;
+                    favoritesOnly = alphaFilter == 1;
                     rebuildVisible();
                 } else if (rc > 0) {
                     if (navTrigger & VPAD_BUTTON_A) {
@@ -2422,13 +2458,21 @@ int main()
                         if (!vals[i].empty()) line += ": " + vals[i];
                         text::drawText(line.c_str(), 60.0f, y, 22, settingsItem == i ? white : muted);
                     }
-                    if (g_downloading) {
+                    if (g_downloading || (g_downloadDone && g_downloadTotal.load() > 0)) {
                         const int done = g_downloadProgress.load();
-                        const int total = std::max(1, g_downloadTotal.load());
-                        drawRoundRect(60.0f, 495.0f, 600.0f, 16.0f, 8.0f, cardPanel);
-                        drawRoundRect(60.0f, 495.0f, 600.0f * done / total, 16.0f, 8.0f, accent);
-                        text::drawText(("Descargando " + std::to_string(done) + "/" + std::to_string(total)).c_str(),
-                                       60.0f, 460.0f, 20, accent);
+                        const int total = g_downloadTotal.load();
+                        if (total > 0) {
+                            drawRoundRect(60.0f, 495.0f, 600.0f, 16.0f, 8.0f, cardPanel);
+                            drawRoundRect(60.0f, 495.0f, 600.0f * done / total, 16.0f, 8.0f, accent);
+                            const std::string status = std::string(g_downloading ? "Procesadas " :
+                                "Última tanda: ") + std::to_string(done) + "/" +
+                                std::to_string(total) + "  Fallos: " +
+                                std::to_string(g_downloadFailures.load());
+                            text::drawText(status.c_str(), 60.0f, 460.0f, 20, accent);
+                        } else {
+                            text::drawText("Actualizando datos; no faltan imágenes", 60.0f,
+                                           460.0f, 20, accent);
+                        }
                     }
                 } else if (settingsSection == 2) {
                     const float y0 = 120.0f, y1 = 190.0f, y2 = 260.0f;
@@ -2488,13 +2532,6 @@ int main()
             }
         } else {
             text::drawText("Biblioteca", 28.0f, 18.0f, 34, white);
-            if (viewMode != 0) {
-                drawRoundRect(220.0f, 20.0f, 170.0f, 42.0f, 10.0f,
-                              favoritesOnly ? Color{245, 217, 127, 95} : cardPanel);
-                drawStar(240.0f, 41.0f, 10.0f, 4.5f, gold);
-                text::drawText("Favoritos", 257.0f, 28.0f, 18,
-                               favoritesOnly ? white : muted);
-            }
             if (!visible.empty()) {
                 const std::string &full = library.roms[visible[focused]].title;
                 if (getTitle(visible[focused]).size() < full.size()) {
@@ -2503,11 +2540,17 @@ int main()
             }
 
             auto drawAlphaBar = [&]() {
-                for (int letter = 0; letter < 28; ++letter) {
-                    char single[2] = {static_cast<char>('A' + letter - 2), 0};
-                    const char *label = letter == 0 ? "All" : letter == 1 ? "#" : single;
-                    text::drawText(label, 40.0f + letter * 43.0f, 82.0f, 15,
-                                   letter == alphaFilter ? accent : muted);
+                for (int item = 0; item < 29; ++item) {
+                    const float x = 40.0f + item * 43.0f;
+                    if (item == 1) {
+                        drawStar(x + 8.0f, 91.0f, 9.0f, 4.0f,
+                                 item == alphaFilter ? accent : muted);
+                        continue;
+                    }
+                    char single[2] = {static_cast<char>('A' + item - 3), 0};
+                    const char *label = item == 0 ? "All" : item == 2 ? "#" : single;
+                    text::drawText(label, x, 82.0f, 15,
+                                   item == alphaFilter ? accent : muted);
                 }
             };
             const int cells = columns * rows;
@@ -2673,6 +2716,7 @@ int main()
         endFrame();
     }
 
+    bootLog("main_exit_clean");
     ProcUIShutdown();
     return 0;
 }

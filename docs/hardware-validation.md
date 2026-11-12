@@ -33,8 +33,12 @@ fallo. El arranque rota esos archivos.
    vertical. En SNES, revisa que la portada central y las laterales muestran
    la imagen completa, incluidos los bordes de las cajas.
 7. En Lista y Carrusel, marca una ROM con X: debe aparecer su estrella.
-   Activa Favoritos con Y y con el botón superior táctil; comprueba que solo
-   aparecen las ROMs marcadas y que puedes volver a la lista completa.
+   Con L/R, recorre «All», la estrella de Favoritos, «#» y A–Z; la estrella
+   también debe responder al touch. Comprueba que Favoritos muestra solo las
+   ROMs marcadas y que «All» restaura la lista completa.
+8. En GBA Cards, recorre hasta P y continúa más allá. Si se cierra, conserva
+   `retrou_rpx.log` y `.1`; compara las últimas líneas `gba_cards_focus`,
+   `gba_cover_load`/`gba_cover_ready` y la presencia de `main_exit_clean`.
 
 ## Controles
 
@@ -72,6 +76,9 @@ fallo. El arranque rota esos archivos.
    `sd:/retrou/thumbnails/<consola>/` y
    `sd:/retrou/backdrops/<consola>/`. Si una descarga falla, localiza la línea
    `GX2 asset: fallo` en `retrou_rpx.log` para identificar el recurso.
+   Interrumpe una tanda y reanúdala: el nuevo total debe contar las imágenes
+   que aún faltan, sin metadata ni archivos presentes. «Procesadas» incluye
+   intentos fallidos; comprueba el contador «Fallos» y `pendientes=` en el log.
 5. Descarga portadas con la app abierta y vuelve a Cards, Lista y Carrusel sin
    reiniciarla. Cada vista debe mostrar las nuevas imágenes cuando termine el
    trabajo. Confirma `covers_refreshed` en `retrou_rpx.log`.

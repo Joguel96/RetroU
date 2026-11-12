@@ -67,7 +67,8 @@ Estas confirmaciones no cambian el estado de las pruebas en Wii U.
 | UI-5 | Carrusel y lista usan el backdrop de la ROM enfocada cuando el fondo dinámico está activo. Compilado; falta comprobar en hardware | 🔧 En curso (Codex, rama main) |
 | UI-6 | Tiempo de aparición del backdrop configurable en Personalizar: 0, 1, 3, 5 o 10 segundos sin cambio de selección; 3 s por defecto y lectura compatible con `view.conf` anterior. Compilado; falta probar el tiempo elegido en hardware | 🔧 En curso (Codex, rama main) |
 | UI-7 | Carrusel NES con portadas verticales y SNES con carátulas completas sin recorte, incluida la imagen central y las laterales. Compilado; falta comprobar en hardware | 🔧 En curso (Codex, rama main) |
-| UI-8 | En Lista y Carrusel, mostrar estrella en juegos favoritos y acceso a Favoritos en la zona superior. Compilado; falta comprobar en hardware | 🔧 En curso (Codex, rama main) |
+| UI-8 | En Lista y Carrusel, mostrar estrella en juegos favoritos y Favoritos inmediatamente después de «All» en el filtro superior, navegable con L/R y touch. Falta comprobar en hardware | 🔧 En curso (Codex, rama main) |
+| UI-9 | Investigar y corregir el cierre de GBA al recorrer Cards hasta la letra P; limitar texturas retenidas y registrar la posición antes de cargar portadas. Falta reproducir y validar en Cemu/hardware | 🔧 En curso (Codex, rama main) |
 | ART-1 | Nuevos iconos y splash (icon/tv-splash/drc-splash) por consola (NES/SNES/GBA/N64) desde `assets/RetroU_consolas_12_PNG/` → `assets/console/<consola>/`; N64 además en `C:/proyectos/Our64/assets/console/n64/` y regenerar `RetroN64U.wuhb` | ✅ 2026-11-12 |
 
 ## 5. Navegación / Input UI
@@ -95,7 +96,7 @@ Estas confirmaciones no cambian el estado de las pruebas en Wii U.
 |---|---|---|
 | AS-1 | Descargas manuales separadas de portadas y backdrops en Assets; fallos por recurso quedan en `retrou_rpx.log` y el reemplazo forzado conserva el archivo anterior si falla. Falta probar en hardware | 🔧 En curso (Codex, rama main) |
 | AS-2 | Metadata se actualiza al iniciar aun con auto-descarga apagada. Falta probar red en hardware | 🔧 En curso (Codex, rama main) |
-| AS-3 | Modo «Solo faltantes» / «Descargar todo» para descarga manual; auto-descarga usa solo faltantes. Falta probar en hardware | 🔧 En curso (Codex, rama main) |
+| AS-3 | Modo «Solo faltantes» / «Descargar todo» para descarga manual; auto-descarga usa solo faltantes. El contador debe incluir únicamente imágenes pendientes al reanudar, sin contar metadata ni archivos existentes. Falta probar en hardware | 🔧 En curso (Codex, rama main) |
 | AS-4 | Barra y contador de progreso de descarga en Assets. Falta probar en hardware | 🔧 En curso (Codex, rama main) |
 | AS-5 | Actualizar las portadas visibles en Cards, Lista y Carrusel al terminar una descarga, sin reiniciar la app. Compilado; falta probar en hardware | 🔧 En curso (Codex, rama main) |
 

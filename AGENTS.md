@@ -201,7 +201,7 @@ No extender el RPL sin petición explícita. Si se retoma, hacerlo en su rama.
 - Navegación con D-Pad/stick, A, B, Plus.
 - No hay barra lateral de consolas; `Plus` abre Ajustes en dos paneles.
 - La biblioteca ofrece cards, lista y carrusel; lista/carrusel tienen filtro
-  alfabético con L/R, Favoritos con Y o touch y estrellas en sus ROMs. NES usa
+  alfabético con L/R, Favoritos junto a «All» y estrellas en sus ROMs. NES usa
   portadas verticales en carrusel y SNES presenta la imagen completa.
   La vista, el fondo dinámico y su espera configurable
   (0/1/3/5/10 s; 3 s por defecto) se guardan en `view.conf`.
@@ -309,6 +309,9 @@ solo mantiene el estado general.
   implementados, pendientes de verificar en hardware (SAVE-1/2).
 - Touch, búsqueda y descargas separadas de portadas/backdrops con progreso:
   implementados, pendientes de verificar en hardware (NAV-1/7, AS-1..5).
+  «Solo faltantes» cuenta solo imágenes ausentes e informa los intentos fallidos.
+  GBA limita la caché de portadas a 16 y registra los cambios de letra en Cards;
+  el cierre reportado en P sigue pendiente de reproducción y validación.
 - Referencias visuales de UI en `ejemplos/` (raíz del proyecto).
 - No afirmar que algo está probado en hardware si no lo está.
 

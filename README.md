@@ -30,10 +30,11 @@ de RetroU.
   `Minus + Plus` sigue disponible en todos.
 - **Guardados y Assets**: cuatro slots de savestate con miniatura, SRAM al
   abrir/guardar/salir y descargas separadas de portadas y backdrops con
-  progreso y actualización de portadas visibles al terminar la descarga.
+  progreso de imágenes realmente pendientes, conteo de fallos y actualización
+  de portadas visibles al terminar la descarga.
   Estas mejoras están pendientes de comprobar en hardware.
 - **Biblioteca GX2**: vistas cards, lista y carrusel; las dos últimas ofrecen
-  filtro alfabético y un acceso superior a Favoritos. El carrusel NES presenta
+  filtro alfabético con Favoritos junto a «All», navegable con L/R. El carrusel NES presenta
   portadas verticales y el de SNES muestra las imágenes completas.
   Personalizar permite activar el fondo dinámico y elegir
   su espera (0, 1, 3, 5 o 10 s; 3 s iniciales). Las

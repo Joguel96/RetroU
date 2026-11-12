@@ -49,10 +49,10 @@ Cada app crea sus carpetas y archivos de configuración si no existen.
 - Muestra la biblioteca en cards, lista o carrusel, sin barra de consolas.
 - **A** carga la ROM con el core integrado.
 - **Plus** abre Ajustes; **Minus** abre el sidebar de filtros en cards.
-- En lista y carrusel, **Minus** abre el buscador y **L/R** recorre el filtro
-  alfabético. La vista y la casilla de fondo dinámico se guardan por consola
+- En lista y carrusel, **Minus** abre el buscador y **L/R** recorre «All»,
+  la estrella de Favoritos, «#» y A–Z. La vista y el fondo dinámico se guardan por consola
   en `view.conf`, junto con la espera del backdrop (0, 1, 3, 5 o 10 s;
-  3 s iniciales). **Y** o el botón superior «Favoritos» filtra estas vistas;
+  3 s iniciales). **Y** también alterna Favoritos;
   **X** marca la ROM y su estrella se muestra en lista y carrusel.
 - El carrusel NES muestra las portadas verticales; el SNES ajusta las imágenes
   completas en el centro y en los laterales, sin recortarlas.
@@ -63,6 +63,11 @@ Cada app crea sus carpetas y archivos de configuración si no existen.
   siempre abre el menú como acceso de emergencia desde el mismo mando.
 - Las portadas de la biblioteca se recargan al completar una descarga, sin
   reiniciar la app.
+- En «Solo faltantes», la barra cuenta solo imágenes aún ausentes en la SD;
+  muestra intentos procesados y fallos por separado, sin sumar metadata.
+- Cards conserva un máximo de 16 texturas de portada en memoria. GBA registra
+  los cambios de letra y la carga de portadas P para localizar un posible
+  cierre al recorrer la biblioteca.
 - «Controles» en ese menú edita el mapa de la ROM; al salir se restablece el
   mapa general. El archivo de la ROM se identifica con un hash estable de su
   ruta y se guarda en `rom-maps/`.
@@ -139,6 +144,9 @@ sd:/retrou/snap/<consola>/
 - Las descargas escriben líneas `GX2 asset` de inicio, fin y fallos por recurso
   en el mismo log. Una actualización forzada conserva el archivo anterior
   si no puede completar el reemplazo.
+- `main_exit_clean` distingue el cierre normal de una interrupción; en GBA,
+  `gba_cards_focus` y `gba_cover_load`/`gba_cover_ready` acotan la última
+  portada solicitada al recorrer Cards.
 - El RPL queda en la rama `experiment/rpl-loader`; no se compila en `main`.
 
 ## Input
@@ -151,7 +159,7 @@ sd:/retrou/snap/<consola>/
 | X | favorito en biblioteca; aceptar en buscador |
 | Y en lista/carrusel | mostrar u ocultar Favoritos |
 | Minus | filtros en cards; buscador en lista/carrusel |
-| L/R | filtro alfabético en lista/carrusel |
+| L/R | All, Favoritos, # y letras en lista/carrusel |
 | Plus | Ajustes |
 | Combinación configurada o Minus+Plus durante partida | menú de juego |
 

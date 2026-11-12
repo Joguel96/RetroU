@@ -1582,10 +1582,12 @@ int main()
             const std::string &title = library.roms[focusedRom].title;
             const char letter = title.empty() ? '#' :
                 static_cast<char>(std::toupper(static_cast<unsigned char>(title.front())));
-            if (letter != lastLoggedGbaLetter) {
+            if (letter != lastLoggedGbaLetter ||
+                (letter == 'P' && focusedRom != lastFocusedRom)) {
                 const std::string event = "gba_cards_focus letter=" + std::string(1, letter) +
                     " index=" + std::to_string(focused) +
-                    " cached=" + std::to_string(coverCache.size());
+                    " cached=" + std::to_string(coverCache.size()) +
+                    " title=" + title;
                 bootLog(event.c_str());
                 lastLoggedGbaLetter = letter;
             }

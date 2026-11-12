@@ -191,7 +191,12 @@ std::string fitText(const char *text, int pixelSize, float maxWidth)
     std::string result = text;
     while (!result.empty() &&
            measureText((result + "...").c_str(), pixelSize) > maxWidth) {
-        result.pop_back();
+        // Remove a whole UTF-8 codepoint so the next measurement stays valid.
+        while (!result.empty()) {
+            const unsigned char removed = static_cast<unsigned char>(result.back());
+            result.pop_back();
+            if ((removed & 0xC0) != 0x80) break;
+        }
     }
     return result + "...";
 }

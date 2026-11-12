@@ -68,7 +68,7 @@ Estas confirmaciones no cambian el estado de las pruebas en Wii U.
 | UI-6 | Tiempo de aparición del backdrop configurable en Personalizar: 0, 1, 3, 5 o 10 segundos sin cambio de selección; 3 s por defecto y lectura compatible con `view.conf` anterior. Compilado; falta probar el tiempo elegido en hardware | 🔧 En curso (Codex, rama main) |
 | UI-7 | Carrusel NES con portadas verticales y SNES con carátulas completas sin recorte, incluida la imagen central y las laterales. Compilado; falta comprobar en hardware | 🔧 En curso (Codex, rama main) |
 | UI-8 | En Lista y Carrusel, mostrar estrella en juegos favoritos y Favoritos inmediatamente después de «All» en el filtro superior, navegable con L/R y touch. Falta comprobar en hardware | 🔧 En curso (Codex, rama main) |
-| UI-9 | Investigar y corregir el cierre de GBA al recorrer Cards hasta la letra P; limitar texturas retenidas y registrar la posición antes de cargar portadas. Falta reproducir y validar en Cemu/hardware | 🔧 En curso (Codex, rama main) |
+| UI-9 | Investigar y corregir el cierre de GBA al recorrer Cards hasta la letra P; limitar texturas retenidas, registrar la posición antes de cargar portadas y evitar cortar caracteres UTF-8 al acortar títulos (por ejemplo «Pokémon»). Falta reproducir y validar en Cemu/hardware | 🔧 En curso (Codex, rama main) |
 | ART-1 | Nuevos iconos y splash (icon/tv-splash/drc-splash) por consola (NES/SNES/GBA/N64) desde `assets/RetroU_consolas_12_PNG/` → `assets/console/<consola>/`; N64 además en `C:/proyectos/Our64/assets/console/n64/` y regenerar `RetroN64U.wuhb` | ✅ 2026-11-12 |
 
 ## 5. Navegación / Input UI

@@ -1,20 +1,33 @@
 # RetroU
 
-Frontend para Nintendo Wii U (Aroma) centrado en lanzar cores `.rpx` de
-Libretro, organizar ROMs por consola y descargar carátulas. La identidad visual
-es “glass caramel”: paneles de cristal, carátulas y navegación con GamePad.
+Frontend propio para Nintendo Wii U (Aroma). Cada consola tiene una WUHB con
+un core Libretro enlazado estáticamente; la UI, los datos y los guardados son
+de RetroU.
 
 ## Estado
 
-- **App nativa Wii U**: `native/` — esqueleto C++17 + WUT + SDL2/SDL2_ttf.
-  Escanea `retrou/roms` y `retrou/cores`, pinta TV/GamePad y lanza el core con
-  `_SYSLaunchTitleByPathFromLauncher`.
+- **Apps nativas Wii U**: `native/` — NES (fceumm), SNES (snes9x) y GBA
+  (mgba), compiladas como WUHB independientes con WUT/GX2.
 - **Interfaz React**: `web/` (Vite + React + Tailwind), extraída de
   `Joguel96/retroui`, sin backend ni Gemini, navegable solo con mando. Es la
   especificación visual y el banco de pruebas de la UI.
-- **Referencia RetroArch**: `docs/retroarch-reference.md` (lanzamiento de
-  `.rpx`, argv/HBL, sysapp, carátulas, ProcUI, WUHB).
+- **Referencia RetroArch**: `docs/retroarch-reference.md` (historia técnica,
+  sin usar RetroArch como base del frontend).
 - **Branding**: `assets/icon.png`, `assets/tv-splash.png`, `assets/drc-splash.png`.
+  Por consola: `assets/console/<consola>/` (generados con
+  `tools/generate_console_assets.py`).
+- **N64 (Our64)**: `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb` — emulador
+  independiente Not64 + GLideN64 (clon externo en `C:/proyectos/Our64`),
+  parcheado para WUT 1.9.2 y rebrandeado como RetroU N64. Conserva la UI
+  propia de Our64. Build reproducible: `tools/build-retrou-n64.sh` dentro de
+  ese clone. **Pendiente**: port del motor Our64 bajo la UI completa de RetroU
+  (varias rondas; registrado como pendiente). No probado en hardware.
+- **Mapeo de controles GX2**: editor estilo Our64 por acción del core, con varias
+  asignaciones por acción, `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás
+  y persistencia explícita de acciones `none` en `control-map.conf`.
+- **Guardados y Assets**: cuatro slots de savestate con miniatura, SRAM al
+  abrir/guardar/salir y descargas separadas de portadas y backdrops con
+  progreso. Estas mejoras están pendientes de comprobar en hardware.
 
 ## Estructura
 
@@ -24,9 +37,9 @@ RetroU/
 ├── docs/
 │   ├── retroarch-reference.md
 │   └── ui.md
-├── native/                  app Wii U: WUT + SDL2
+├── native/                  apps Wii U: WUT + GX2 + cores estáticos
 │   ├── content/             Lato OFL (ui.ttf, ui-bold.ttf, OFL.txt)
-│   └── src/main.cpp
+│   └── src/
 ├── web/                     interfaz React navegable con mando
 └── README.md
 ```
@@ -36,17 +49,15 @@ RetroU/
 En MSYS2/devkitPro:
 
 ```sh
-cd native
-/opt/devkitpro/portlibs/wiiu/bin/powerpc-eabi-cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j"$(nproc)"
+./native/build-retrou-gx2.sh
 ```
 
 Salidas:
 
 ```text
-native/build/RetroU.elf
-native/build/RetroU.rpx
-native/build/RetroU.wuhb
+dist/wiiu/apps/RetroNESU/RetroNESU.wuhb
+dist/wiiu/apps/RetroSNESU/RetroSNESU.wuhb
+dist/wiiu/apps/RetroGBAU/RetroGBAU.wuhb
 ```
 
 ## Ejecutar la interfaz React
@@ -63,21 +74,22 @@ npm run dev
 ## Layout de SD previsto
 
 ```text
-sd:/wiiu/apps/RetroU/RetroU.wuhb
-sd:/retrou/roms/<Consola>/*.rom
-sd:/retrou/cores/*.rpx
-sd:/retrou/thumbnails/<Sistema>/Named_Boxarts/*.png
-sd:/retrou/launch/last.txt
+sd:/wiiu/apps/RetroNESU/RetroNESU.wuhb
+sd:/wiiu/apps/RetroSNESU/RetroSNESU.wuhb
+sd:/wiiu/apps/RetroGBAU/RetroGBAU.wuhb
+sd:/retrou/roms/<consola>/
+sd:/retrou/config/<consola>/
+sd:/retrou/saves/<consola>/save/
+sd:/retrou/snap/<consola>/
+sd:/retrou/thumbnails/<consola>/
+sd:/retrou/backdrops/<consola>/
 ```
 
 ## Hoja de ruta
 
-1. ~~Esqueleto nativo + escaneo + lanzamiento de `.rpx`~~.
-2. Validar core `.rpl` en proceso (fceumm) y frontend Libretro.
-3. Vídeo/audio/input, SRAM y savestates dentro de RetroU.
-4. Ajustes de memoria, escalado, widescreen y overrides.
-5. Carátulas reales desde `thumbnails.libretro.com`.
-6. Portar las vistas de `web/` a la UI nativa y probar en hardware.
+La lista canónica de tareas y su estado de verificación está en
+[PENDIENTES.md](PENDIENTES.md). Una compilación correcta no equivale a una
+prueba en hardware.
 
 ## Documentación
 

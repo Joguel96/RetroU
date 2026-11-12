@@ -69,6 +69,22 @@ foreach(ICON_SYSTEM nes snes gba)
     )
 endforeach()
 
+# CTRL-3: controller image per console (assets/controles/<system>.png),
+# embedded so the mapping editor does not depend on the SD card.
+set(PAD_OBJECT_DIR "${CMAKE_CURRENT_BINARY_DIR}/embedded_pads")
+foreach(PAD_SYSTEM nes snes gba)
+    set(PAD_OBJ_${PAD_SYSTEM} "${PAD_OBJECT_DIR}/${PAD_SYSTEM}_pad.o")
+    add_custom_command(
+        OUTPUT "${PAD_OBJ_${PAD_SYSTEM}}"
+        COMMAND "${CMAKE_COMMAND}" -E make_directory "${PAD_OBJECT_DIR}"
+        COMMAND "${OBJCOPY}" -I binary -O elf32-powerpc -B powerpc
+                --rename-section .data=.rodata,alloc,load,readonly,data,contents
+                ${PAD_SYSTEM}.png "${PAD_OBJ_${PAD_SYSTEM}}"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../assets/controles"
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/../assets/controles/${PAD_SYSTEM}.png"
+    )
+endforeach()
+
 function(configure_retrou target)
     target_sources(${target} PRIVATE "${FONT_REGULAR_OBJ}" "${FONT_BOLD_OBJ}")
     set_source_files_properties("${FONT_REGULAR_OBJ}" "${FONT_BOLD_OBJ}"
@@ -228,10 +244,13 @@ function(add_gx2_retrou target system label app_name core)
         ${RETRO_COMMON_SOURCES}
         "${FONT_REGULAR_OBJ}"
         "${ICON_OBJ_${system}}"
+        "${PAD_OBJ_${system}}"
     )
     set_source_files_properties("${FONT_REGULAR_OBJ}"
         PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
     set_source_files_properties("${ICON_OBJ_${system}}"
+        PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
+    set_source_files_properties("${PAD_OBJ_${system}}"
         PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
     target_include_directories(${target} PRIVATE
         src
@@ -246,12 +265,12 @@ function(add_gx2_retrou target system label app_name core)
         RETROU_STATIC_CORE=1
         RETROU_CORE_SYSTEM="${system}"
         RETROU_CORE_LABEL="${label}"
+        RETROU_PAD_PNG=${system}
     )
     target_compile_options(${target} PRIVATE -Wall -Wextra)
     target_link_libraries(${target} PRIVATE
         "${core}"
         m
-        z
         SDL2
         curl
         mbedtls
@@ -259,6 +278,7 @@ function(add_gx2_retrou target system label app_name core)
         mbedcrypto
         freetype
         png
+        z
         bz2
         brotlidec
         brotlicommon

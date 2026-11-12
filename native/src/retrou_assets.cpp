@@ -84,7 +84,7 @@ bool downloadToFile(const std::string &url, const std::string &path)
 }
 
 bool downloadIfMissing(const std::string &sdRoot, const std::string &system,
-                       const std::string &title, const char *kind)
+                       const std::string &title, const char *kind, bool force)
 {
     const std::string folder = libretroSystemFolder(system);
     if (folder.empty()) {
@@ -97,9 +97,10 @@ bool downloadIfMissing(const std::string &sdRoot, const std::string &system,
     const std::string safe = libretroName(title);
     const std::string dst = dir + "/" + safe + ".png";
     struct stat info;
-    if (stat(dst.c_str(), &info) == 0) {
+    if (!force && stat(dst.c_str(), &info) == 0) {
         return true;
     }
+    const std::string temporary = dst + ".tmp";
 
     const char *type = std::string(kind) == "thumbnails" ? "Named_Boxarts" : "Named_Snaps";
     const std::string base = "https://thumbnails.libretro.com/" + urlEncode(folder) +
@@ -107,14 +108,16 @@ bool downloadIfMissing(const std::string &sdRoot, const std::string &system,
     const char *suffixes[] = {"", " (USA)", " (Europe)", " (Japan)", " (World)"};
     for (const char *suffix : suffixes) {
         const std::string url = base + urlEncode(safe + suffix) + ".png";
-        if (downloadToFile(url, dst)) {
-            return true;
+        if (downloadToFile(url, temporary)) {
+            if (std::rename(temporary.c_str(), dst.c_str()) == 0) return true;
+            std::remove(temporary.c_str());
         }
     }
     return false;
 }
 
-void downloadMetadata(const std::string &sdRoot, const std::string &system)
+void downloadMetadata(const std::string &sdRoot, const std::string &system,
+                      std::atomic<int> *progress)
 {
     const std::string folder = libretroSystemFolder(system);
     if (folder.empty()) {
@@ -125,25 +128,33 @@ void downloadMetadata(const std::string &sdRoot, const std::string &system)
     const char *kinds[] = {"developer", "genre", "releaseyear"};
     for (const char *kind : kinds) {
         const std::string path = dir + "/" + system + "-" + kind + ".dat";
-        struct stat info;
-        if (stat(path.c_str(), &info) == 0) {
-            continue;
-        }
         const std::string url =
             "https://raw.githubusercontent.com/libretro/libretro-database/master/metadat/" +
             std::string(kind) + "/" + urlEncode(folder) + ".dat";
-        downloadToFile(url, path);
+        const std::string temporary = path + ".tmp";
+        if (downloadToFile(url, temporary)) {
+            if (std::rename(temporary.c_str(), path.c_str()) != 0)
+                std::remove(temporary.c_str());
+        }
+        if (progress) ++(*progress);
     }
 }
 
 void downloadAll(const std::string &sdRoot, const std::string &system,
-                 const std::vector<std::string> &titles)
+                 const std::vector<std::string> &titles, bool covers, bool backdrops,
+                 bool force, std::atomic<int> *progress)
 {
     curl_global_init(CURL_GLOBAL_DEFAULT);
-    downloadMetadata(sdRoot, system);
+    downloadMetadata(sdRoot, system, progress);
     for (const std::string &title : titles) {
-        downloadIfMissing(sdRoot, system, title, "thumbnails");
-        downloadIfMissing(sdRoot, system, title, "backdrops");
+        if (covers) {
+            downloadIfMissing(sdRoot, system, title, "thumbnails", force);
+            if (progress) ++(*progress);
+        }
+        if (backdrops) {
+            downloadIfMissing(sdRoot, system, title, "backdrops", force);
+            if (progress) ++(*progress);
+        }
     }
     curl_global_cleanup();
 }

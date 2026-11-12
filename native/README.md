@@ -44,8 +44,8 @@ Cada app crea sus carpetas y archivos de configuración si no existen.
 - Escanea `sd:/retrou/roms/<consola>/`.
 - Muestra solo la grilla de juegos, sin barra de consolas.
 - **A** carga la ROM con el core integrado.
-- **Plus** abre el sidebar con filtros, controles y ajustes.
-- En el sidebar se puede cambiar la grilla entre 3 y 6 columnas.
+- **Plus** abre Ajustes; **Minus** abre el sidebar de filtros en cards.
+- El touch del GamePad selecciona juegos y opciones en la UI.
 - **Minus + Plus** abre el menú superpuesto durante el core.
 - El render de la UI es bajo demanda: solo repinta cuando hay entrada o cambia
   el estado, no a 60 FPS constante.
@@ -54,10 +54,15 @@ No hay selector de cores: cada app es un sistema.
 
 ## Lo que falta
 
-- Corregir audio en hardware (NES silencioso y cortes en SNES/GBA).
-- SRAM/savestates reales (las carpetas ya existen).
-- Mapeo de controles y ajustes de vídeo funcionales.
-- Carátulas reales.
+- Verificar en hardware los cuatro slots de savestate con miniatura y la
+  persistencia de SRAM al cargar, guardar y salir.
+- Mapeo de controles estilo Our64 funcional, con varias asignaciones por acción,
+  `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás y persistencia de
+  acciones desasignadas en `control-map.conf`. NES y SNES muestran su imagen
+  completa en el editor, GBA usa un solo puerto y las fuentes distinguen
+  `Stick L` de `Stick R`.
+- Verificar en hardware la descarga separada de portadas/backdrops, metadatos
+  automáticos y barra de progreso.
 
 El input básico del core ya está conectado: A/B/X/Y/L/R, Start/Select y D-Pad/stick.
 
@@ -72,12 +77,21 @@ cd native
 cmake --build build -j"$(nproc)"
 ```
 
+Para compilar las variantes GX2 y copiarlas automáticamente a `dist/wiiu/apps/`:
+
+```sh
+./native/build-retrou-gx2.sh
+```
+
+El script acepta `BUILD_TYPE`, `JOBS`, `DEVKITPRO` y `CMAKE_WIIU` como
+variables de entorno. Cada ejecución conserva un log en `native/build/logs/`.
+
 Salidas:
 
 ```text
-build/retrou_nes.wuhb
-build/retrou_snes.wuhb
-build/retrou_gba.wuhb
+native/build/retrou_nes_gx2.wuhb
+native/build/retrou_snes_gx2.wuhb
+native/build/retrou_gba_gx2.wuhb
 ```
 
 ## SD
@@ -93,18 +107,23 @@ sd:/retrou/snap/<consola>/
 
 ## Logs
 
-- `sd:/retrou/retrou_rpx.log`: carga/init/run del core estático.
+- `sd:/retrou/retrou_rpx.log`: arranque, carga y ejecución del core estático;
+  las tres ejecuciones anteriores quedan en `.1`, `.2` y `.3`.
 - El RPL queda en la rama `experiment/rpl-loader`; no se compila en `main`.
 
 ## Input
 
 | Mando | Acción |
 |---|---|
-| D-Pad / stick | mover selección |
-| L / R | consola anterior / siguiente |
-| A | cargar ROM con el core integrado |
-| B | volver a "Todas" |
-| X | detalle (placeholder) |
+| D-Pad / Stick L | mover selección |
+| A | abrir juego u opción |
+| B | volver un nivel; borrar en buscador |
+| X | favorito en biblioteca; aceptar en buscador |
+| Minus | filtros en vista cards |
+| Plus | Ajustes |
+
+El menú durante el juego se abre con Minus+Plus. El touch del GamePad permite
+seleccionar elementos visibles. Ver `PENDIENTES.md` para lo que falta validar.
 | Y | favorito (placeholder) |
 | Start | test (solo build Test) |
 | Minus | menú de RetroU en juego |

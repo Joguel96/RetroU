@@ -229,6 +229,34 @@ void RplCore::inputPollCallback()
     }
 }
 
+// CTRL-3 (modelo Our64): cada acción con fuentes mapeadas se activa si
+// cualquiera de ellas está pulsada. Acción == bit retro (0..11).
+static void applyActionMap(const CoreActionMap &m, uint32_t hold, uint16_t &state)
+{
+    for (int a = 0; a < CoreActionMap::kMaxActions; ++a) {
+        if (m.sources[a] != 0 && (m.sources[a] & hold)) {
+            state |= static_cast<uint16_t>(1u << a);
+        }
+    }
+}
+
+// Direcciones de los sticks L/R como fuentes pseudo (misma convención de
+// signo que Our64: +y = arriba).
+static uint32_t stickSourceBits(float lx, float ly, float rx, float ry)
+{
+    const float dz = 0.5f;
+    uint32_t bits = 0;
+    if (ly > dz) bits |= kStickSrcUp;
+    else if (ly < -dz) bits |= kStickSrcDown;
+    else if (lx < -dz) bits |= kStickSrcLeft;
+    else if (lx > dz) bits |= kStickSrcRight;
+    if (ry > dz) bits |= kStickRSrcUp;
+    else if (ry < -dz) bits |= kStickRSrcDown;
+    else if (rx < -dz) bits |= kStickRSrcLeft;
+    else if (rx > dz) bits |= kStickRSrcRight;
+    return bits;
+}
+
 void RplCore::pollInput()
 {
     if (!input_enabled_) {
@@ -237,7 +265,14 @@ void RplCore::pollInput()
         input_state_ = 0;
         return;
     }
-    wpad_input_poll();
+    // Frontends that push samples (the GX2 app) are consumed here; the rest
+    // fall back to polling KPAD from this callback.
+    const bool wpadPushed = wpad_samples_used_ != wpad_samples_seq_;
+    if (wpadPushed) {
+        wpad_samples_used_ = wpad_samples_seq_;
+    } else {
+        wpad_input_poll();
+    }
     for (int port = 0; port < 2; ++port) {
         uint16_t state = 0;
         SDL_GameController *controller = controllers_[port];
@@ -268,38 +303,78 @@ void RplCore::pollInput()
             if (ly > deadzone) state |= 1u << RETRO_DEVICE_ID_JOYPAD_DOWN;
         }
         if (wpad_ports_[port] >= 0) {
-            WpadSnapshot pad = wpad_input_state(wpad_ports_[port]);
+            const WpadSnapshot pad = wpadPushed
+                ? wpad_samples_[wpad_ports_[port]]
+                : wpad_input_state(wpad_ports_[port]);
             if (pad.connected) {
-                const uint32_t pA = WPAD_PRO_BUTTON_A;
-                const uint32_t pB = WPAD_PRO_BUTTON_B;
-                if (pad.buttons & pA) state |= 1u << RETRO_DEVICE_ID_JOYPAD_A;
-                if (pad.buttons & pB) state |= 1u << RETRO_DEVICE_ID_JOYPAD_B;
-                if (pad.buttons & WPAD_PRO_BUTTON_X) state |= 1u << RETRO_DEVICE_ID_JOYPAD_X;
-                if (pad.buttons & WPAD_PRO_BUTTON_Y) state |= 1u << RETRO_DEVICE_ID_JOYPAD_Y;
-                if (pad.buttons & WPAD_PRO_BUTTON_L) state |= 1u << RETRO_DEVICE_ID_JOYPAD_L;
-                if (pad.buttons & WPAD_PRO_BUTTON_R) state |= 1u << RETRO_DEVICE_ID_JOYPAD_R;
-                if (pad.buttons & WPAD_PRO_BUTTON_PLUS) state |= 1u << RETRO_DEVICE_ID_JOYPAD_START;
-                if (pad.buttons & WPAD_PRO_BUTTON_MINUS) state |= 1u << RETRO_DEVICE_ID_JOYPAD_SELECT;
-                if (pad.buttons & WPAD_PRO_BUTTON_UP) state |= 1u << RETRO_DEVICE_ID_JOYPAD_UP;
-                if (pad.buttons & WPAD_PRO_BUTTON_DOWN) state |= 1u << RETRO_DEVICE_ID_JOYPAD_DOWN;
-                if (pad.buttons & WPAD_PRO_BUTTON_LEFT) state |= 1u << RETRO_DEVICE_ID_JOYPAD_LEFT;
-                if (pad.buttons & WPAD_PRO_BUTTON_RIGHT) state |= 1u << RETRO_DEVICE_ID_JOYPAD_RIGHT;
+                const uint32_t hold = pad.buttons |
+                    stickSourceBits(pad.left_x / 32767.0f, pad.left_y / 32767.0f,
+                                    pad.right_x / 32767.0f, pad.right_y / 32767.0f);
+                applyActionMap(wpad_map_, hold, state);
             }
         }
-        if (port == 0 && vpad_enabled_ && !controllers_[0] && wpad_ports_[0] < 0) {
-            VPADStatus vpad{};
+        if (vpad_enabled_ && port == vpad_port_ && !controllers_[port] && wpad_ports_[port] < 0) {
             VPADReadError vpadError = VPAD_READ_NO_SAMPLES;
-            VPADRead(VPAD_CHAN_0, &vpad, 1, &vpadError);
-            if (vpadError == VPAD_READ_SUCCESS) {
-                for (int id = 0; id < 12; ++id) {
-                    if (vpad_map_[id] != 0 && (vpad.hold & vpad_map_[id])) {
-                        state |= 1u << id;
-                    }
-                }
+            VPADStatus sample{};
+            if (vpad_sample_used_ != vpad_sample_seq_) {
+                // Fresh sample pushed by the frontend this frame.
+                vpad_sample_used_ = vpad_sample_seq_;
+                vpadError = vpad_sample_error_;
+                sample = vpad_sample_;
+            } else {
+                // No frontend sample (e.g. the SDL frontend path): read here.
+                VPADRead(VPAD_CHAN_0, &sample, 1, &vpadError);
             }
+            last_vpad_error_ = vpadError;
+            if (vpadError == VPAD_READ_SUCCESS) {
+                const uint32_t hold = sample.hold |
+                    stickSourceBits(sample.leftStick.x, sample.leftStick.y,
+                                    sample.rightStick.x, sample.rightStick.y);
+                applyActionMap(vpad_map_, hold, state);
+            }
+        } else if (port == vpad_port_) {
+            last_vpad_error_ = static_cast<VPADReadError>(-100);
         }
         input_states_[port] = state;
         if (port == 0) input_state_ = state;
+    }
+
+    // Temporary diagnostics: the first polls after a game load show what the
+    // core actually receives (sd:/retrou/retrou_rpx.log).
+    static int diag = 0;
+    if (diag < 10) {
+        ++diag;
+        char buf[192];
+        std::snprintf(buf, sizeof(buf),
+                      "input diag %d: st0=0x%04x st1=0x%04x vpadErr=%d vpadOn=%d wpad=[%d,%d]",
+                      diag, input_states_[0], input_states_[1],
+                      static_cast<int>(last_vpad_error_),
+                      static_cast<int>(vpad_enabled_), wpad_ports_[0], wpad_ports_[1]);
+        log(buf);
+        if (diag == 1) {
+            int vpadBound = 0;
+            int wpadBound = 0;
+            for (int a = 0; a < CoreActionMap::kMaxActions; ++a) {
+                vpadBound += vpad_map_.sources[a] != 0 ? 1 : 0;
+                wpadBound += wpad_map_.sources[a] != 0 ? 1 : 0;
+            }
+            std::snprintf(buf, sizeof(buf),
+                          "input action map: vpad acciones=%d | wpad acciones=%d",
+                          vpadBound, wpadBound);
+            log(buf);
+            for (int a = 0; a < CoreActionMap::kMaxActions; ++a) {
+                if (vpad_map_.sources[a] == 0) continue;
+                std::snprintf(buf, sizeof(buf),
+                              "input vpad bind: accion=%d fuentes=0x%x", a, vpad_map_.sources[a]);
+                log(buf);
+            }
+            for (int a = 0; a < CoreActionMap::kMaxActions; ++a) {
+                if (wpad_map_.sources[a] == 0) continue;
+                std::snprintf(buf, sizeof(buf),
+                              "input wpad bind: accion=%d fuentes=0x%x", a, wpad_map_.sources[a]);
+                log(buf);
+            }
+        }
     }
 }
 
@@ -445,12 +520,9 @@ bool RplCore::loadStaticCore(SDL_Renderer *tv, SDL_Renderer *drc, std::string &e
     get_system_info_(&info);
     name_ = info.library_name ? info.library_name : "static test";
 
-    // Default GamePad (VPAD) button map: RetroPad id -> physical button.
-    vpad_map_ = {
-        VPAD_BUTTON_B, VPAD_BUTTON_Y, VPAD_BUTTON_MINUS, VPAD_BUTTON_PLUS,
-        VPAD_BUTTON_UP, VPAD_BUTTON_DOWN, VPAD_BUTTON_LEFT, VPAD_BUTTON_RIGHT,
-        VPAD_BUTTON_A, VPAD_BUTTON_X, VPAD_BUTTON_L, VPAD_BUTTON_R
-    };
+    // Default maps are the frontend's responsibility (setVpadActionMap /
+    // setWpadActionMap); leave them empty here so unconfigured bindings
+    // produce no input.
 
     log("RplCore before retro_init (static)");
     init_();
@@ -482,6 +554,7 @@ bool RplCore::loadGame(const std::string &rom_path, std::string &error)
 
     log("retro_load_game ok");
     game_loaded_ = true;
+    loadSram();
 
     startAudio();
 
@@ -492,6 +565,7 @@ void RplCore::unloadGame()
 {
     log("unloadGame: start");
     if (game_loaded_ && unload_game_) {
+        saveSram();
         unload_game_();
     }
     log("unloadGame: after unload_game_");
@@ -521,8 +595,10 @@ bool RplCore::loadSram()
     void *data = get_memory_data_(RETRO_MEMORY_SAVE_RAM);
     if (!data) return false;
     std::ifstream in(sramPath(), std::ios::binary);
+    if (!in) in.open(sramPath() + ".bak", std::ios::binary);
     if (!in) return false;
     in.read(static_cast<char *>(data), static_cast<std::streamsize>(size));
+    if (static_cast<size_t>(in.gcount()) != size) return false;
     log("loadSram " + sramPath() + " size=" + std::to_string(size));
     return true;
 }
@@ -534,15 +610,42 @@ bool RplCore::saveSram()
     if (size == 0) return false;
     void *data = get_memory_data_(RETRO_MEMORY_SAVE_RAM);
     if (!data) return false;
-    std::ofstream out(sramPath(), std::ios::binary | std::ios::trunc);
+    const std::string path = sramPath();
+    const std::string temporary = path + ".tmp";
+    std::ofstream out(temporary, std::ios::binary | std::ios::trunc);
     if (!out) return false;
     out.write(static_cast<const char *>(data), static_cast<std::streamsize>(size));
-    log("saveSram " + sramPath() + " size=" + std::to_string(size));
+    out.close();
+    if (!out) {
+        std::remove(temporary.c_str());
+        log("saveSram failed " + path);
+        return false;
+    }
+    const std::string backup = path + ".bak";
+    struct stat oldFile{};
+    const bool hadOld = stat(path.c_str(), &oldFile) == 0;
+    if (hadOld) {
+        std::remove(backup.c_str());
+        if (std::rename(path.c_str(), backup.c_str()) != 0) {
+            std::remove(temporary.c_str());
+            log("saveSram backup failed " + path);
+            return false;
+        }
+    }
+    if (std::rename(temporary.c_str(), path.c_str()) != 0) {
+        if (hadOld) std::rename(backup.c_str(), path.c_str());
+        std::remove(temporary.c_str());
+        log("saveSram replace failed " + path);
+        return false;
+    }
+    if (hadOld) std::remove(backup.c_str());
+    log("saveSram " + path + " size=" + std::to_string(size));
     return true;
 }
 
 bool RplCore::saveState(const std::string &path)
 {
+    saveSram();
     if (!serialize_size_ || !serialize_) return false;
     const size_t size = serialize_size_();
     if (size == 0) return false;
@@ -660,6 +763,7 @@ void RplCore::unload()
     log("RplCore::unload");
     if (loaded_) {
         if (game_loaded_ && unload_game_) {
+            saveSram();
             unload_game_();
         }
         game_loaded_ = false;

@@ -10,7 +10,32 @@
 #include <string>
 #include <vector>
 
+#include "wpad_input.hpp"
+#include <vpad/input.h>
+
 namespace retrou {
+
+// CTRL-3 (modelo Our64): cada acción del core (ids retro 0..11) apunta a UNA
+// O VARIAS fuentes físicas (máscara del dispositivo). Una fuente puede estar
+// en varias acciones (Y Add comparte); el editor reasigna al reemplazar.
+// Las direcciones de los sticks L/R son fuentes pseudo (kStickSrc*), así que
+// cada stick puede actuar como D-Pad en las direcciones que haya mapeadas.
+struct CoreActionMap {
+    static constexpr int kMaxActions = 12;
+    std::array<uint32_t, kMaxActions> sources{};
+};
+
+// Pseudo-masks for the stick directions. Same values for the VPAD and WPAD
+// mask spaces; the real button masks of both stay below 0x01000000
+// (VPAD tops out at 0x00040000 STICK_L, WPAD at 0x00020000).
+static constexpr uint32_t kStickSrcUp = 0x01000000u;
+static constexpr uint32_t kStickSrcDown = 0x02000000u;
+static constexpr uint32_t kStickSrcLeft = 0x04000000u;
+static constexpr uint32_t kStickSrcRight = 0x08000000u;
+static constexpr uint32_t kStickRSrcUp = 0x10000000u;
+static constexpr uint32_t kStickRSrcDown = 0x20000000u;
+static constexpr uint32_t kStickRSrcLeft = 0x40000000u;
+static constexpr uint32_t kStickRSrcRight = 0x80000000u;
 
 class RplCore {
 public:
@@ -48,8 +73,27 @@ public:
     void setControlMaps(const std::array<std::array<int, 8>, 2> &maps) { control_maps_ = maps; }
     void setWpadPorts(int first, int second) { wpad_ports_[0] = first; wpad_ports_[1] = second; }
     void setVpadEnabled(bool enabled) { vpad_enabled_ = enabled; }
-    void setVpadMap(const std::array<uint32_t, 12> &map) { vpad_map_ = map; }
+    // Which core port (0/1) the GamePad feeds; -1 = GamePad not assigned.
+    void setVpadPort(int port) { vpad_port_ = port; }
+    // Action maps (CTRL-3, modelo Our64): acción -> máscaras físicas.
+    void setVpadActionMap(const CoreActionMap &map) { vpad_map_ = map; }
+    void setWpadActionMap(const CoreActionMap &map) { wpad_map_ = map; }
     void setInputEnabled(bool on) { input_enabled_ = on; }
+    // The frontend reads VPAD once per frame; the core must reuse that
+    // sample, because a second VPADRead in the same frame returns
+    // NO_SAMPLES (the queue only refills between frames). The frontend
+    // pushes it here right after its own read.
+    void pushVpadSample(const VPADStatus &vpad, VPADReadError error) {
+        vpad_sample_ = vpad;
+        vpad_sample_error_ = error;
+        ++vpad_sample_seq_;
+    }
+    // Same idea for the KPAD/WPAD controllers: the frontend polls once per
+    // frame and pushes all four channels; the core reuses them.
+    void pushWpadSamples(const std::array<WpadSnapshot, 4> &states) {
+        wpad_samples_ = states;
+        ++wpad_samples_seq_;
+    }
     void setExternalAudioDevice(SDL_AudioDeviceID device) { external_audio_ = device; }
     void setVideoOptions(int aspect, int scale, int filter) {
         video_aspect_ = aspect;
@@ -128,8 +172,18 @@ private:
     int video_filter_ = 0;
     int wpad_ports_[2] = {-1, -1};
     bool vpad_enabled_ = false;
+    int vpad_port_ = 0;
     bool input_enabled_ = true;
-    std::array<uint32_t, 12> vpad_map_{};
+    VPADReadError last_vpad_error_ = VPAD_READ_NO_SAMPLES;
+    VPADStatus vpad_sample_{};
+    VPADReadError vpad_sample_error_ = VPAD_READ_NO_SAMPLES;
+    int vpad_sample_seq_ = 0;   // bumped by every pushVpadSample()
+    int vpad_sample_used_ = 0;  // seq consumed by the last poll
+    std::array<WpadSnapshot, 4> wpad_samples_{};
+    int wpad_samples_seq_ = 0;
+    int wpad_samples_used_ = 0;
+    CoreActionMap vpad_map_;
+    CoreActionMap wpad_map_;
     SDL_AudioDeviceID external_audio_ = 0;
     SDL_GameController *controller_ = nullptr;
     std::array<SDL_GameController *, 2> controllers_ = {nullptr, nullptr};

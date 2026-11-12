@@ -116,6 +116,13 @@ en mayúscula por compatibilidad. La ruta canónica es minúscula.
 `theme.conf` es común. `nes.conf`, `control-map.conf` y `video.conf` son
 independientes por app.
 
+`control-map.conf` usa el formato `v2` estilo Our64 (acción del core → una o
+varias máscaras de botones físicos): secciones `[gamepad]` y `[pro]`, líneas
+`p1`/`p2` y una línea por acción. Las acciones sin asignación se escriben como
+`none`, para que `X Unmap` sobreviva al reinicio. Los conf en formato `v1` o
+viejo (una línea de 13 ints) se migran al cargar y se reescriben al primer
+cambio.
+
 Ya no se usa `sd:/retrou/cores`, HBL, Mocha ni `launch/last.txt`.
 
 ## 5. Cores
@@ -191,7 +198,7 @@ No extender el RPL sin petición explícita. Si se retoma, hacerlo en su rama.
 ## 8. Logs
 
 ```text
-sd:/retrou/retrou_rpx.log      app estática (init/run)
+sd:/retrou/retrou_rpx.log      app estática (init/run; .1/.2/.3 anteriores)
 sd:/retrou/retrou_rpl.log      RPL (solo rama experimental)
 ```
 
@@ -250,14 +257,31 @@ No commitear:
 
 ## 11. Estado funcional y limitaciones
 
+**La lista canónica de pendientes es `PENDIENTES.md`** (raíz del proyecto):
+antes de empezar una actividad hay que revisarlo, y cada pendiente terminado
+**y verificado en hardware** se marca como ✅ allí (con fecha). Este resumen
+solo mantiene el estado general.
+
 - NES/SNES/GBA: WUHB estática generada y compilada.
-- No probado en hardware: NES/SNES/GBA con ROM real.
-- **Input del core implementado**: A/B/X/Y/L/R, Start/Select y D-Pad/stick.
-- **Audio del core implementado con SDL2**; hay que corregir silencios/cortes en hardware.
-- SRAM/savestates/carátulas reales pendientes.
-- El sidebar funciona, pero Controles/Ajustes son placeholders.
-- El guardado de SRAM/snap todavía no escribe archivos; solo se crean las
-  carpetas.
+- N64: `RetroN64U.wuhb` generada desde Our64 (Not64 + GLideN64, clon externo
+  en `C:/proyectos/Our64`), parcheada para WUT 1.9.2 y rebrandeada como
+  RetroU N64 con la UI propia de Our64. No probado en hardware. Pendiente el
+  port con la UI completa de RetroU (varias rondas, ver `PENDIENTES.md`).
+- **Probado en hardware por el usuario**: HOME durante partida, audio del
+  core, NES/SNES/GBA con ROMs reales, savestates y carátulas, conexión de
+  Pro Controller.
+- **Input del core implementado**: A/B/X/Y/L/R, Start/Select y D-pad/stick.
+- **Input UI**: GamePad (VPAD) + Pro Controller (WPAD) con detección en
+  caliente; menú HOME del sistema vía ProcUI.
+- **Controles implementado**: asignación de mandos a los 2 puertos del core
+  (Mando 1/Mando 2) y remapeo estilo Our64 por acción del core, con múltiples
+  botones por acción, `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás y
+  migración de `v1`/conf viejo. Sin verificar aún en hardware.
+- SRAM automática al abrir/guardar/salir y cuatro slots con miniatura:
+  implementados, pendientes de verificar en hardware (SAVE-1/2).
+- Touch, búsqueda y descargas separadas de portadas/backdrops con progreso:
+  implementados, pendientes de verificar en hardware (NAV-1/7, AS-1..4).
+- Referencias visuales de UI en `ejemplos/` (raíz del proyecto).
 - No afirmar que algo está probado en hardware si no lo está.
 
 ## 12. Convenciones
@@ -276,9 +300,16 @@ No commitear:
 
 Antes de tocar código, presentar al usuario:
 
+0. el/los pendiente(s) de `PENDIENTES.md` que cubre la actividad (si no
+   está registrado, agregarlo primero);
 1. archivos que se crearán/modificarán;
 2. explicación corta del cambio;
 3. cómo se probará;
 4. riesgos.
 
 Esperar autorización. Después implementar en un cambio acotado y verificable.
+
+Al terminar una actividad: si quedó probada en hardware, marcar su ID como
+✅ en `PENDIENTES.md` (con fecha) y ajustar el resumen de la sección 11 si
+cambia el estado general. Si no, dejarla 🔧/⬜ y documentar qué falta
+verificar.

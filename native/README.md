@@ -124,6 +124,9 @@ sd:/retrou/snap/<consola>/
   las tres ejecuciones anteriores quedan en `.1`, `.2` y `.3`.
 - El log registra carga/restauración/guardado de mapas y perfiles, y un
   resumen de entrada por ROM. Los logs de compilación quedan en `native/build/logs/`.
+- Las descargas escriben líneas `GX2 asset` de inicio, fin y fallos por recurso
+  en el mismo log. Una actualización forzada conserva el archivo anterior
+  si no puede completar el reemplazo.
 - El RPL queda en la rama `experiment/rpl-loader`; no se compila en `main`.
 
 ## Input

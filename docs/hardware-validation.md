@@ -58,7 +58,8 @@ fallo. El arranque rota esos archivos.
    verifica contador/barra y que no se mezclan los dos tipos.
 4. Prueba «Solo faltantes» y «Descargar todo» con conexión. Comprueba en la SD
    `sd:/retrou/thumbnails/<consola>/` y
-   `sd:/retrou/backdrops/<consola>/`.
+   `sd:/retrou/backdrops/<consola>/`. Si una descarga falla, localiza la línea
+   `GX2 asset: fallo` en `retrou_rpx.log` para identificar el recurso.
 
 ## N64
 

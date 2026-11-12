@@ -4,6 +4,7 @@
 
 #include <cctype>
 #include <cstdio>
+#include <fstream>
 #include <sys/stat.h>
 
 namespace retrou::assets {
@@ -13,6 +14,39 @@ namespace {
 void ensureDir(const std::string &dir)
 {
     mkdir(dir.c_str(), 0777);
+}
+
+void assetLog(const std::string &sdRoot, const std::string &message)
+{
+    std::ofstream out(sdRoot + "/retrou/retrou_rpx.log", std::ios::app);
+    if (out) out << "GX2 asset: " << message << "\n";
+}
+
+bool replaceDownloadedFile(const std::string &temporary, const std::string &destination)
+{
+    if (std::rename(temporary.c_str(), destination.c_str()) == 0) return true;
+    struct stat existing{};
+    if (stat(destination.c_str(), &existing) != 0) {
+        std::remove(temporary.c_str());
+        return false;
+    }
+    const std::string backup = destination + ".bak";
+    struct stat priorBackup{};
+    if (stat(backup.c_str(), &priorBackup) == 0) {
+        std::remove(temporary.c_str());
+        return false;
+    }
+    if (std::rename(destination.c_str(), backup.c_str()) != 0) {
+        std::remove(temporary.c_str());
+        return false;
+    }
+    if (std::rename(temporary.c_str(), destination.c_str()) == 0) {
+        std::remove(backup.c_str());
+        return true;
+    }
+    std::rename(backup.c_str(), destination.c_str());
+    std::remove(temporary.c_str());
+    return false;
 }
 
 std::string urlEncode(const std::string &value)
@@ -109,10 +143,10 @@ bool downloadIfMissing(const std::string &sdRoot, const std::string &system,
     for (const char *suffix : suffixes) {
         const std::string url = base + urlEncode(safe + suffix) + ".png";
         if (downloadToFile(url, temporary)) {
-            if (std::rename(temporary.c_str(), dst.c_str()) == 0) return true;
-            std::remove(temporary.c_str());
+            if (replaceDownloadedFile(temporary, dst)) return true;
         }
     }
+    assetLog(sdRoot, "fallo " + std::string(kind) + " " + system + " / " + title);
     return false;
 }
 
@@ -132,10 +166,8 @@ void downloadMetadata(const std::string &sdRoot, const std::string &system,
             "https://raw.githubusercontent.com/libretro/libretro-database/master/metadat/" +
             std::string(kind) + "/" + urlEncode(folder) + ".dat";
         const std::string temporary = path + ".tmp";
-        if (downloadToFile(url, temporary)) {
-            if (std::rename(temporary.c_str(), path.c_str()) != 0)
-                std::remove(temporary.c_str());
-        }
+        if (!downloadToFile(url, temporary) || !replaceDownloadedFile(temporary, path))
+            assetLog(sdRoot, "fallo metadata " + system + " / " + kind);
         if (progress) ++(*progress);
     }
 }
@@ -145,17 +177,23 @@ void downloadAll(const std::string &sdRoot, const std::string &system,
                  bool force, std::atomic<int> *progress)
 {
     curl_global_init(CURL_GLOBAL_DEFAULT);
+    assetLog(sdRoot, "inicio " + system + " roms=" + std::to_string(titles.size()) +
+                     " portadas=" + std::to_string(covers) +
+                     " fondos=" + std::to_string(backdrops) +
+                     " forzar=" + std::to_string(force));
     downloadMetadata(sdRoot, system, progress);
+    int failures = 0;
     for (const std::string &title : titles) {
         if (covers) {
-            downloadIfMissing(sdRoot, system, title, "thumbnails", force);
+            if (!downloadIfMissing(sdRoot, system, title, "thumbnails", force)) ++failures;
             if (progress) ++(*progress);
         }
         if (backdrops) {
-            downloadIfMissing(sdRoot, system, title, "backdrops", force);
+            if (!downloadIfMissing(sdRoot, system, title, "backdrops", force)) ++failures;
             if (progress) ++(*progress);
         }
     }
+    assetLog(sdRoot, "fin " + system + " fallos=" + std::to_string(failures));
     curl_global_cleanup();
 }
 

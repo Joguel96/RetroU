@@ -215,6 +215,9 @@ sd:/retrou/retrou_rpx.log      app estática (init/run; .1/.2/.3 anteriores)
 sd:/retrou/retrou_rpl.log      RPL (solo rama experimental)
 ```
 
+`retrou_rpx.log` registra también fallos de descarga por recurso (`GX2 asset`);
+el reemplazo forzado conserva el archivo existente si falla.
+
 Ya no se usa `launcher.log` ni `launch/last.txt`.
 
 ## 9. Directorios y datos

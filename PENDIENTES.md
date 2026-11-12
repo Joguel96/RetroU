@@ -85,7 +85,7 @@ está**. Un cambio compilado pero sin verificar sigue siendo ⬜/🔧.
 
 | ID | Pendiente | Estado |
 |---|---|---|
-| AS-1 | Descargas manuales separadas de portadas y backdrops en Assets. Falta probar en hardware | 🔧 En curso (Codex, rama main) |
+| AS-1 | Descargas manuales separadas de portadas y backdrops en Assets; fallos por recurso quedan en `retrou_rpx.log` y el reemplazo forzado conserva el archivo anterior si falla. Falta probar en hardware | 🔧 En curso (Codex, rama main) |
 | AS-2 | Metadata se actualiza al iniciar aun con auto-descarga apagada. Falta probar red en hardware | 🔧 En curso (Codex, rama main) |
 | AS-3 | Modo «Solo faltantes» / «Descargar todo» para descarga manual; auto-descarga usa solo faltantes. Falta probar en hardware | 🔧 En curso (Codex, rama main) |
 | AS-4 | Barra y contador de progreso de descarga en Assets. Falta probar en hardware | 🔧 En curso (Codex, rama main) |

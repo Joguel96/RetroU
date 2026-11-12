@@ -97,14 +97,17 @@ sd:/retrou/config/nes/
   nes.conf
   control-map.conf
   video.conf
+  view.conf
 sd:/retrou/config/snes/
   snes.conf
   control-map.conf
   video.conf
+  view.conf
 sd:/retrou/config/gba/
   gba.conf
   control-map.conf
   video.conf
+  view.conf
 
 sd:/retrou/saves/<consola>/save/          SRAM de juegos
 sd:/retrou/snap/<consola>/                slots de guardado de la app
@@ -113,8 +116,8 @@ sd:/retrou/snap/<consola>/                slots de guardado de la app
 Las carpetas de ROMs se aceptan en minúscula (`nes`, `snes`, `gba`) y también
 en mayúscula por compatibilidad. La ruta canónica es minúscula.
 
-`theme.conf` es común. `nes.conf`, `control-map.conf` y `video.conf` son
-independientes por app.
+`theme.conf` es común. `<consola>.conf`, `control-map.conf`, `video.conf` y
+`view.conf` son independientes por app.
 
 `control-map.conf` usa el formato `v2` estilo Our64 (acción del core → una o
 varias máscaras de botones físicos): secciones `[gamepad]` y `[pro]`, líneas
@@ -186,10 +189,11 @@ No extender el RPL sin petición explícita. Si se retoma, hacerlo en su rama.
 
 - UI de cristal propia, en español, guiada por `Joguel96/retroui`.
 - Navegación con D-Pad/stick, A, B, Plus.
-- No hay barra lateral de consolas ni vista de ajustes separada.
-- Solo la grilla de juegos a pantalla completa.
-- `Plus` abre el sidebar superpuesto con filtros, controles y ajustes.
-- El sidebar permite elegir entre 3 y 6 columnas de juegos.
+- No hay barra lateral de consolas; `Plus` abre Ajustes en dos paneles.
+- La biblioteca ofrece cards, lista y carrusel; lista/carrusel tienen filtro
+  alfabético con L/R. La vista y el fondo dinámico se guardan en `view.conf`.
+- `Minus` abre el sidebar de filtros solo en cards; en lista/carrusel abre
+  el buscador. Las cards permiten entre 3 y 6 columnas.
 - `Minus + Plus` abre el menú superpuesto durante el core.
 - El menú de juego pausa el core.
 - El render de la UI es bajo demanda (`ui_dirty`), no a 60 FPS constantes.
@@ -219,6 +223,7 @@ sd:/retrou/config/theme.conf
 sd:/retrou/config/<consola>/<consola>.conf
 sd:/retrou/config/<consola>/control-map.conf
 sd:/retrou/config/<consola>/video.conf
+sd:/retrou/config/<consola>/view.conf
 
 sd:/retrou/saves/<consola>/save/
 sd:/retrou/snap/<consola>/

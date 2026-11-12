@@ -55,11 +55,11 @@ está**. Un cambio compilado pero sin verificar sigue siendo ⬜/🔧.
 | ID | Pendiente | Estado |
 |---|---|---|
 | UI-1 | Redondeo de cards: **bordes superiores rectos, base redondeada** (primera versión estaba invertida; corregida según `ejemplos/Retrou_resultados/error_cards.png`) | ✅ 2026-11-11 |
-| UI-2 | Distribución de Ajustes en dos paneles | ⬜ |
-| UI-3 | Sistema de 3 vistas para los juegos replicando la funcionalidad y presentación de Our64: **cards** (cuadrícula actual), **lista** y **carrusel**, seleccionables en Personalización (sección extra, no es un tema). Referencias: `ejemplos/Our64/carrousel.png` (card central grande con vecina asomando, barra alfabética arriba, banner con título abajo, contador "N Games") y `ejemplos/Our64/list.png` (stack de cards a la izquierda + filas de títulos a la derecha con subtítulo de estado) | ⬜ |
-| UI-4 | Check de "fondo dinámico" en Ajustes → Personalización | ⬜ |
-| UI-5 | Con vista carrusel + fondo dinámico activo, el backdrop se usa como fondo (como hoy en la cuadrícula) | ⬜ |
-| UI-6 | Backdrop: revisar el tiempo de aparición (hoy espera 3 s de inactividad; aclarar valor/unidad exactos con el usuario) | ⬜ |
+| UI-2 | Ajustes en dos paneles: opciones a la izquierda y contexto de sección a la derecha. Compilado; falta revisar presentación en hardware | 🔧 En curso (Codex, rama main) |
+| UI-3 | Tres vistas de juegos: cards, lista y carrusel, elegibles en Personalizar; lista/carrusel con filtro alfabético y navegación propia. Compilado; falta revisar presentación y flujo en hardware. Referencias: `ejemplos/Our64/carrousel.png` y `list.png` | 🔧 En curso (Codex, rama main) |
+| UI-4 | Casilla de «Fondo dinámico» en Ajustes → Personalizar; valor guardado por consola en `view.conf`. Compilado; falta probar en hardware | 🔧 En curso (Codex, rama main) |
+| UI-5 | Carrusel y lista usan el backdrop de la ROM enfocada cuando el fondo dinámico está activo. Compilado; falta comprobar en hardware | 🔧 En curso (Codex, rama main) |
+| UI-6 | Backdrop: el código espera exactamente 3000 ms sin cambio de selección; falta acordar con el usuario si debe cambiar ese tiempo y probarlo en hardware | ⬜ |
 | ART-1 | Nuevos iconos y splash (icon/tv-splash/drc-splash) por consola (NES/SNES/GBA/N64) desde `assets/RetroU_consolas_12_PNG/` → `assets/console/<consola>/`; N64 además en `C:/proyectos/Our64/assets/console/n64/` y regenerar `RetroN64U.wuhb` | ✅ 2026-11-12 |
 
 ## 5. Navegación / Input UI

@@ -944,6 +944,20 @@ int main()
     bool sfxOn = true;
     int coreVolume = 80;
     loadAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn, coreVolume);
+    int viewMode = 0; // cards, lista, carrusel
+    bool dynamicBg = true;
+    {
+        std::ifstream viewIn(library.sd_root + "/retrou/config/" RETROU_CORE_SYSTEM "/view.conf");
+        int backdrop = 1;
+        if (viewIn >> viewMode >> backdrop) {
+            viewMode = std::max(0, std::min(2, viewMode));
+            dynamicBg = backdrop != 0;
+        }
+    }
+    auto saveViewOptions = [&]() {
+        std::ofstream viewOut(library.sd_root + "/retrou/config/" RETROU_CORE_SYSTEM "/view.conf", std::ios::trunc);
+        if (viewOut) viewOut << viewMode << " " << (dynamicBg ? 1 : 0) << "\n";
+    };
     g_uiVolume = uiVolume;
     g_bgMusicOn = bgMusicOn;
     g_sfxOn = sfxOn;
@@ -975,13 +989,13 @@ int main()
     bool favoritesOnly = false;
     bool sidebarOpen = false;
     bool settingsOpen = false;
-    int viewMode = 0; // 0 = cards (única vista por ahora; lista/carrusel en UI-3)
     uint32_t lastStickDir = 0; // última dirección del stick para la navegación UI
     uint32_t wpadNavLastBits[4] = {0, 0, 0, 0}; // CTRL-4: edge por mando externo
     int sidebarIndex = 0;
     int focused = 0;
     int sortMode = 0;      // 0 name, 1 region
     int regionFilter = 0;  // 0 all, 1 USA, 2 Europe, 3 Japan
+    int alphaFilter = 0;   // 0 = todos, 1 = #, 2..27 = A..Z
 
     auto rebuildVisible = [&]() {
         visible.clear();
@@ -990,6 +1004,13 @@ int main()
             if (favoritesOnly && !library.roms[i].favorite) continue;
             if (regionFilter != 0 && detectRegion(library.roms[i].title) != regionFilter) {
                 continue;
+            }
+            if (viewMode != 0 && alphaFilter != 0) {
+                const unsigned char first = library.roms[i].title.empty() ? 0 :
+                    static_cast<unsigned char>(library.roms[i].title.front());
+                const char letter = static_cast<char>(std::toupper(first));
+                if (alphaFilter == 1 ? (letter >= 'A' && letter <= 'Z')
+                                     : letter != 'A' + alphaFilter - 2) continue;
             }
             if (!q.empty() && toLower(library.roms[i].title).find(q) == std::string::npos) {
                 continue;
@@ -1328,6 +1349,9 @@ int main()
             loadMetaMap(library.sd_root, RETROU_CORE_SYSTEM, "developer", metaDev);
             loadMetaMap(library.sd_root, RETROU_CORE_SYSTEM, "releaseyear", metaYear);
             coverCache.clear();
+            for (auto &entry : backdropCache)
+                if (entry.second >= 0) destroyTexture(entry.second);
+            backdropCache.clear();
             metaApplied = true;
         }
 
@@ -1390,7 +1414,7 @@ int main()
                         sectionCursor = std::min(4, static_cast<int>((ty - 105) / 80));
                         navTrigger |= VPAD_BUTTON_A;
                     } else if (settingsSection >= 0 && ty < 520) {
-                        const int counts[] = {2, 5, hasSecondCorePort() ? 3 : 2, 3, 2};
+                        const int counts[] = {4, 5, hasSecondCorePort() ? 3 : 2, 3, 2};
                         settingsItem = std::min(counts[settingsSection] - 1,
                                                 static_cast<int>((ty - 105) / 70));
                         navTrigger |= settingsSection == 1 && settingsItem >= 3 ? VPAD_BUTTON_A : VPAD_BUTTON_RIGHT;
@@ -1402,7 +1426,19 @@ int main()
                     navTrigger |= VPAD_BUTTON_A;
                 } else if (!inGame && !settingsOpen && !sidebarOpen && !searchActive && ty > 650) {
                     navTrigger |= tx < 500 ? VPAD_BUTTON_MINUS : VPAD_BUTTON_PLUS;
-                } else if (!inGame && !settingsOpen && !sidebarOpen && !searchActive && tx >= gridX && ty >= gridY && ty < gridY + gridH) {
+                } else if (!inGame && !settingsOpen && !sidebarOpen && !searchActive && viewMode != 0 &&
+                           ty >= 75 && ty < 120 && tx >= 40 && tx < 1244) {
+                    alphaFilter = std::min(27, static_cast<int>((tx - 40) / 43));
+                    rebuildVisible();
+                } else if (!inGame && !settingsOpen && !sidebarOpen && !searchActive && viewMode == 1 &&
+                           tx >= 500 && ty >= 142 && ty < 592) {
+                    const int index = scroll + static_cast<int>((ty - 142) / 90);
+                    if (index < static_cast<int>(visible.size())) { focused = index; navTrigger |= VPAD_BUTTON_A; }
+                } else if (!inGame && !settingsOpen && !sidebarOpen && !searchActive && viewMode == 2 &&
+                           ty >= 130 && ty < 580) {
+                    navTrigger |= tx < 290 ? VPAD_BUTTON_LEFT : tx > 990 ? VPAD_BUTTON_RIGHT : VPAD_BUTTON_A;
+                } else if (!inGame && !settingsOpen && !sidebarOpen && !searchActive && viewMode == 0 &&
+                           tx >= gridX && ty >= gridY && ty < gridY + gridH) {
                     const int col = static_cast<int>((tx - gridX) / (cardW + gap));
                     const int row = static_cast<int>((ty - gridY) / (cardH + gap));
                     const int index = scroll + row * columns + col;
@@ -1586,7 +1622,7 @@ int main()
                     }
                 } else {
                     int itemCount = 1;
-                    if (settingsSection == 0) itemCount = 2;
+                    if (settingsSection == 0) itemCount = 4;
                     else if (settingsSection == 1) itemCount = 5;
                     else if (settingsSection == 2) itemCount = hasSecondCorePort() ? 3 : 2;
                     else if (settingsSection == 3) itemCount = 3;
@@ -1599,7 +1635,10 @@ int main()
                     } else if (navTrigger & VPAD_BUTTON_DOWN) {
                         settingsItem = (settingsItem + 1) % itemCount;
                     } else if (navTrigger & VPAD_BUTTON_A) {
-                        if (settingsSection == 2 && settingsItem == (hasSecondCorePort() ? 2 : 1)) {
+                        if (settingsSection == 0 && settingsItem == 3) {
+                            dynamicBg = !dynamicBg;
+                            saveViewOptions();
+                        } else if (settingsSection == 2 && settingsItem == (hasSecondCorePort() ? 2 : 1)) {
                             // CTRL-3: editor de mapeo estilo Our64.
                             mapMode = true;
                             mapRow = 0;
@@ -1622,6 +1661,16 @@ int main()
                         } else if (settingsSection == 0 && settingsItem == 1) {
                             columns = std::max(3, std::min(6, columns + dir));
                             saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn, coreVolume);
+                        } else if (settingsSection == 0 && settingsItem == 2) {
+                            viewMode = (viewMode + dir + 3) % 3;
+                            alphaFilter = 0;
+                            focused = 0;
+                            scroll = 0;
+                            rebuildVisible();
+                            saveViewOptions();
+                        } else if (settingsSection == 0 && settingsItem == 3) {
+                            dynamicBg = !dynamicBg;
+                            saveViewOptions();
                         } else if (settingsSection == 1 && settingsItem == 0) {
                             showCovers = !showCovers;
                             saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn, coreVolume);
@@ -1731,6 +1780,12 @@ int main()
                     // (lista/carrusel no tienen sidebar).
                     sidebarOpen = true;
                     sidebarIndex = 0;
+                } else if (viewMode != 0 && (navTrigger & VPAD_BUTTON_MINUS)) {
+                    searchActive = true;
+                    searchCursor = 0;
+                } else if (viewMode != 0 && (navTrigger & (VPAD_BUTTON_L | VPAD_BUTTON_R))) {
+                    alphaFilter = (alphaFilter + ((navTrigger & VPAD_BUTTON_R) ? 1 : 27)) % 28;
+                    rebuildVisible();
                 } else if (rc > 0) {
                     if (navTrigger & VPAD_BUTTON_A) {
                         if (core.loadGame(library.roms[visible[focused]].path, error)) {
@@ -1749,16 +1804,21 @@ int main()
                         focused = (focused + rc - 1) % rc;
                         navBlip();
                     } else if (navTrigger & VPAD_BUTTON_DOWN) {
-                        focused = std::min(rc - 1, focused + columns);
+                        focused = std::min(rc - 1, focused + (viewMode == 0 ? columns : 1));
                         navBlip();
                     } else if (navTrigger & VPAD_BUTTON_UP) {
-                        focused = std::max(0, focused - columns);
+                        focused = std::max(0, focused - (viewMode == 0 ? columns : 1));
                         navBlip();
                     }
-                    const int focusedRow = focused / columns;
-                    int scrollRow = focusedRow - (rows - 1);
-                    if (scrollRow < 0) scrollRow = 0;
-                    scroll = scrollRow * columns;
+                    if (viewMode == 0) {
+                        const int focusedRow = focused / columns;
+                        int scrollRow = focusedRow - (rows - 1);
+                        if (scrollRow < 0) scrollRow = 0;
+                        scroll = scrollRow * columns;
+                    } else if (viewMode == 1) {
+                        if (focused < scroll) scroll = focused;
+                        if (focused >= scroll + 5) scroll = focused - 4;
+                    }
                 }
             }
         }
@@ -1776,7 +1836,7 @@ int main()
         beginFrame(bg);
         drawGradient(0.0f, 0.0f, 1280.0f, 720.0f, bgTop, bg);
 
-        if (!inGame && !mapMode && !settingsOpen && !sidebarOpen && !searchActive &&
+        if (dynamicBg && !inGame && !mapMode && !settingsOpen && !sidebarOpen && !searchActive &&
             !visible.empty() && SDL_GetTicks() - focusedTick >= 3000) {
             Texture bd = getBackdrop(visible[focused]);
             if (bd >= 0) {
@@ -1919,9 +1979,17 @@ int main()
             }
         } else if (settingsOpen) {
             const char *sections[] = {"PERSONALIZAR", "ASSETS", "CONTROLES", "SONIDO", "VÍDEO"};
+            const char *sectionHelp[] = {"Vistas, tema y fondo", "Portadas y datos", "Mandos y botones", "Volumen y efectos", "Imagen del juego"};
             const char *themeOpts[] = {"Gris", "Azul", "Verde", "Dorado", "Rosa"};
             const char *aspectOpts[] = {"Original", "4:3", "16:9"};
             const char *scaleOpts[] = {"Ajustar", "Entero", "Estirar"};
+            drawRoundRect(24.0f, 88.0f, 800.0f, 560.0f, 18.0f, panel);
+            drawRoundRect(840.0f, 88.0f, 416.0f, 560.0f, 18.0f, cardPanel);
+            const int previewSection = settingsSection < 0 ? sectionCursor : settingsSection;
+            text::drawText(sections[previewSection], 870.0f, 126.0f, 24, white);
+            text::drawText(sectionHelp[previewSection], 870.0f, 178.0f, 16, muted);
+            text::drawText(settingsSection < 0 ? "A  Abrir sección" : "IZQ/DER  Cambiar valor",
+                           870.0f, 570.0f, 15, accent);
 
             if (settingsSection == -1) {
                 text::drawText("Ajustes", 28.0f, 18.0f, 34, white);
@@ -1937,11 +2005,22 @@ int main()
             } else {
                 text::drawText(sections[settingsSection], 28.0f, 18.0f, 34, white);
                 if (settingsSection == 0) {
-                    const float y0 = 120.0f, y1 = 190.0f;
-                    if (settingsItem == 0) drawRoundRect(50.0f, y0 - 8.0f, 520.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                    text::drawText(("Tema: " + std::string(themeOpts[themeIndex])).c_str(), 60.0f, y0, 22, settingsItem == 0 ? white : muted);
-                    if (settingsItem == 1) drawRoundRect(50.0f, y1 - 8.0f, 520.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                    text::drawText(("Columnas: " + std::to_string(columns)).c_str(), 60.0f, y1, 22, settingsItem == 1 ? white : muted);
+                    const char *views[] = {"Cards", "Lista", "Carrusel"};
+                    const std::string options[4] = {
+                        "Tema: " + std::string(themeOpts[themeIndex]),
+                        "Columnas: " + std::to_string(columns),
+                        "Vista: " + std::string(views[viewMode]),
+                        "Fondo dinámico: " + std::string(dynamicBg ? "Sí" : "No")
+                    };
+                    for (int i = 0; i < 4; ++i) {
+                        const float y = 120.0f + i * 70.0f;
+                        if (settingsItem == i) drawRoundRect(50.0f, y - 8.0f, 740.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                        text::drawText(options[i].c_str(), 60.0f, y, 22, settingsItem == i ? white : muted);
+                        if (i == 3) {
+                            drawRoundRect(740.0f, y - 3.0f, 28.0f, 28.0f, 5.0f, dynamicBg ? accent : muted);
+                            if (dynamicBg) text::drawText("✓", 746.0f, y - 4.0f, 22, bg);
+                        }
+                    }
                 } else if (settingsSection == 1) {
                     const char *labels[5] = {"Carátulas", "Auto-descarga", "Modo", "Descargar portadas (A)", "Descargar backdrops (A)"};
                     std::string vals[5] = {showCovers ? "Sí" : "No", autoDownload ? "Sí" : "No",
@@ -2009,10 +2088,19 @@ int main()
                 }
             }
 
+            auto drawAlphaBar = [&]() {
+                for (int letter = 0; letter < 28; ++letter) {
+                    char single[2] = {static_cast<char>('A' + letter - 2), 0};
+                    const char *label = letter == 0 ? "All" : letter == 1 ? "#" : single;
+                    text::drawText(label, 40.0f + letter * 43.0f, 82.0f, 15,
+                                   letter == alphaFilter ? accent : muted);
+                }
+            };
             const int cells = columns * rows;
             if (visible.empty()) {
+                if (viewMode != 0) drawAlphaBar();
                 text::drawText("Sin ROMs", 100.0f, 340.0f, 24, white);
-            } else {
+            } else if (viewMode == 0) {
                 for (int i = 0; i < cells; ++i) {
                     const int idx = scroll + i;
                     if (idx >= static_cast<int>(visible.size())) break;
@@ -2058,6 +2146,36 @@ int main()
                         drawStar(x + cardW - 18.0f, y + 18.0f, 9.0f, 4.0f, gold);
                     }
                 }
+            } else if (viewMode == 1) {
+                drawAlphaBar();
+                drawRoundRect(42.0f, 130.0f, 425.0f, 470.0f, 16.0f, panel);
+                const int selected = visible[focused];
+                if (showCovers) drawTextureCover(getCover(selected), 75.0f, 160.0f, 355.0f, 380.0f);
+                for (int i = 0; i < 5 && scroll + i < static_cast<int>(visible.size()); ++i) {
+                    const int index = scroll + i;
+                    const float y = 142.0f + i * 90.0f;
+                    const bool selectedRow = index == focused;
+                    drawRoundRect(500.0f, y, 730.0f, 78.0f, 12.0f,
+                                  selectedRow ? Color{245, 217, 127, 60} : cardPanel);
+                    const std::string &title = library.roms[visible[index]].title;
+                    text::drawText(text::fitText(title.c_str(), 22, 670.0f).c_str(),
+                                   522.0f, y + 12.0f, 22, selectedRow ? white : muted);
+                    text::drawText(titleYear(title).c_str(), 522.0f, y + 46.0f, 14, muted);
+                }
+            } else {
+                drawAlphaBar();
+                const int count = static_cast<int>(visible.size());
+                if (focused > 0 && showCovers)
+                    drawTextureCover(getCover(visible[focused - 1]), 40.0f, 185.0f, 230.0f, 330.0f);
+                if (focused + 1 < count && showCovers)
+                    drawTextureCover(getCover(visible[focused + 1]), 1010.0f, 185.0f, 230.0f, 330.0f);
+                drawRoundRect(295.0f, 130.0f, 690.0f, 450.0f, 20.0f, panel);
+                if (showCovers) drawTextureCover(getCover(visible[focused]), 308.0f, 143.0f, 664.0f, 424.0f);
+                drawRoundRect(300.0f, 590.0f, 680.0f, 64.0f, 12.0f, cardPanel);
+                text::drawText(text::fitText(library.roms[visible[focused]].title.c_str(), 24, 630.0f).c_str(),
+                               325.0f, 605.0f, 24, white);
+                text::drawText((std::to_string(focused + 1) + " / " + std::to_string(count) + " juegos").c_str(),
+                               1020.0f, 610.0f, 17, muted);
             }
             if (sidebarOpen) {
                 drawRoundRect(24.0f, 88.0f, 300.0f, 560.0f, 18.0f, panel);
@@ -2082,7 +2200,10 @@ int main()
             if (sidebarOpen) {
                 text::drawText("A  SELECCIONAR    B  CERRAR", 28.0f, 672.0f, 15, muted);
             } else {
-                text::drawText("A  JUGAR    X  FAVORITO    -  FILTROS    +  AJUSTES", 28.0f, 672.0f, 15, muted);
+                text::drawText(viewMode == 0
+                                   ? "A  JUGAR    X  FAVORITO    -  FILTROS    +  AJUSTES"
+                                   : "A  JUGAR    X  FAVORITO    -  BUSCAR    +  AJUSTES",
+                               28.0f, 672.0f, 15, muted);
             }
 
             if (searchActive) {

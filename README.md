@@ -28,6 +28,10 @@ de RetroU.
 - **Guardados y Assets**: cuatro slots de savestate con miniatura, SRAM al
   abrir/guardar/salir y descargas separadas de portadas y backdrops con
   progreso. Estas mejoras están pendientes de comprobar en hardware.
+- **Biblioteca GX2**: vistas cards, lista y carrusel; las dos últimas ofrecen
+  filtro alfabético. Personalizar permite activar el fondo dinámico. Las
+  opciones de vista se guardan por consola en `view.conf` y esperan prueba
+  visual en hardware.
 
 ## Estructura
 

@@ -32,6 +32,7 @@ sd:/retrou/config/theme.conf
 sd:/retrou/config/nes/nes.conf
 sd:/retrou/config/nes/control-map.conf
 sd:/retrou/config/nes/video.conf
+sd:/retrou/config/nes/view.conf
 ...
 sd:/retrou/saves/<consola>/save/
 sd:/retrou/snap/<consola>/
@@ -42,9 +43,12 @@ Cada app crea sus carpetas y archivos de configuración si no existen.
 ## Qué hace
 
 - Escanea `sd:/retrou/roms/<consola>/`.
-- Muestra solo la grilla de juegos, sin barra de consolas.
+- Muestra la biblioteca en cards, lista o carrusel, sin barra de consolas.
 - **A** carga la ROM con el core integrado.
 - **Plus** abre Ajustes; **Minus** abre el sidebar de filtros en cards.
+- En lista y carrusel, **Minus** abre el buscador y **L/R** recorre el filtro
+  alfabético. La vista y la casilla de fondo dinámico se guardan por consola
+  en `view.conf`.
 - El touch del GamePad selecciona juegos y opciones en la UI.
 - **Minus + Plus** abre el menú superpuesto durante el core.
 - El render de la UI es bajo demanda: solo repinta cuando hay entrada o cambia
@@ -119,7 +123,8 @@ sd:/retrou/snap/<consola>/
 | A | abrir juego u opción |
 | B | volver un nivel; borrar en buscador |
 | X | favorito en biblioteca; aceptar en buscador |
-| Minus | filtros en vista cards |
+| Minus | filtros en cards; buscador en lista/carrusel |
+| L/R | filtro alfabético en lista/carrusel |
 | Plus | Ajustes |
 
 El menú durante el juego se abre con Minus+Plus. El touch del GamePad permite

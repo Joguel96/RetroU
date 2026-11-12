@@ -62,16 +62,16 @@ Apps:
 
 | Target | Core | Sistema |
 |---|---|---|
-| `retrou_nes` | fceumm | NES |
-| `retrou_snes` | snes9x | SNES |
-| `retrou_gba` | mgba | GBA |
+| `retrou_nes_gx2` | fceumm | NES |
+| `retrou_snes_gx2` | snes9x | SNES |
+| `retrou_gba_gx2` | mgba | GBA |
 
 Salidas:
 
 ```text
-native/build/retrou_nes.wuhb
-native/build/retrou_snes.wuhb
-native/build/retrou_gba.wuhb
+native/build/retrou_nes_gx2.wuhb
+native/build/retrou_snes_gx2.wuhb
+native/build/retrou_gba_gx2.wuhb
 ```
 
 Distribución:

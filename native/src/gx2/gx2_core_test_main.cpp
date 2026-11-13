@@ -2321,10 +2321,15 @@ int main()
                 } else if (viewMode != 0 && (navTrigger & VPAD_BUTTON_MINUS)) {
                     searchActive = true;
                     searchCursor = 0;
-                } else if (viewMode != 0 && (navTrigger & VPAD_BUTTON_Y)) {
-                    alphaFilter = favoritesOnly ? 0 : 1;
-                    favoritesOnly = alphaFilter == 1;
+                } else if (navTrigger & VPAD_BUTTON_Y) {
+                    viewMode = (viewMode + 1) % 3;
+                    alphaFilter = viewMode != 0 && favoritesOnly ? 1 : 0;
+                    focused = 0;
+                    scroll = 0;
                     rebuildVisible();
+                    saveViewOptions();
+                    bootLog(("library_view_changed mode=" + std::to_string(viewMode)).c_str());
+                    navBlip();
                 } else if (viewMode != 0 && (navTrigger & (VPAD_BUTTON_L | VPAD_BUTTON_R))) {
                     alphaFilter = (alphaFilter + ((navTrigger & VPAD_BUTTON_R) ? 1 : 28)) % 29;
                     favoritesOnly = alphaFilter == 1;
@@ -2905,8 +2910,8 @@ int main()
                 text::drawText("A  SELECCIONAR    B  CERRAR", 28.0f, 672.0f, 15, muted);
             } else {
                 text::drawText(viewMode == 0
-                                   ? "A  JUGAR    X  FAVORITO    -  FILTROS    +  AJUSTES"
-                                   : "A  JUGAR    X  FAVORITO    Y  FAVORITOS    -  BUSCAR    +  AJUSTES",
+                                   ? "A  JUGAR    X  FAVORITO    Y  VISTA    -  FILTROS    +  AJUSTES"
+                                   : "A  JUGAR    X  FAVORITO    Y  VISTA    -  BUSCAR    +  AJUSTES",
                                28.0f, 672.0f, 15, muted);
             }
 

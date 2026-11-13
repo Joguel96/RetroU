@@ -76,7 +76,7 @@ no lee este `audio.conf`.
 - En lista y carrusel, **Minus** abre el buscador y **L/R** recorre «All»,
   la estrella de Favoritos, «#» y A–Z. La vista y el fondo dinámico se guardan por consola
   en `view.conf`, junto con la espera del backdrop (0, 1, 3, 5 o 10 s;
-  3 s iniciales). **Y** también alterna Favoritos;
+  3 s iniciales). **Y** cambia entre cards, lista y carrusel;
   **X** marca la ROM y su estrella se muestra en lista y carrusel.
 - El carrusel NES muestra las portadas verticales; el SNES ajusta las imágenes
   completas en el centro y en los laterales, sin recortarlas.
@@ -209,7 +209,7 @@ sd:/retrou/snap/<consola>/
 | A | abrir juego u opción |
 | B | volver un nivel; borrar en buscador |
 | X | favorito en biblioteca; aceptar en buscador |
-| Y en lista/carrusel | mostrar u ocultar Favoritos |
+| Y en biblioteca | cambiar entre cards, lista y carrusel |
 | Minus | filtros en cards; buscador en lista/carrusel |
 | L/R | All, Favoritos, # y letras en lista/carrusel |
 | Plus | Ajustes |

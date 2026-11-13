@@ -211,6 +211,7 @@ No extender el RPL sin petición explícita. Si se retoma, hacerlo en su rama.
 - La biblioteca ofrece cards, lista y carrusel; lista/carrusel tienen filtro
   alfabético con L/R, Favoritos junto a «All» y estrellas en sus ROMs. NES usa
   portadas verticales en carrusel y SNES presenta la imagen completa.
+  `Y` cambia entre las tres vistas desde la biblioteca.
   La vista, el fondo dinámico y su espera configurable
   (0/1/3/5/10 s; 3 s por defecto) se guardan en `view.conf`.
 - `Minus` abre el sidebar de filtros solo en cards; en lista/carrusel abre
@@ -328,7 +329,8 @@ solo mantiene el estado general.
   (SAVE-1/2).
 - Touch, búsqueda, vistas de biblioteca y descargas separadas de
   portadas/backdrops con progreso: probados en hardware (NAV-1/7, UI-3..9,
-  AS-1..5). GBA ya recorre más allá del juego 144. Salir al menú de Wii U
+  AS-1..5). El atajo `Y Vista` (UI-10) aún requiere prueba en Wii U.
+  GBA ya recorre más allá del juego 144. Salir al menú de Wii U
   durante descargas activas funciona (AS-6, confirmado en Wii U).
 - Ajustes en dos paneles: nueva distribución según
   `ejemplos/Disposicion de menu.png`, confirmada en Wii U (UI-2).

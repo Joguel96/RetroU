@@ -51,6 +51,7 @@ de RetroU.
 - **Biblioteca GX2**: vistas cards, lista y carrusel; las dos últimas ofrecen
   filtro alfabético con Favoritos junto a «All», navegable con L/R. El carrusel NES presenta
   portadas verticales y el de SNES muestra las imágenes completas.
+  `Y` cambia de vista desde la biblioteca.
   Personalizar permite activar el fondo dinámico y elegir
   su espera (0, 1, 3, 5 o 10 s; 3 s iniciales). Las
   opciones de vista se guardan por consola en `view.conf`. Las vistas fueron

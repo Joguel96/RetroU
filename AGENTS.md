@@ -302,7 +302,8 @@ solo mantiene el estado general.
   core y NES/SNES/GBA con ROMs reales. El 2026-11-12 confirmó además las
   pruebas restantes de navegación, controles, guardados y Assets. El
   2026-11-13 confirmó UI-2, CTRL-8, AS-6 y CTRL-9. Reportó ruido en el
-  audio de GBA (AUD-1).
+  audio de GBA. La conversión lineal AUD-1 no lo resolvió; AUD-2 solicita
+  48 000 Hz y usa remuestreo sinc, pendiente de verificar en hardware.
 - **Input del core implementado**: A/B/X/Y/L/R, Start/Select y D-pad/stick.
 - **Input UI**: GamePad (VPAD) + Pro Controller (WPAD) con detección en
   caliente; menú HOME del sistema vía ProcUI.
@@ -321,8 +322,11 @@ solo mantiene el estado general.
   durante descargas activas funciona (AS-6, confirmado en Wii U).
 - Ajustes en dos paneles: nueva distribución según
   `ejemplos/Disposicion de menu.png`, confirmada en Wii U (UI-2).
-- Audio GBA: mGBA informa 65 536 Hz y la salida compartida GX2 funciona a
-  32 000 Hz. La conversión de frecuencia de AUD-1 necesita prueba en Wii U.
+- Audio GBA: mGBA informa 65 536 Hz. AUD-1 (lineal hacia 32 000 Hz) falló en
+  Wii U. AUD-2 solicita 48 000 Hz y filtra con sinc antes de la salida SDL;
+  falta prueba en Wii U.
+- Los nombres visibles de las WUHB de NES, SNES y GBA ya son `RetroU NES`,
+  `RetroU SNES` y `RetroU GBA` (APP-1, pendiente confirmar en Wii U).
 - Referencias visuales de UI en `ejemplos/` (raíz del proyecto).
 - No afirmar que algo está probado en hardware si no lo está.
 

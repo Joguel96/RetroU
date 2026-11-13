@@ -11,6 +11,9 @@ Libretro enlazado estáticamente** y se distribuye como WUHB independiente.
 | `RetroSNESU.wuhb` | snes9x | SNES |
 | `RetroGBAU.wuhb` | mgba | GBA |
 
+Los nombres visibles de las WUHB son `RetroU NES`, `RetroU SNES` y
+`RetroU GBA` (APP-1; pendiente verificar en el menú de Wii U).
+
 Distribución:
 
 ```text
@@ -108,7 +111,11 @@ No hay selector de cores: cada app es un sistema.
 El usuario confirmó en hardware las funciones de biblioteca, navegación,
 guardados, mapeo y descargas de NES/SNES/GBA anteriores a AS-6, CTRL-8 y UI-2.
 AS-6, CTRL-8, UI-2 y CTRL-9 se confirmaron en Wii U el 2026-11-13. La
-conversión de frecuencia de audio de GBA (AUD-1) necesita otra prueba.
+conversión lineal de audio de GBA (AUD-1) se probó y no eliminó el ruido.
+AUD-2 cambia la salida solicitada a 48 000 Hz y aplica un filtro sinc al
+audio de mGBA de 65 536 Hz; falta comprobar el resultado en hardware. El log
+`retrou_rpx.log` registra `audio_opened`, `Audio sinc resampler` y los
+reinicios de cola por atraso.
 
 El input básico del core ya está conectado: A/B/X/Y/L/R, Start/Select y D-Pad/stick.
 

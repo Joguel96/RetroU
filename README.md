@@ -36,9 +36,10 @@ de RetroU.
   de metadata y actualización de portadas visibles al terminar.
   El usuario confirmó estas funciones y el cierre con descargas activas en
   hardware (AS-6).
-- **Audio GBA**: mGBA genera muestras a 65 536 Hz; la salida compartida de
-  RetroU usa 32 000 Hz en Wii U. La conversión de frecuencia de AUD-1 está
-  compilada y necesita verificación en hardware.
+- **Audio GBA**: mGBA genera muestras a 65 536 Hz. La conversión lineal a
+  32 000 Hz de AUD-1 no eliminó el ruido en hardware. AUD-2 solicita una salida
+  de 48 000 Hz y usa remuestreo sinc con paso bajo; falta probarla en Wii U.
+  El log registra la frecuencia y el formato obtenidos del dispositivo.
 - **Biblioteca GX2**: vistas cards, lista y carrusel; las dos últimas ofrecen
   filtro alfabético con Favoritos junto a «All», navegable con L/R. El carrusel NES presenta
   portadas verticales y el de SNES muestra las imágenes completas.

@@ -25,7 +25,8 @@ reconectar un mando externo. La referencia de Ajustes ya está en
 
 Ronda del 2026-11-13: UI-2, CTRL-8 y AS-6 quedaron confirmados en Wii U.
 CTRL-9 también quedó confirmado tras probar la WUHB corregida. El usuario
-reportó ruido en el audio del core de GBA (AUD-1).
+reportó ruido en el audio del core de GBA. La conversión lineal de AUD-1
+se probó y el ruido persistió; AUD-2 reemplaza ese intento.
 
 ---
 
@@ -128,9 +129,16 @@ Guía de la ronda en Wii U: `docs/hardware-validation.md`.
 
 | ID | Pendiente | Estado |
 |---|---|---|
-| AUD-1 | Corregir el ruido del core GBA: mGBA entrega 65 536 Hz y la salida compartida GX2 usa 32 000 Hz; adaptar la frecuencia antes de encolar audio y comprobar en Wii U | 🔧 En curso (Codex, rama main); falta Wii U |
+| AUD-1 | Conversión lineal de 65 536 Hz a la salida de 32 000 Hz para el core GBA | ❌ 2026-11-13: probada en Wii U; el ruido persistió |
+| AUD-2 | Corregir el ruido de GBA siguiendo la ruta de RetroArch: salida Wii U a 48 000 Hz y remuestreo con filtro sinc antes de encolar; comprobar el resultado en hardware | 🔧 En curso (Codex, rama main); falta Wii U |
 
-## 11. Ejemplos gráficos (referencias Our64)
+## 11. Nombre de las apps
+
+| ID | Pendiente | Estado |
+|---|---|---|
+| APP-1 | Mostrar `RetroU NES`, `RetroU SNES` y `RetroU GBA` como nombre de las WUHB, sin `GX2`; verificar en el menú de Wii U | 🔧 En curso (Codex, rama main); falta Wii U |
+
+## 12. Ejemplos gráficos (referencias Our64)
 
 Carpeta del proyecto raíz: **`ejemplos/`** — ahí se adjuntan capturas/mocks
 de referencia (p. ej. el apartado de controles de Our64 para CTRL-3). Ver

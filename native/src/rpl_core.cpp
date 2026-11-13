@@ -155,9 +155,39 @@ void RplCore::queueAudio(const int16_t *data, size_t frames)
     }
 
     /* Keep latency bounded if the frontend falls behind. */
-    const uint32_t max_bytes = static_cast<uint32_t>(sample_rate_) * 4u * 3u;
+    const uint32_t max_bytes = static_cast<uint32_t>(audio_device_rate_) * 4u * 3u;
     if (SDL_GetQueuedAudioSize(audio_device_) > max_bytes) {
         SDL_ClearQueuedAudio(audio_device_);
+    }
+    if (sample_rate_ != audio_device_rate_) {
+        std::vector<int16_t> converted;
+        converted.reserve((frames * static_cast<size_t>(audio_device_rate_) /
+                           static_cast<size_t>(sample_rate_) + 2) * 2);
+        const double step = static_cast<double>(sample_rate_) / audio_device_rate_;
+        for (size_t i = 0; i < frames; ++i) {
+            const int16_t *current = data + i * 2;
+            if (!audio_previous_valid_) {
+                audio_previous_[0] = current[0];
+                audio_previous_[1] = current[1];
+                audio_previous_valid_ = true;
+                continue;
+            }
+            while (audio_resample_phase_ < 1.0) {
+                for (int ch = 0; ch < 2; ++ch) {
+                    const double sample = audio_previous_[ch] +
+                        (current[ch] - audio_previous_[ch]) * audio_resample_phase_;
+                    converted.push_back(static_cast<int16_t>(sample * audio_volume_ / 100));
+                }
+                audio_resample_phase_ += step;
+            }
+            audio_resample_phase_ -= 1.0;
+            audio_previous_[0] = current[0];
+            audio_previous_[1] = current[1];
+        }
+        if (!converted.empty())
+            SDL_QueueAudio(audio_device_, converted.data(),
+                           static_cast<uint32_t>(converted.size() * sizeof(int16_t)));
+        return;
     }
     if (audio_volume_ >= 100) {
         SDL_QueueAudio(audio_device_, data,
@@ -186,7 +216,9 @@ void RplCore::startAudio()
 
     if (external_audio_) {
         audio_device_ = external_audio_;
-        log("Audio reusing external device: " + std::to_string(sample_rate_) + " Hz");
+        audio_device_rate_ = external_audio_rate_ > 0 ? external_audio_rate_ : sample_rate_;
+        log("Audio reusing external device: " + std::to_string(sample_rate_) +
+            " Hz -> " + std::to_string(audio_device_rate_) + " Hz");
         return;
     }
 
@@ -211,6 +243,7 @@ void RplCore::startAudio()
 
     log("Audio opened: " + std::to_string(have.freq) + " Hz, " +
         std::to_string(have.channels) + " ch");
+    audio_device_rate_ = have.freq;
     SDL_PauseAudioDevice(audio_device_, 0);
 }
 
@@ -521,6 +554,8 @@ bool RplCore::loadGame(const std::string &rom_path, std::string &error)
     }
     retro_game_info game{};
     rom_path_ = rom_path;
+    audio_resample_phase_ = 0.0;
+    audio_previous_valid_ = false;
     log("RplCore loadGame " + rom_path_);
     game.path = rom_path_.c_str();
     game.data = nullptr;

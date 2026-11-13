@@ -94,7 +94,10 @@ public:
         wpad_samples_ = states;
         ++wpad_samples_seq_;
     }
-    void setExternalAudioDevice(SDL_AudioDeviceID device) { external_audio_ = device; }
+    void setExternalAudioDevice(SDL_AudioDeviceID device, int rate) {
+        external_audio_ = device;
+        external_audio_rate_ = rate;
+    }
     void setVideoOptions(int aspect, int scale, int filter) {
         video_aspect_ = aspect;
         video_scale_ = scale;
@@ -165,6 +168,11 @@ private:
 
     SDL_AudioDeviceID audio_device_ = 0;
     int sample_rate_ = 44100;
+    int audio_device_rate_ = 44100;
+    int external_audio_rate_ = 0;
+    double audio_resample_phase_ = 0.0;
+    int16_t audio_previous_[2] = {0, 0};
+    bool audio_previous_valid_ = false;
     int audio_volume_ = 100;
     int audio_latency_ = 1;
     int video_aspect_ = 0;

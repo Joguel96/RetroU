@@ -996,6 +996,7 @@ static void stopAssetDownload()
 
 // ---- UI audio: 16-bit retro background loop + navigation blip (queue-based) ----
 static SDL_AudioDeviceID g_uiDevice = 0;
+static int g_uiDeviceRate = 0;
 static std::vector<int16_t> g_loop;
 static std::vector<int16_t> g_blip;
 static size_t g_loopPos = 0;
@@ -1022,6 +1023,7 @@ static void initUiAudio()
     SDL_AudioSpec obtained{};
     g_uiDevice = SDL_OpenAudioDevice(nullptr, 0, &want, &obtained, 0);
     if (g_uiDevice) {
+        g_uiDeviceRate = obtained.freq;
         SDL_PauseAudioDevice(g_uiDevice, 0);
     }
 }
@@ -1469,7 +1471,7 @@ int main()
     core.setControllers(nullptr, nullptr);
     core.setVpadEnabled(true);
     core.setVideoOptions(videoAspect, videoScale, videoFilter);
-    core.setExternalAudioDevice(g_uiDevice);
+    core.setExternalAudioDevice(g_uiDevice, g_uiDeviceRate);
     core.setAudioOptions(coreVolume, 0);
 
     wpad_input_init();

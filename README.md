@@ -40,6 +40,10 @@ de RetroU.
   32 000 Hz de AUD-1 no eliminó el ruido en hardware. AUD-2 solicita una salida
   de 48 000 Hz y usa remuestreo sinc con paso bajo; falta probarla en Wii U.
   El log registra la frecuencia y el formato obtenidos del dispositivo.
+- **Salida de audio**: Sonido permite elegir frecuencia automática, 32 000 o
+  48 000 Hz y búfer de 512, 1024 o 2048 muestras. Se guarda por consola en
+  `sd:/retrou/config/<consola>/audio.conf` y se aplica al reiniciar esa app
+  (AUD-3, pendiente de probar en Wii U). N64 conserva su configuración propia.
 - **Biblioteca GX2**: vistas cards, lista y carrusel; las dos últimas ofrecen
   filtro alfabético con Favoritos junto a «All», navegable con L/R. El carrusel NES presenta
   portadas verticales y el de SNES muestra las imágenes completas.

@@ -98,6 +98,7 @@ sd:/retrou/config/nes/
   nes.conf
   control-map.conf
   video.conf
+  audio.conf
   view.conf
   profiles/
   rom-maps/
@@ -105,11 +106,13 @@ sd:/retrou/config/snes/
   snes.conf
   control-map.conf
   video.conf
+  audio.conf
   view.conf
 sd:/retrou/config/gba/
   gba.conf
   control-map.conf
   video.conf
+  audio.conf
   view.conf
 
 sd:/retrou/saves/<consola>/save/          SRAM de juegos
@@ -120,7 +123,12 @@ Las carpetas de ROMs se aceptan en minúscula (`nes`, `snes`, `gba`) y también
 en mayúscula por compatibilidad. La ruta canónica es minúscula.
 
 `theme.conf` y `menu-shortcut.conf` son comunes. `<consola>.conf`,
-`control-map.conf`, `video.conf` y `view.conf` son independientes por app.
+`control-map.conf`, `video.conf`, `audio.conf` y `view.conf` son independientes por app.
+
+`audio.conf` usa `v1 <frecuencia> <búfer>`: frecuencia 0 = automática
+(GBA 48 kHz, NES/SNES 32 kHz), 1 = 32 kHz, 2 = 48 kHz; búfer 0/1/2 =
+512/1024/2048 muestras. Los cambios en Sonido se aplican al reiniciar la app
+porque el dispositivo SDL no se cierra durante la sesión (AUD-3).
 
 `control-map.conf` usa el formato `v2` estilo Our64 (acción del core → una o
 varias máscaras de botones físicos): secciones `[gamepad]` y `[pro]`, líneas
@@ -325,6 +333,9 @@ solo mantiene el estado general.
 - Audio GBA: mGBA informa 65 536 Hz. AUD-1 (lineal hacia 32 000 Hz) falló en
   Wii U. AUD-2 solicita 48 000 Hz y filtra con sinc antes de la salida SDL;
   falta prueba en Wii U.
+- Sonido permite configurar frecuencia y búfer de salida por app NES/SNES/GBA
+  en `audio.conf`; AUD-3 requiere comprobación en Wii U. N64 mantiene su
+  configuración independiente.
 - Los nombres visibles de las WUHB de NES, SNES y GBA ya son `RetroU NES`,
   `RetroU SNES` y `RetroU GBA` (APP-1, pendiente confirmar en Wii U).
 - Referencias visuales de UI en `ejemplos/` (raíz del proyecto).

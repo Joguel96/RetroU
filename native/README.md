@@ -36,6 +36,7 @@ sd:/retrou/config/menu-shortcut.conf
 sd:/retrou/config/nes/nes.conf
 sd:/retrou/config/nes/control-map.conf
 sd:/retrou/config/nes/video.conf
+sd:/retrou/config/nes/audio.conf
 sd:/retrou/config/nes/view.conf
 sd:/retrou/config/nes/profiles/
 sd:/retrou/config/nes/rom-maps/
@@ -50,6 +51,14 @@ Cada app crea sus carpetas y archivos de configuración si no existen.
 una o varias máscaras físicas en hexadecimal, o `none`. Los formatos `v1` y
 anterior se leen y migran al guardar. Los tres perfiles por dispositivo se
 guardan en `profiles/`; los mapas por ROM, en `rom-maps/`.
+
+Cada app NES/SNES/GBA lee su propio `audio.conf` con formato `v1 <frecuencia>
+<búfer>`: frecuencia `0` = Auto (GBA 48 000 Hz, NES/SNES 32 000 Hz), `1` =
+32 000 Hz, `2` = 48 000 Hz; búfer `0` = 512, `1` = 1024, `2` = 2048 muestras.
+Los cambios de Sonido se guardan enseguida y se aplican al próximo inicio,
+porque el dispositivo SDL permanece abierto durante la sesión. Si falla la
+frecuencia elegida, se prueba la otra; `retrou_rpx.log` registra la selección,
+la frecuencia real y los fallos de apertura. N64 usa su propia app/configuración.
 
 ## Qué hace
 

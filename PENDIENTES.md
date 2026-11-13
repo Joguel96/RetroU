@@ -131,6 +131,7 @@ Guía de la ronda en Wii U: `docs/hardware-validation.md`.
 |---|---|---|
 | AUD-1 | Conversión lineal de 65 536 Hz a la salida de 32 000 Hz para el core GBA | ❌ 2026-11-13: probada en Wii U; el ruido persistió |
 | AUD-2 | Corregir el ruido de GBA siguiendo la ruta de RetroArch: salida Wii U a 48 000 Hz y remuestreo con filtro sinc antes de encolar; comprobar el resultado en hardware | 🔧 En curso (Codex, rama main); falta Wii U |
+| AUD-3 | Configurar frecuencia de salida y tamaño del búfer desde Sonido, guardados en `audio.conf` independiente para NES/SNES/GBA; aplicar al próximo inicio y verificar en Wii U | 🔧 En curso (Codex, rama main); falta Wii U |
 
 ## 11. Nombre de las apps
 

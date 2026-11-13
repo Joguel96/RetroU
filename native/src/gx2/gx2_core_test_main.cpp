@@ -1007,13 +1007,7 @@ static bool g_sfxOn = true;
 
 static void initUiAudio()
 {
-    const int rate = 32000;
-    const int blipFrames = static_cast<int>(rate * 0.05f);
-    for (int i = 0; i < blipFrames; ++i) {
-        const float t = static_cast<float>(i) / rate;
-        const float w = std::sin(6.2831853f * 880.0f * t);
-        g_blip.push_back(static_cast<int16_t>((w >= 0.0f ? 0.3f : -0.3f) * 32767.0f));
-    }
+    const int rate = 48000;
     SDL_AudioSpec want{};
     want.freq = rate;
     want.format = AUDIO_S16SYS;
@@ -1022,9 +1016,26 @@ static void initUiAudio()
     want.callback = nullptr;
     SDL_AudioSpec obtained{};
     g_uiDevice = SDL_OpenAudioDevice(nullptr, 0, &want, &obtained, 0);
+    if (!g_uiDevice) {
+        bootLog((std::string("audio_48000_failed ") + SDL_GetError()).c_str());
+        want.freq = 32000;
+        g_uiDevice = SDL_OpenAudioDevice(nullptr, 0, &want, &obtained, 0);
+    }
     if (g_uiDevice) {
         g_uiDeviceRate = obtained.freq;
+        bootLog(("audio_opened requested=" + std::to_string(want.freq) +
+                 " obtained=" + std::to_string(obtained.freq) +
+                 " format=" + std::to_string(obtained.format) +
+                 " channels=" + std::to_string(obtained.channels)).c_str());
+        const int blipFrames = static_cast<int>(g_uiDeviceRate * 0.05f);
+        for (int i = 0; i < blipFrames; ++i) {
+            const float t = static_cast<float>(i) / g_uiDeviceRate;
+            const float w = std::sin(6.2831853f * 880.0f * t);
+            g_blip.push_back(static_cast<int16_t>((w >= 0.0f ? 0.3f : -0.3f) * 32767.0f));
+        }
         SDL_PauseAudioDevice(g_uiDevice, 0);
+    } else {
+        bootLog((std::string("audio_open_failed ") + SDL_GetError()).c_str());
     }
 }
 

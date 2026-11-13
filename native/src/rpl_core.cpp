@@ -3,8 +3,10 @@
 #include <padscore/wpad.h>
 #include <vpad/input.h>
 
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <cmath>
 #include <fstream>
 #include <iterator>
 #include <sys/stat.h>
@@ -17,6 +19,16 @@ RplCore *RplCore::instance_ = nullptr;
 namespace {
 
 const char *kSystemDirectory = "/vol/external01/retrou/config/system";
+constexpr int kAudioSincTaps = 64;
+constexpr int kAudioSincPhases = 256;
+constexpr int kAudioSincHistory = kAudioSincTaps / 2;
+
+int16_t clampAudioSample(float value)
+{
+    if (value < -32768.0f) return -32768;
+    if (value > 32767.0f) return 32767;
+    return static_cast<int16_t>(value);
+}
 
 Uint32 sdlFormatFor(uint32_t format)
 {
@@ -155,38 +167,52 @@ void RplCore::queueAudio(const int16_t *data, size_t frames)
     }
 
     /* Keep latency bounded if the frontend falls behind. */
-    const uint32_t max_bytes = static_cast<uint32_t>(audio_device_rate_) * 4u * 3u;
+    const uint32_t max_bytes = static_cast<uint32_t>(audio_device_rate_) * 4u / 2u;
     if (SDL_GetQueuedAudioSize(audio_device_) > max_bytes) {
+        log("Audio queue exceeded 500 ms; dropping stale samples");
         SDL_ClearQueuedAudio(audio_device_);
     }
     if (sample_rate_ != audio_device_rate_) {
+        if (audio_resample_kernel_.empty()) return;
+        if (audio_resample_buffer_.empty()) {
+            audio_resample_buffer_.reserve((frames + kAudioSincTaps) * 2);
+            for (int i = 0; i < kAudioSincHistory; ++i) {
+                audio_resample_buffer_.push_back(data[0]);
+                audio_resample_buffer_.push_back(data[1]);
+            }
+            audio_resample_position_ = kAudioSincHistory;
+        }
+        audio_resample_buffer_.insert(audio_resample_buffer_.end(), data, data + frames * 2);
         std::vector<int16_t> converted;
         converted.reserve((frames * static_cast<size_t>(audio_device_rate_) /
                            static_cast<size_t>(sample_rate_) + 2) * 2);
         const double step = static_cast<double>(sample_rate_) / audio_device_rate_;
-        for (size_t i = 0; i < frames; ++i) {
-            const int16_t *current = data + i * 2;
-            if (!audio_previous_valid_) {
-                audio_previous_[0] = current[0];
-                audio_previous_[1] = current[1];
-                audio_previous_valid_ = true;
-                continue;
+        const size_t available = audio_resample_buffer_.size() / 2;
+        while (static_cast<size_t>(audio_resample_position_) + kAudioSincHistory < available) {
+            const size_t center = static_cast<size_t>(audio_resample_position_);
+            const double fraction = audio_resample_position_ - center;
+            const int phase = static_cast<int>(fraction * kAudioSincPhases);
+            const float *kernel = audio_resample_kernel_.data() + phase * kAudioSincTaps;
+            float sum[2] = {0.0f, 0.0f};
+            for (int tap = 0; tap < kAudioSincTaps; ++tap) {
+                const size_t source = (center + tap - (kAudioSincHistory - 1)) * 2;
+                sum[0] += audio_resample_buffer_[source] * kernel[tap];
+                sum[1] += audio_resample_buffer_[source + 1] * kernel[tap];
             }
-            while (audio_resample_phase_ < 1.0) {
-                for (int ch = 0; ch < 2; ++ch) {
-                    const double sample = audio_previous_[ch] +
-                        (current[ch] - audio_previous_[ch]) * audio_resample_phase_;
-                    converted.push_back(static_cast<int16_t>(sample * audio_volume_ / 100));
-                }
-                audio_resample_phase_ += step;
-            }
-            audio_resample_phase_ -= 1.0;
-            audio_previous_[0] = current[0];
-            audio_previous_[1] = current[1];
+            const float gain = audio_volume_ / 100.0f;
+            converted.push_back(clampAudioSample(sum[0] * gain));
+            converted.push_back(clampAudioSample(sum[1] * gain));
+            audio_resample_position_ += step;
         }
-        if (!converted.empty())
-            SDL_QueueAudio(audio_device_, converted.data(),
-                           static_cast<uint32_t>(converted.size() * sizeof(int16_t)));
+        const size_t consumed = static_cast<size_t>(audio_resample_position_) - kAudioSincHistory;
+        if (consumed > 0) {
+            audio_resample_buffer_.erase(audio_resample_buffer_.begin(),
+                                         audio_resample_buffer_.begin() + consumed * 2);
+            audio_resample_position_ -= consumed;
+        }
+        if (!converted.empty() && SDL_QueueAudio(audio_device_, converted.data(),
+                           static_cast<uint32_t>(converted.size() * sizeof(int16_t))) != 0)
+            log(std::string("SDL_QueueAudio failed: ") + SDL_GetError());
         return;
     }
     if (audio_volume_ >= 100) {
@@ -200,6 +226,39 @@ void RplCore::queueAudio(const int16_t *data, size_t frames)
         SDL_QueueAudio(audio_device_, scaled.data(),
                        static_cast<uint32_t>(scaled.size() * sizeof(int16_t)));
     }
+}
+
+void RplCore::prepareAudioResampler()
+{
+    audio_resample_kernel_.clear();
+    audio_resample_buffer_.clear();
+    audio_resample_position_ = 0.0;
+    if (sample_rate_ == audio_device_rate_ || audio_device_rate_ <= 0) return;
+
+    // RetroArch resamples core PCM before submitting it to Wii U's 48 kHz
+    // output. Use a windowed-sinc low-pass here so mGBA's 65,536 Hz signal
+    // can be downsampled without folding frequencies above Nyquist into noise.
+    const double pi = 3.14159265358979323846;
+    const double cutoff = std::min(1.0, static_cast<double>(audio_device_rate_) / sample_rate_) * 0.90;
+    audio_resample_kernel_.resize(kAudioSincPhases * kAudioSincTaps);
+    for (int phase = 0; phase < kAudioSincPhases; ++phase) {
+        const double fraction = static_cast<double>(phase) / kAudioSincPhases;
+        double total = 0.0;
+        for (int tap = 0; tap < kAudioSincTaps; ++tap) {
+            const double position = tap - (kAudioSincHistory - 1) - fraction;
+            const double x = pi * cutoff * position;
+            const double sinc = std::abs(x) < 1e-9 ? 1.0 : std::sin(x) / x;
+            const double window = 0.42 - 0.5 * std::cos(2.0 * pi * tap / (kAudioSincTaps - 1)) +
+                                  0.08 * std::cos(4.0 * pi * tap / (kAudioSincTaps - 1));
+            const double coefficient = cutoff * sinc * window;
+            audio_resample_kernel_[phase * kAudioSincTaps + tap] = static_cast<float>(coefficient);
+            total += coefficient;
+        }
+        for (int tap = 0; tap < kAudioSincTaps; ++tap)
+            audio_resample_kernel_[phase * kAudioSincTaps + tap] /= static_cast<float>(total);
+    }
+    log("Audio sinc resampler: " + std::to_string(sample_rate_) + " -> " +
+        std::to_string(audio_device_rate_) + " Hz, 64 taps");
 }
 
 void RplCore::startAudio()
@@ -219,6 +278,7 @@ void RplCore::startAudio()
         audio_device_rate_ = external_audio_rate_ > 0 ? external_audio_rate_ : sample_rate_;
         log("Audio reusing external device: " + std::to_string(sample_rate_) +
             " Hz -> " + std::to_string(audio_device_rate_) + " Hz");
+        prepareAudioResampler();
         return;
     }
 
@@ -244,6 +304,7 @@ void RplCore::startAudio()
     log("Audio opened: " + std::to_string(have.freq) + " Hz, " +
         std::to_string(have.channels) + " ch");
     audio_device_rate_ = have.freq;
+    prepareAudioResampler();
     SDL_PauseAudioDevice(audio_device_, 0);
 }
 
@@ -554,8 +615,8 @@ bool RplCore::loadGame(const std::string &rom_path, std::string &error)
     }
     retro_game_info game{};
     rom_path_ = rom_path;
-    audio_resample_phase_ = 0.0;
-    audio_previous_valid_ = false;
+    audio_resample_position_ = 0.0;
+    audio_resample_buffer_.clear();
     log("RplCore loadGame " + rom_path_);
     game.path = rom_path_.c_str();
     game.data = nullptr;

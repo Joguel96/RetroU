@@ -170,9 +170,9 @@ private:
     int sample_rate_ = 44100;
     int audio_device_rate_ = 44100;
     int external_audio_rate_ = 0;
-    double audio_resample_phase_ = 0.0;
-    int16_t audio_previous_[2] = {0, 0};
-    bool audio_previous_valid_ = false;
+    double audio_resample_position_ = 0.0;
+    std::vector<int16_t> audio_resample_buffer_;
+    std::vector<float> audio_resample_kernel_;
     int audio_volume_ = 100;
     int audio_latency_ = 1;
     int video_aspect_ = 0;
@@ -237,6 +237,7 @@ private:
     void *resolve(const char *name, std::string &error);
     void log(const std::string &message) const;
     void queueAudio(const int16_t *data, size_t frames);
+    void prepareAudioResampler();
     void pollInput();
     void updateTexture(SDL_Renderer *renderer, SDL_Texture *&texture);
     void destroyTextures();};

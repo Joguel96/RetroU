@@ -8,9 +8,10 @@ fallo. El arranque rota esos archivos.
 
 El usuario confirmó en Wii U la navegación, controles, guardados y Assets de
 NES/SNES/GBA, y que RetroN64U funciona (N64-1). En la ronda del 2026-11-13
-confirmó UI-2, CTRL-8 y AS-6. Detectó otro caso: en GBA, el Pro elegido como
-Mando 1 no llega al core si la ROM tiene mapa propio (CTRL-9). Este último
-arreglo requiere una nueva prueba; N64-2 sigue pendiente.
+confirmó UI-2, CTRL-8 y AS-6. También confirmó que el Pro llega al core de
+GBA aunque la ROM tenga mapa propio (CTRL-9). Reportó ruido en el audio de
+GBA (AUD-1); la conversión de frecuencia requiere otra prueba. N64-2 sigue
+pendiente.
 
 ## Preparación
 
@@ -109,6 +110,15 @@ arreglo requiere una nueva prueba; N64-2 sigue pendiente.
    había comenzado, también `GX2 asset: cancelado`), y que
    la siguiente apertura puede reanudar «Solo faltantes».
 
+## Audio GBA
+
+Abre en Wii U la misma ROM que producía ruido y escucha música y efectos al
+menos durante un minuto. Cambia el volumen del core y reanuda tras abrir el
+menú de partida. Confirma que el log muestra
+`Audio reusing external device: 65536 Hz -> 32000 Hz` (o la frecuencia real
+que SDL haya abierto) y que no hay ruido, aceleración ni cortes. Repite una
+partida breve de NES o SNES para detectar una regresión en la ruta directa.
+
 ## N64
 
 `RetroN64U.wuhb` fue probado por el usuario en hardware y funciona (N64-1).
@@ -133,6 +143,7 @@ de esta tanda y no se tocó.
 | `67f44e5` | Rutas seguras GBA, índice de assets y cola de descargas manuales | `native/build/logs/build-20261112-150558.log` |
 | `a227b86` | Cancelación al salir, restauración de mandos y nueva distribución de Ajustes | `native/build/logs/build-20261112-234215.log` |
 | `826b787` | GBA conserva Mando 1 global al abrir una ROM con mapa propio | `native/build/logs/build-20261113-002521.log` |
+| `4d73820` | Conversión de audio del core GBA a la frecuencia de SDL | `native/build/logs/build-20261113-003709.log` |
 
 Los logs y WUHB están ignorados por Git: conserva una copia antes de limpiar
 `native/build/` o `dist/`. Para retirar un cambio, revierte su commit con Git,

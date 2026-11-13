@@ -301,7 +301,8 @@ solo mantiene el estado general.
 - **Probado en hardware por el usuario**: HOME durante partida, audio del
   core y NES/SNES/GBA con ROMs reales. El 2026-11-12 confirmó además las
   pruebas restantes de navegación, controles, guardados y Assets. El
-  2026-11-13 confirmó UI-2, CTRL-8 y AS-6; falta verificar CTRL-9.
+  2026-11-13 confirmó UI-2, CTRL-8, AS-6 y CTRL-9. Reportó ruido en el
+  audio de GBA (AUD-1).
 - **Input del core implementado**: A/B/X/Y/L/R, Start/Select y D-pad/stick.
 - **Input UI**: GamePad (VPAD) + Pro Controller (WPAD) con detección en
   caliente; menú HOME del sistema vía ProcUI.
@@ -310,9 +311,8 @@ solo mantiene el estado general.
   botones por acción, `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás y
   migración de `v1`/conf viejo; también orden de mandos, perfiles, mapas por ROM
   y atajos configurables del menú. La reconexión de Pro/Classic funciona
-  (CTRL-8, confirmado en Wii U). Pendiente:
-  GBA no aplicaba al core el Pro elegido como Mando 1 cuando una ROM cargaba
-  un mapa propio; la corrección CTRL-9 necesita prueba en Wii U.
+  (CTRL-8, confirmado en Wii U). GBA aplica al core el Pro elegido como Mando 1
+  aunque la ROM tenga un mapa propio (CTRL-9, confirmado en Wii U).
 - SRAM automática y cuatro slots con miniatura: probados en hardware
   (SAVE-1/2).
 - Touch, búsqueda, vistas de biblioteca y descargas separadas de
@@ -321,6 +321,8 @@ solo mantiene el estado general.
   durante descargas activas funciona (AS-6, confirmado en Wii U).
 - Ajustes en dos paneles: nueva distribución según
   `ejemplos/Disposicion de menu.png`, confirmada en Wii U (UI-2).
+- Audio GBA: mGBA informa 65 536 Hz y la salida compartida GX2 funciona a
+  32 000 Hz. La conversión de frecuencia de AUD-1 necesita prueba en Wii U.
 - Referencias visuales de UI en `ejemplos/` (raíz del proyecto).
 - No afirmar que algo está probado en hardware si no lo está.
 

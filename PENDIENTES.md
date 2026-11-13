@@ -24,8 +24,8 @@ reconectar un mando externo. La referencia de Ajustes ya está en
 `ejemplos/Disposicion de menu.png`. N64 se confirmó después por separado.
 
 Ronda del 2026-11-13: UI-2, CTRL-8 y AS-6 quedaron confirmados en Wii U.
-Se detectó CTRL-9 en GBA al abrir una ROM con mapa propio después de asignar
-el Pro como Mando 1; su corrección necesita prueba en hardware.
+CTRL-9 también quedó confirmado tras probar la WUHB corregida. El usuario
+reportó ruido en el audio del core de GBA (AUD-1).
 
 ---
 
@@ -61,7 +61,7 @@ el Pro como Mando 1; su corrección necesita prueba en hardware.
 | CTRL-6 | GamePad asignable a **cualquier mando del core** (Mando 1 y Mando 2). `setVpadPort()` + opciones de Mando 2 con GamePad. Extendido: se listan **todos** los mandos conectados (4 canales KPAD + GamePad, sin límite de 2) y se nombran por tipo (Wii U Pro Controller, Classic Controller, Wii Remote, Wii Remote + Nunchuk) con sufijo numérico solo si hay varios del mismo tipo | ✅ 2026-11-11 |
 | CTRL-7 | Configurar por tipo de mando la combinación global que abre el menú durante el core, con opciones compatibles para GamePad, Pro/Classic y Wii Remote/Nunchuk; conservar Minus+Plus como emergencia y persistir el ajuste | ✅ 2026-11-12 |
 | CTRL-8 | Al desconectar y reconectar Wii U Pro Controller o Classic Controller durante la app, conservar o restaurar su asignación a Mando 1/Mando 2 y su mapeo; comprobar también la navegación de UI tras reconectar | ✅ 2026-11-13 |
-| CTRL-9 | GBA: al elegir Wii U Pro Controller como Mando 1, una ROM con mapa propio debe conservar ese mando durante el juego; el archivo por ROM solo modifica botones, no el orden global | 🔧 En curso (Codex, rama main); falta Wii U |
+| CTRL-9 | GBA: al elegir Wii U Pro Controller como Mando 1, una ROM con mapa propio debe conservar ese mando durante el juego; el archivo por ROM solo modifica botones, no el orden global | ✅ 2026-11-13 |
 
 ## 4. UI / Apariencia
 
@@ -124,7 +124,13 @@ Guía de la ronda en Wii U: `docs/hardware-validation.md`.
 | N64-1 | Probar `RetroN64U.wuhb` en hardware (generada desde Our64, rebrandeada); el usuario confirmó que es funcional | ✅ 2026-11-12 |
 | N64-2 | Port completo a la UI RetroU (varias rondas; clon externo en `C:/proyectos/Our64`) | ⬜ |
 
-## 10. Ejemplos gráficos (referencias Our64)
+## 10. Audio del core
+
+| ID | Pendiente | Estado |
+|---|---|---|
+| AUD-1 | Corregir el ruido del core GBA: mGBA entrega 65 536 Hz y la salida compartida GX2 usa 32 000 Hz; adaptar la frecuencia antes de encolar audio y comprobar en Wii U | 🔧 En curso (Codex, rama main); falta Wii U |
+
+## 11. Ejemplos gráficos (referencias Our64)
 
 Carpeta del proyecto raíz: **`ejemplos/`** — ahí se adjuntan capturas/mocks
 de referencia (p. ej. el apartado de controles de Our64 para CTRL-3). Ver

@@ -833,6 +833,41 @@ static void saveAppSettings(const std::string &sdRoot, int columns, bool showCov
     }
 }
 
+// Each console app owns its output settings. The SDL device is opened once at
+// startup, so changes to these values take effect on the next app launch.
+struct AudioOutputSettings {
+    int rateMode = 0;   // Auto, 32000 Hz, 48000 Hz
+    int bufferMode = 0; // 512, 1024, 2048 samples
+};
+
+static std::string audioConfigPath(const std::string &sdRoot)
+{
+    return sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/audio.conf";
+}
+
+static AudioOutputSettings loadAudioOutputSettings(const std::string &sdRoot)
+{
+    AudioOutputSettings settings;
+    std::ifstream in(audioConfigPath(sdRoot));
+    std::string version;
+    int rateMode = 0, bufferMode = 0;
+    if (in >> version >> rateMode >> bufferMode && version == "v1" &&
+        rateMode >= 0 && rateMode <= 2 && bufferMode >= 0 && bufferMode <= 2) {
+        settings.rateMode = rateMode;
+        settings.bufferMode = bufferMode;
+    }
+    return settings;
+}
+
+static bool saveAudioOutputSettings(const std::string &sdRoot,
+                                    const AudioOutputSettings &settings)
+{
+    std::ofstream out(audioConfigPath(sdRoot), std::ios::trunc);
+    if (!out) return false;
+    out << "v1 " << settings.rateMode << " " << settings.bufferMode << "\n";
+    return static_cast<bool>(out);
+}
+
 // CTRL-7: acceso al menú durante el core. Es global para las tres apps y se
 // configura por familia física, nunca por ROM ni por puerto del core.
 struct MenuShortcuts {
@@ -1005,20 +1040,25 @@ static int g_uiVolume = 80;
 static bool g_bgMusicOn = true;
 static bool g_sfxOn = true;
 
-static void initUiAudio()
+static void initUiAudio(const AudioOutputSettings &settings)
 {
-    const int rate = std::string(RETROU_CORE_SYSTEM) == "gba" ? 48000 : 32000;
+    const int automaticRate = std::string(RETROU_CORE_SYSTEM) == "gba" ? 48000 : 32000;
+    const int rate = settings.rateMode == 1 ? 32000 :
+                     settings.rateMode == 2 ? 48000 : automaticRate;
     SDL_AudioSpec want{};
     want.freq = rate;
     want.format = AUDIO_S16SYS;
     want.channels = 2;
-    want.samples = 512;
+    want.samples = settings.bufferMode == 1 ? 1024 :
+                   settings.bufferMode == 2 ? 2048 : 512;
     want.callback = nullptr;
     SDL_AudioSpec obtained{};
     g_uiDevice = SDL_OpenAudioDevice(nullptr, 0, &want, &obtained, 0);
-    if (!g_uiDevice && rate == 48000) {
-        bootLog((std::string("audio_48000_failed ") + SDL_GetError()).c_str());
-        want.freq = 32000;
+    if (!g_uiDevice) {
+        bootLog(("audio_open_failed requested=" + std::to_string(rate) +
+                 " buffer=" + std::to_string(want.samples) +
+                 " error=" + SDL_GetError()).c_str());
+        want.freq = rate == 48000 ? 32000 : 48000;
         g_uiDevice = SDL_OpenAudioDevice(nullptr, 0, &want, &obtained, 0);
     }
     if (g_uiDevice) {
@@ -1026,7 +1066,10 @@ static void initUiAudio()
         bootLog(("audio_opened requested=" + std::to_string(want.freq) +
                  " obtained=" + std::to_string(obtained.freq) +
                  " format=" + std::to_string(obtained.format) +
-                 " channels=" + std::to_string(obtained.channels)).c_str());
+                 " channels=" + std::to_string(obtained.channels) +
+                 " buffer=" + std::to_string(obtained.samples) +
+                 " rate_mode=" + std::to_string(settings.rateMode) +
+                 " buffer_mode=" + std::to_string(settings.bufferMode)).c_str());
         const int blipFrames = static_cast<int>(g_uiDeviceRate * 0.05f);
         for (int i = 0; i < blipFrames; ++i) {
             const float t = static_cast<float>(i) / g_uiDeviceRate;
@@ -1102,8 +1145,6 @@ int main()
     VPADInit();
     SDL_Init(SDL_INIT_AUDIO | SDL_INIT_TIMER);
     bootLog("sdl_ready");
-    initUiAudio();
-    bootLog("audio_ready");
 
     if (!init()) {
         bootLog("gx2_init_failed");
@@ -1123,6 +1164,14 @@ int main()
     mkdir((library.sd_root + "/retrou").c_str(), 0777);
     mkdir((library.sd_root + "/retrou/config").c_str(), 0777);
     mkdir(controlConfigDir(library.sd_root).c_str(), 0777);
+    AudioOutputSettings audioOutput = loadAudioOutputSettings(library.sd_root);
+    const AudioOutputSettings activeAudioOutput = audioOutput;
+    bool audioRestartRequired = false;
+    bootLog(("audio_config_loaded system=" RETROU_CORE_SYSTEM
+             " rate_mode=" + std::to_string(audioOutput.rateMode) +
+             " buffer_mode=" + std::to_string(audioOutput.bufferMode)).c_str());
+    initUiAudio(audioOutput);
+    bootLog("audio_ready");
     scanRoms(library, RETROU_CORE_SYSTEM);
     bootLog("rom_scan_ready");
     loadFavorites(library, RETROU_CORE_SYSTEM);
@@ -1770,7 +1819,7 @@ int main()
                     }
                 } else if (settingsOpen && settingsSection >= 0 &&
                            tx >= 350 && tx < 1240 && ty >= 210 && ty < 625) {
-                        const int counts[] = {5, 5, hasSecondCorePort() ? 7 : 6, 3, 2};
+                        const int counts[] = {5, 5, hasSecondCorePort() ? 7 : 6, 5, 2};
                         settingsItem = std::min(counts[settingsSection] - 1,
                                                 static_cast<int>((ty - 210) /
                                                     (settingsSection == 2 ? 60 : 70)));
@@ -2065,7 +2114,7 @@ int main()
                     if (settingsSection == 0) itemCount = 5;
                     else if (settingsSection == 1) itemCount = 5;
                     else if (settingsSection == 2) itemCount = hasSecondCorePort() ? 7 : 6;
-                    else if (settingsSection == 3) itemCount = 3;
+                    else if (settingsSection == 3) itemCount = 5;
                     else if (settingsSection == 4) itemCount = 2;
 
                     if (navTrigger & VPAD_BUTTON_B) {
@@ -2150,6 +2199,22 @@ int main()
                             sfxOn = !sfxOn;
                             g_sfxOn = sfxOn;
                             saveAppSettings(library.sd_root, columns, showCovers, uiVolume, bgMusicOn, sfxOn, coreVolume);
+                        } else if (settingsSection == 3 && settingsItem == 3) {
+                            audioOutput.rateMode = (audioOutput.rateMode + dir + 3) % 3;
+                            const bool saved = saveAudioOutputSettings(library.sd_root, audioOutput);
+                            audioRestartRequired = audioOutput.rateMode != activeAudioOutput.rateMode ||
+                                                   audioOutput.bufferMode != activeAudioOutput.bufferMode;
+                            bootLog((std::string(saved ? "audio_config_saved" : "audio_config_save_failed") +
+                                     " rate_mode=" + std::to_string(audioOutput.rateMode) +
+                                     " buffer_mode=" + std::to_string(audioOutput.bufferMode)).c_str());
+                        } else if (settingsSection == 3 && settingsItem == 4) {
+                            audioOutput.bufferMode = (audioOutput.bufferMode + dir + 3) % 3;
+                            const bool saved = saveAudioOutputSettings(library.sd_root, audioOutput);
+                            audioRestartRequired = audioOutput.rateMode != activeAudioOutput.rateMode ||
+                                                   audioOutput.bufferMode != activeAudioOutput.bufferMode;
+                            bootLog((std::string(saved ? "audio_config_saved" : "audio_config_save_failed") +
+                                     " rate_mode=" + std::to_string(audioOutput.rateMode) +
+                                     " buffer_mode=" + std::to_string(audioOutput.bufferMode)).c_str());
                         } else if (settingsSection == 4 && settingsItem == 0) {
                             videoAspect = (videoAspect + dir + 3) % 3;
                             saveVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter);
@@ -2544,7 +2609,7 @@ int main()
             text::drawText("B  CANCELAR", 28.0f, 672.0f, 16, muted);
         } else if (settingsOpen) {
             const char *sections[] = {"PERSONALIZAR", "ASSETS", "CONTROLES", "SONIDO", "VÍDEO"};
-            const char *sectionHelp[] = {"Vistas, tema y fondo", "Portadas y datos", "Mandos y botones", "Volumen y efectos", "Imagen del juego"};
+            const char *sectionHelp[] = {"Vistas, tema y fondo", "Portadas y datos", "Mandos y botones", "Volumen, salida y efectos", "Imagen del juego"};
             const char *themeOpts[] = {"Gris", "Azul", "Verde", "Dorado", "Rosa"};
             const char *aspectOpts[] = {"Original", "4:3", "16:9"};
             const char *scaleOpts[] = {"Ajustar", "Entero", "Estirar"};
@@ -2664,14 +2729,23 @@ int main()
                                        370.0f, y, 22, settingsItem == i ? white : muted);
                     }
                 } else if (settingsSection == 3) {
-                    const char *labels[3] = {"Sonido del menú", "Sonido del juego", "Efectos"};
-                    std::string vals[3] = {std::to_string(uiVolume), std::to_string(coreVolume),
-                                           sfxOn ? "Sí" : "No"};
-                    for (int i = 0; i < 3; ++i) {
+                    const char *labels[5] = {"Sonido del menú", "Sonido del juego", "Efectos",
+                                             "Frecuencia de salida", "Buffer de audio"};
+                    const char *rates[3] = {"Auto", "32 000 Hz", "48 000 Hz"};
+                    const char *buffers[3] = {"512 muestras", "1024 muestras", "2048 muestras"};
+                    std::string vals[5] = {std::to_string(uiVolume), std::to_string(coreVolume),
+                                           sfxOn ? "Sí" : "No", rates[audioOutput.rateMode],
+                                           buffers[audioOutput.bufferMode]};
+                    for (int i = 0; i < 5; ++i) {
                         const float y = 220.0f + i * 70.0f;
                         if (settingsItem == i) drawRoundRect(356.0f, y - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
                         text::drawText((std::string(labels[i]) + ": " + vals[i]).c_str(), 370.0f, y, 22, settingsItem == i ? white : muted);
                     }
+                    text::drawText(audioRestartRequired
+                                       ? "Reinicia RetroU para aplicar la salida de audio"
+                                       : "Auto: GBA 48 000 Hz; NES/SNES 32 000 Hz",
+                                   370.0f, 578.0f, 16,
+                                   audioRestartRequired ? accent : muted);
                 } else {
                     text::drawText("Pendiente", 370.0f, 220.0f, 22, muted);
                 }

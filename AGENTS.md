@@ -334,8 +334,8 @@ solo mantiene el estado general.
   Wii U. AUD-2 solicita 48 000 Hz y filtra con sinc antes de la salida SDL;
   falta prueba en Wii U.
 - Sonido permite configurar frecuencia y búfer de salida por app NES/SNES/GBA
-  en `audio.conf`; AUD-3 requiere comprobación en Wii U. N64 mantiene su
-  configuración independiente.
+  en `audio.conf`; AUD-3 requiere comprobación en Wii U. La WUHB de N64 usa
+  audio AX en Our64 y no lee este archivo.
 - Los nombres visibles de las WUHB de NES, SNES y GBA ya son `RetroU NES`,
   `RetroU SNES` y `RetroU GBA` (APP-1, pendiente confirmar en Wii U).
 - Referencias visuales de UI en `ejemplos/` (raíz del proyecto).

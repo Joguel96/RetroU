@@ -43,7 +43,8 @@ de RetroU.
 - **Salida de audio**: Sonido permite elegir frecuencia automática, 32 000 o
   48 000 Hz y búfer de 512, 1024 o 2048 muestras. Se guarda por consola en
   `sd:/retrou/config/<consola>/audio.conf` y se aplica al reiniciar esa app
-  (AUD-3, pendiente de probar en Wii U). N64 conserva su configuración propia.
+  (AUD-3, pendiente de probar en Wii U). La WUHB de N64 usa audio AX propio
+  y no lee este archivo.
 - **Biblioteca GX2**: vistas cards, lista y carrusel; las dos últimas ofrecen
   filtro alfabético con Favoritos junto a «All», navegable con L/R. El carrusel NES presenta
   portadas verticales y el de SNES muestra las imágenes completas.

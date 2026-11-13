@@ -58,7 +58,8 @@ Cada app NES/SNES/GBA lee su propio `audio.conf` con formato `v1 <frecuencia>
 Los cambios de Sonido se guardan enseguida y se aplican al próximo inicio,
 porque el dispositivo SDL permanece abierto durante la sesión. Si falla la
 frecuencia elegida, se prueba la otra; `retrou_rpx.log` registra la selección,
-la frecuencia real y los fallos de apertura. N64 usa su propia app/configuración.
+la frecuencia real y los fallos de apertura. N64 usa audio AX en otra WUHB y
+no lee este `audio.conf`.
 
 ## Qué hace
 

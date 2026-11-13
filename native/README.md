@@ -1,7 +1,7 @@
 # App nativa Wii U — WUHB por consola
 
-Frontend RetroU con **WUT + SDL2 + SDL2_ttf**. Cada build lleva **un core
-Libretro enlazado estáticamente** y se distribuye como WUHB independiente.
+NES/SNES/GBA usan **WUT + SDL2 + SDL2_ttf** y un core Libretro estático por
+WUHB. N64 es otra WUHB independiente: Not64 + GLideN64 + audio AX.
 
 ## Apps generadas
 
@@ -10,14 +10,16 @@ Libretro enlazado estáticamente** y se distribuye como WUHB independiente.
 | `RetroNESU.wuhb` | fceumm | NES |
 | `RetroSNESU.wuhb` | snes9x | SNES |
 | `RetroGBAU.wuhb` | mgba | GBA |
+| `RetroN64U.wuhb` | Not64 + GLideN64 + AX | N64 |
 
-N64 se compila en el clon externo `C:/proyectos/Our64` (Not64 + GLideN64),
-fuera de `native/`. Su WUHB se copia en `dist/wiiu/apps/RetroN64U/` mediante
-`tools/build-retrou-n64.sh` de ese clon. La ronda TASK-001–011 del port de la
-biblioteca RetroU está compilada y pendiente de probar en Wii U.
+N64 se compila en el clon externo `C:/proyectos/Our64`, fuera de CMake y
+`native/`. Los cambios del port están en el commit `869861d` y los ajustes
+WUT 1.9.2 en `29de243`. La nueva WUHB arrancó en Cemu; falta la ronda N64
+en Wii U y afinar la apariencia de Ajustes.
 
-Los nombres visibles de las WUHB son `RetroU NES`, `RetroU SNES` y
-`RetroU GBA` (APP-1; pendiente verificar en el menú de Wii U).
+Los nombres visibles de las WUHB son `RetroU NES`, `RetroU SNES`,
+`RetroU GBA` y `RetroU N64`. El nombre N64 se verificó en Cemu; falta
+verificarlo en el menú de Wii U.
 
 Distribución:
 
@@ -25,6 +27,7 @@ Distribución:
 dist/wiiu/apps/RetroNESU/RetroNESU.wuhb
 dist/wiiu/apps/RetroSNESU/RetroSNESU.wuhb
 dist/wiiu/apps/RetroGBAU/RetroGBAU.wuhb
+dist/wiiu/apps/RetroN64U/RetroN64U.wuhb
 ```
 
 No hay launcher, `RetroU.wuhb`, `retrou/cores` ni RPX sueltos.
@@ -35,6 +38,13 @@ No hay launcher, `RetroU.wuhb`, `retrou/cores` ni RPX sueltos.
 sd:/retrou/roms/nes/
 sd:/retrou/roms/snes/
 sd:/retrou/roms/gba/
+sd:/retrou/roms/n64/
+sd:/retrou/n64/config/
+sd:/retrou/n64/art/
+sd:/retrou/n64/backdrops/
+sd:/retrou/n64/saves/
+sd:/retrou/n64/states/
+sd:/retrou/n64/retrou_n64.log
 
 sd:/retrou/config/theme.conf
 sd:/retrou/config/menu-shortcut.conf
@@ -162,6 +172,34 @@ native/build/retrou_snes_gx2.wuhb
 native/build/retrou_gba_gx2.wuhb
 ```
 
+### Compilar y recuperar RetroU N64
+
+Desde MSYS2/devkitPro, con el clon Our64 fijado en `29de243`:
+
+```sh
+cd /c/proyectos/Our64
+bash tools/build-retrou-n64.sh /c/proyectos/RetroU
+```
+
+El script ejecuta `make -C player RELEASE=1`, deja la salida en
+`player/release/our64.wuhb`, el log con commit y sumas SHA-256 en
+`player/build-release/logs/build-<fecha>.log`, y copia de forma verificada
+a `C:/proyectos/RetroU/dist/wiiu/apps/RetroN64U/RetroN64U.wuhb`.
+Antes de sustituirla, copia la WUHB existente a `RetroN64U.previous.wuhb`.
+El binario de esta ronda tiene SHA-256
+`9d5a7dabeb0b079f3e14192bf84437cfef5450ca4889e37bba43c37ea9b3190b`;
+el anterior, `5f822245644f1634f05ff982561383b8d0bc15068328219d45118ee072b42177`.
+El log final de build es
+`C:/proyectos/Our64/player/build-release/logs/build-20261113-212647.log`.
+
+Si la nueva WUHB falla, cierra Cemu o RetroU N64, conserva el log
+`sd:/retrou/n64/retrou_n64.log` y restaura
+`dist/wiiu/apps/RetroN64U/RetroN64U.previous.wuhb` como
+`RetroN64U.wuhb`; comprueba su SHA-256 antes de copiarla a la SD.
+Para revertir código, usa `git revert` sobre el commit específico en
+`C:/proyectos/Our64`, recompila y conserva el nuevo log. No borres datos
+de `sd:/retrou/n64/` para volver a un binario anterior.
+
 ## SD
 
 ```text
@@ -177,6 +215,7 @@ sd:/retrou/snap/<consola>/
 
 - `sd:/retrou/retrou_rpx.log`: arranque, carga y ejecución del core estático;
   las tres ejecuciones anteriores quedan en `.1`, `.2` y `.3`.
+- `sd:/retrou/n64/retrou_n64.log`: ejecución N64, separada de NES/SNES/GBA.
 - El log registra carga/restauración/guardado de mapas y perfiles, y un
   resumen de entrada por ROM. Los logs de compilación quedan en `native/build/logs/`.
 - El log registra `menu_shortcut_loaded`, `menu_shortcut_saved`, fallos de

@@ -28,10 +28,11 @@
 | TASK-014 | Our64 | `f7acfc5` |
 | TASK-015 | Our64 | `5992648` |
 | TASK-016 | Our64 | `0773b5f` |
+| Contraste de diálogos TASK-015 | Our64 | `7b72e99` |
 
-Compilación final: `C:/proyectos/Our64/player/build-release/logs/build-20261113-204114.log`.
+Compilación final: `C:/proyectos/Our64/player/build-release/logs/build-20261113-204348.log`.
 WUHB copiada: `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb`, SHA-256
-`60a9bc9404b9d64756a38fd580a5d3c4631a8844b26a0c47b4d1638f8e940514`.
+`5f822245644f1634f05ff982561383b8d0bc15068328219d45118ee072b42177`.
 La prueba de capturas de escritorio no pudo arrancar en MSYS2 por falta de
 `freetype2`, `libpng`, `libturbojpeg` y `zlib`; la compilación Wii U y la prueba
 portátil `test_covers` sí pasaron. Cemu arrancó y mostró la biblioteca, pero el

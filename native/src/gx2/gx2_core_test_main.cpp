@@ -904,6 +904,8 @@ static std::atomic<int> g_downloadProgress{0};
 static std::atomic<int> g_downloadTotal{0};
 static std::atomic<int> g_downloadFailures{0};
 static std::atomic<int> g_downloadQueued{0};
+static std::atomic<bool> g_downloadCancel{false};
+static std::thread g_downloadThread;
 struct AssetJob {
     std::string sdRoot;
     std::string system;
@@ -949,8 +951,11 @@ static void startAssetDownload(const std::string &sdRoot, const std::string &sys
         bootLog("asset_download_queued");
         return;
     }
-    std::thread([job = std::move(job)]() mutable {
+    if (g_downloadThread.joinable()) g_downloadThread.join();
+    g_downloadCancel = false;
+    g_downloadThread = std::thread([job = std::move(job)]() mutable {
         for (;;) {
+            if (g_downloadCancel) break;
             g_downloadDone = false;
             g_downloadProgress = 0;
             g_downloadFailures = 0;
@@ -958,10 +963,11 @@ static void startAssetDownload(const std::string &sdRoot, const std::string &sys
                 job.sdRoot, job.system, job.titles, job.covers, job.backdrops, job.force);
             retrou::assets::downloadAll(job.sdRoot, job.system, job.titles,
                                         job.covers, job.backdrops, job.force,
-                                        &g_downloadProgress, &g_downloadFailures);
+                                        &g_downloadProgress, &g_downloadFailures,
+                                        &g_downloadCancel);
             if (job.covers) ++g_coverGeneration;
             std::lock_guard<std::mutex> lock(g_downloadMutex);
-            if (g_assetQueue.empty()) {
+            if (g_downloadCancel || g_assetQueue.empty()) {
                 g_downloading = false;
                 g_downloadDone = true;
                 break;
@@ -970,7 +976,22 @@ static void startAssetDownload(const std::string &sdRoot, const std::string &sys
             g_assetQueue.pop_front();
             g_downloadQueued = static_cast<int>(g_assetQueue.size());
         }
-    }).detach();
+    });
+}
+
+static void stopAssetDownload()
+{
+    if (!g_downloadThread.joinable()) return;
+    bootLog("asset_shutdown_begin");
+    g_downloadCancel = true;
+    {
+        std::lock_guard<std::mutex> lock(g_downloadMutex);
+        g_assetQueue.clear();
+        g_downloadQueued = 0;
+    }
+    g_downloadThread.join();
+    g_downloading = false;
+    bootLog("asset_shutdown_complete");
 }
 
 // ---- UI audio: 16-bit retro background loop + navigation blip (queue-based) ----
@@ -1440,6 +1461,7 @@ int main()
     bootLog("before_static_core");
     if (!core.loadStaticCore(nullptr, nullptr, error)) {
         bootLog("static_core_failed");
+        stopAssetDownload();
         return 1;
     }
     bootLog("static_core_ready");
@@ -1454,6 +1476,9 @@ int main()
     // Controllers are re-detected in the loop (hot-plug): poll first, then
     // rebuild the device list and the core port assignment when it changes.
     std::vector<int> proChannels;
+    std::array<int, 4> slotChannels{{-1, -1, -1, -1}};
+    std::array<int, 4> slotTypes{{WPAD_TYPE_NONE, WPAD_TYPE_NONE,
+                                  WPAD_TYPE_NONE, WPAD_TYPE_NONE}};
     std::vector<std::string> devOpts;   // core port 1 options: GamePad + Pros
     std::vector<std::string> p2Opts;    // core port 2 options: none + Pros
     auto applyControlMaps = [&]() {
@@ -1461,38 +1486,76 @@ int main()
         core.setWpadActionMap(proMap);
     };
     auto refreshControllers = [&]() {
-        wpad_input_poll();
         proChannels = wpad_input_channels();
         const auto &states = wpad_input_states();
-        // Sufijo numerico solo cuando hay mas de un mando del mismo tipo.
+        // Conserva el slot logico al perder el canal. Una reconexion en otro
+        // canal reclama primero un slot libre del mismo tipo.
+        for (int i = 0; i < 4; ++i) {
+            const int ch = slotChannels[i];
+            if (ch >= 0 && (states[ch].type != slotTypes[i] || !states[ch].connected)) {
+                slotChannels[i] = -1;
+                bootLog(("controller_disconnected slot=" + std::to_string(i)).c_str());
+            }
+        }
+        for (int ch : proChannels) {
+            if (std::find(slotChannels.begin(), slotChannels.end(), ch) != slotChannels.end())
+                continue;
+            int slot = -1;
+            for (int i = 0; i < 4; ++i)
+                if (slotChannels[i] < 0 && slotTypes[i] == states[ch].type) { slot = i; break; }
+            if (slot < 0) for (int i = 0; i < 4; ++i)
+                if (slotChannels[i] < 0 && slotTypes[i] == WPAD_TYPE_NONE) { slot = i; break; }
+            if (slot < 0) for (int i = 0; i < 4; ++i)
+                if (slotChannels[i] < 0 && player1Device != i + 1 && player2Device != i + 2)
+                    { slot = i; break; }
+            if (slot < 0) continue;
+            slotChannels[slot] = ch;
+            slotTypes[slot] = states[ch].type;
+            bootLog(("controller_rebound slot=" + std::to_string(slot) +
+                     " channel=" + std::to_string(ch) +
+                     " type=" + std::to_string(states[ch].type)).c_str());
+        }
+        // Si el nuevo canal apareció antes de caducar el viejo, recupera el
+        // slot seleccionado en cuanto se confirme la desconexión.
+        for (int target : {player1Device - 1, player2Device - 2}) {
+            if (target < 0 || target >= 4 || slotChannels[target] >= 0 ||
+                slotTypes[target] == WPAD_TYPE_NONE) continue;
+            for (int i = 0; i < 4; ++i) {
+                if (i == target || slotChannels[i] < 0 ||
+                    slotTypes[i] != slotTypes[target] ||
+                    player1Device == i + 1 || player2Device == i + 2) continue;
+                slotChannels[target] = slotChannels[i];
+                slotChannels[i] = -1;
+                bootLog(("controller_restored slot=" + std::to_string(target) +
+                         " channel=" + std::to_string(slotChannels[target])).c_str());
+                break;
+            }
+        }
+        // El indice de cada opcion permanece fijo mientras la app esta abierta.
         int typeCount[5] = {0, 0, 0, 0, 0};
         int typeSeen[5] = {0, 0, 0, 0, 0};
-        for (int ch : proChannels) typeCount[states[ch].type]++;
+        for (int type : slotTypes) if (type != WPAD_TYPE_NONE) typeCount[type]++;
         devOpts.clear();
         devOpts.push_back("GamePad");
         p2Opts.clear();
         p2Opts.push_back("-");
         p2Opts.push_back("GamePad");
-        for (int ch : proChannels) { // todos los mandos conectados (4 canales)
-            const int t = states[ch].type;
-            std::string name = wpadTypeLabel(t);
-            if (typeCount[t] > 1) name += " " + std::to_string(++typeSeen[t]);
-            else ++typeSeen[t];
+        for (int i = 0; i < 4; ++i) {
+            const int t = slotTypes[i];
+            std::string name = t == WPAD_TYPE_NONE ? "Mando sin conectar" : wpadTypeLabel(t);
+            if (t != WPAD_TYPE_NONE && typeCount[t] > 1)
+                name += " " + std::to_string(++typeSeen[t]);
+            if (slotChannels[i] < 0 && t != WPAD_TYPE_NONE) name += " (desconectado)";
             devOpts.push_back(name);
             p2Opts.push_back(name);
         }
         if (player1Device >= static_cast<int>(devOpts.size())) player1Device = 0;
         if (player2Device >= static_cast<int>(p2Opts.size())) player2Device = 0;
         auto chan1 = [&](int dev) -> int {
-            // dev 0 = GamePad (sin canal WPAD), dev 1.. = mando externo.
-            return dev >= 1 && dev <= static_cast<int>(proChannels.size())
-                ? proChannels[dev - 1] : -1;
+            return dev >= 1 && dev <= 4 ? slotChannels[dev - 1] : -1;
         };
         auto chan2 = [&](int dev) -> int {
-            // dev 0 = ninguno, dev 1 = GamePad (sin canal WPAD), dev 2.. = mando externo.
-            if (dev == 1) return -1;
-            return dev >= 2 && dev <= static_cast<int>(proChannels.size()) + 1
-                ? proChannels[dev - 2] : -1;
+            return dev >= 2 && dev <= 5 ? slotChannels[dev - 2] : -1;
         };
         core.setWpadPorts(chan1(player1Device), hasSecondCorePort() ? chan2(player2Device) : -1);
         // El GamePad alimenta el puerto del core donde esté asignado
@@ -1503,6 +1566,7 @@ int main()
         core.setVpadPort(vpadPort);
         applyControlMaps();
     };
+    wpad_input_poll();
     refreshControllers();
 
     bool inGame = false;
@@ -1616,7 +1680,12 @@ int main()
         // Hot-plug: re-detect Pro Controllers when the connected set changes.
         wpad_input_poll();
         core.pushWpadSamples(wpad_input_states()); // single poll per frame; the core reuses it
-        if (wpad_input_channels() != proChannels) {
+        bool controllerChanged = wpad_input_channels() != proChannels;
+        for (int i = 0; i < 4 && !controllerChanged; ++i)
+            if (slotChannels[i] >= 0 &&
+                wpad_input_states()[slotChannels[i]].type != slotTypes[i])
+                controllerChanged = true;
+        if (controllerChanged) {
             refreshControllers();
         }
 
@@ -1676,18 +1745,25 @@ int main()
                     const int row = static_cast<int>((ty - 130) / 58);
                     const int key = row * 6 + col;
                     if (key < 39) { searchCursor = key; navTrigger |= VPAD_BUTTON_A; }
-                } else if (settingsOpen && tx >= 50 && tx < 810 && ty >= 105) {
-                    if (settingsSection == -1 && ty < 520) {
-                        sectionCursor = std::min(4, static_cast<int>((ty - 105) / 80));
+                } else if (settingsOpen && tx >= 36 && tx < 312 &&
+                           ty >= 110 && ty < 520) {
+                    if (settingsSection == -1) {
+                        sectionCursor = std::min(4, static_cast<int>((ty - 110) / 80));
                         navTrigger |= VPAD_BUTTON_A;
-                    } else if (settingsSection >= 0 && ty < (settingsSection == 2 ? 610 : 520)) {
+                    } else {
+                        sectionCursor = std::min(4, static_cast<int>((ty - 110) / 80));
+                        settingsSection = sectionCursor;
+                        settingsItem = 0;
+                    }
+                } else if (settingsOpen && settingsSection >= 0 &&
+                           tx >= 350 && tx < 1240 && ty >= 210 && ty < 625) {
                         const int counts[] = {5, 5, hasSecondCorePort() ? 7 : 6, 3, 2};
                         settingsItem = std::min(counts[settingsSection] - 1,
-                                                static_cast<int>((ty - 105) / 70));
+                                                static_cast<int>((ty - 210) /
+                                                    (settingsSection == 2 ? 60 : 70)));
                         navTrigger |= settingsSection == 1 && settingsItem >= 3 ? VPAD_BUTTON_A : VPAD_BUTTON_RIGHT;
                         if (settingsSection == 2 && settingsItem >= (hasSecondCorePort() ? 2 : 1))
                             navTrigger |= VPAD_BUTTON_A;
-                    }
                 } else if (sidebarOpen && tx >= 36 && tx < 350 && ty >= 140 && ty < 330) {
                     sidebarIndex = std::min(3, static_cast<int>((ty - 140) / 44));
                     navTrigger |= VPAD_BUTTON_A;
@@ -1933,8 +2009,9 @@ int main()
                     int selected = -1;
                     if (vpad.trigger & VPAD_BUTTON_A) selected = orderPort == 0 ? 0 : 1;
                     if (selected < 0) {
-                        for (int i = 0; i < static_cast<int>(proChannels.size()); ++i) {
-                            const WpadSnapshot &s = wpadStates[proChannels[i]];
+                        for (int i = 0; i < 4; ++i) {
+                            if (slotChannels[i] < 0) continue;
+                            const WpadSnapshot &s = wpadStates[slotChannels[i]];
                             const uint32_t a = (s.type == WPAD_TYPE_PRO || s.type == WPAD_TYPE_CLASSIC)
                                 ? static_cast<uint32_t>(WPAD_PRO_BUTTON_A)
                                 : static_cast<uint32_t>(WPAD_BUTTON_A);
@@ -2070,12 +2147,20 @@ int main()
                             core.setVideoOptions(videoAspect, videoScale, videoFilter);
                         } else if (settingsSection == 2 && settingsItem == 0) {
                             const int n = static_cast<int>(devOpts.size());
-                            if (n > 0) player1Device = (player1Device + dir + n) % n;
+                            for (int step = 0; step < n; ++step) {
+                                player1Device = (player1Device + dir + n) % n;
+                                if (player1Device == 0 || slotChannels[player1Device - 1] >= 0)
+                                    break;
+                            }
                             persistControls();
                             refreshControllers();
                         } else if (settingsSection == 2 && settingsItem == 1 && hasSecondCorePort()) {
                             const int n = static_cast<int>(p2Opts.size());
-                            if (n > 0) player2Device = (player2Device + dir + n) % n;
+                            for (int step = 0; step < n; ++step) {
+                                player2Device = (player2Device + dir + n) % n;
+                                if (player2Device <= 1 || slotChannels[player2Device - 2] >= 0)
+                                    break;
+                            }
                             persistControls();
                             refreshControllers();
                         } else if (settingsSection == 2 && settingsItem >= (hasSecondCorePort() ? 4 : 3)) {
@@ -2442,27 +2527,30 @@ int main()
             const char *themeOpts[] = {"Gris", "Azul", "Verde", "Dorado", "Rosa"};
             const char *aspectOpts[] = {"Original", "4:3", "16:9"};
             const char *scaleOpts[] = {"Ajustar", "Entero", "Estirar"};
-            drawRoundRect(24.0f, 88.0f, 800.0f, 560.0f, 18.0f, panel);
-            drawRoundRect(840.0f, 88.0f, 416.0f, 560.0f, 18.0f, cardPanel);
+            drawRoundRect(24.0f, 88.0f, 300.0f, 560.0f, 18.0f, panel);
+            drawRoundRect(340.0f, 88.0f, 916.0f, 560.0f, 18.0f, cardPanel);
             const int previewSection = settingsSection < 0 ? sectionCursor : settingsSection;
-            text::drawText(sections[previewSection], 870.0f, 126.0f, 24, white);
-            text::drawText(sectionHelp[previewSection], 870.0f, 178.0f, 16, muted);
-            text::drawText(settingsSection < 0 ? "A  Abrir sección" : "IZQ/DER  Cambiar valor",
-                           870.0f, 570.0f, 15, accent);
+            text::drawText(sections[previewSection], 370.0f, 126.0f, 28, white);
+            text::drawText(sectionHelp[previewSection], 370.0f, 174.0f, 18, muted);
+            if (settingsSection != 2)
+                text::drawText(settingsSection < 0 ? "A  Abrir sección" : "IZQ/DER  Cambiar valor",
+                               370.0f, 615.0f, 15, accent);
+
+            text::drawText("Ajustes", 28.0f, 18.0f, 34, white);
+            for (int i = 0; i < 5; ++i) {
+                const float y = 120.0f + i * 80.0f;
+                const bool sel = i == previewSection;
+                if (sel) drawRoundRect(36.0f, y - 8.0f, 276.0f, 48.0f, 10.0f,
+                                       Color{245, 217, 127, 40});
+                text::drawText(sections[i], 46.0f, y, 19, sel ? white : muted);
+                text::drawText(sectionHelp[i], 46.0f, y + 25.0f, 13, muted);
+            }
 
             if (settingsSection == -1) {
-                text::drawText("Ajustes", 28.0f, 18.0f, 34, white);
-                for (int i = 0; i < 5; ++i) {
-                    const float y = 120.0f + i * 80.0f;
-                    const bool sel = i == sectionCursor;
-                    if (sel) {
-                        drawRoundRect(50.0f, y - 8.0f, 520.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                    }
-                    text::drawText(sections[i], 60.0f, y, 24, sel ? white : muted);
-                }
+                text::drawText("Selecciona una sección para configurar RetroU.",
+                               370.0f, 258.0f, 22, muted);
                 text::drawText("A  ABRIR    B  BIBLIOTECA", 28.0f, 672.0f, 15, muted);
             } else {
-                text::drawText(sections[settingsSection], 28.0f, 18.0f, 34, white);
                 if (settingsSection == 0) {
                     const char *views[] = {"Cards", "Lista", "Carrusel"};
                     const std::string options[5] = {
@@ -2473,12 +2561,12 @@ int main()
                         "Aparición del fondo: " + std::to_string(backdropDelaysMs[backdropDelayIndex] / 1000) + " s"
                     };
                     for (int i = 0; i < 5; ++i) {
-                        const float y = 120.0f + i * 70.0f;
-                        if (settingsItem == i) drawRoundRect(50.0f, y - 8.0f, 740.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                        text::drawText(options[i].c_str(), 60.0f, y, 22, settingsItem == i ? white : muted);
+                        const float y = 220.0f + i * 70.0f;
+                        if (settingsItem == i) drawRoundRect(356.0f, y - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                        text::drawText(options[i].c_str(), 370.0f, y, 22, settingsItem == i ? white : muted);
                         if (i == 3) {
-                            drawRoundRect(740.0f, y - 3.0f, 28.0f, 28.0f, 5.0f, dynamicBg ? accent : muted);
-                            if (dynamicBg) text::drawText("✓", 746.0f, y - 4.0f, 22, bg);
+                            drawRoundRect(1180.0f, y - 3.0f, 28.0f, 28.0f, 5.0f, dynamicBg ? accent : muted);
+                            if (dynamicBg) text::drawText("✓", 1186.0f, y - 4.0f, 22, bg);
                         }
                     }
                 } else if (settingsSection == 1) {
@@ -2486,85 +2574,85 @@ int main()
                     std::string vals[5] = {showCovers ? "Sí" : "No", autoDownload ? "Sí" : "No",
                                            downloadAllMode ? "Descargar todo" : "Solo faltantes", "", ""};
                     for (int i = 0; i < 5; ++i) {
-                        const float y = 120.0f + i * 70.0f;
-                        if (settingsItem == i) drawRoundRect(50.0f, y - 8.0f, 760.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                        const float y = 220.0f + i * 70.0f;
+                        if (settingsItem == i) drawRoundRect(356.0f, y - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
                         std::string line = labels[i];
                         if (!vals[i].empty()) line += ": " + vals[i];
-                        text::drawText(line.c_str(), 60.0f, y, 22, settingsItem == i ? white : muted);
+                        text::drawText(line.c_str(), 370.0f, y, 22, settingsItem == i ? white : muted);
                     }
                     if (g_downloading || (g_downloadDone && g_downloadTotal.load() > 0)) {
                         const int done = g_downloadProgress.load();
                         const int total = g_downloadTotal.load();
                         if (total > 0) {
-                            drawRoundRect(60.0f, 495.0f, 600.0f, 16.0f, 8.0f, cardPanel);
-                            drawRoundRect(60.0f, 495.0f, 600.0f * done / total, 16.0f, 8.0f, accent);
+                            drawRoundRect(370.0f, 590.0f, 700.0f, 16.0f, 8.0f, cardPanel);
+                            drawRoundRect(370.0f, 590.0f, 700.0f * done / total, 16.0f, 8.0f, accent);
                             const std::string status = std::string(g_downloading ? "Procesadas " :
                                 "Última tanda: ") + std::to_string(done) + "/" +
                                 std::to_string(total) + "  Fallos: " +
                                 std::to_string(g_downloadFailures.load()) +
                                 (g_downloadQueued.load() > 0 ? "  En cola: " +
                                  std::to_string(g_downloadQueued.load()) : "");
-                            text::drawText(status.c_str(), 60.0f, 460.0f, 20, accent);
+                            text::drawText(status.c_str(), 370.0f, 560.0f, 20, accent);
                         } else {
                             text::drawText(g_downloadQueued.load() > 0 ?
                                                "Actualizando datos; descarga en cola" :
-                                               "Actualizando datos; no faltan imágenes", 60.0f,
-                                           460.0f, 20, accent);
+                                               "Actualizando datos; no faltan imágenes", 370.0f,
+                                           560.0f, 20, accent);
                         }
                     }
                 } else if (settingsSection == 2) {
-                    const float y0 = 120.0f, y1 = 190.0f, y2 = 260.0f;
-                    if (settingsItem == 0) drawRoundRect(50.0f, y0 - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                    const float y0 = 220.0f, y1 = 280.0f, y2 = 340.0f;
+                    if (settingsItem == 0) drawRoundRect(356.0f, y0 - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
                     text::drawText(("Mando 1: " + devOpts[player1Device]).c_str(),
-                                   60.0f, y0, 22, settingsItem == 0 ? white : muted);
+                                   370.0f, y0, 22, settingsItem == 0 ? white : muted);
                     if (hasSecondCorePort()) {
-                        if (settingsItem == 1) drawRoundRect(50.0f, y1 - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                        if (settingsItem == 1) drawRoundRect(356.0f, y1 - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
                         text::drawText(("Mando 2: " + p2Opts[player2Device]).c_str(),
-                                       60.0f, y1, 22, settingsItem == 1 ? white : muted);
+                                       370.0f, y1, 22, settingsItem == 1 ? white : muted);
                     }
                     const float orderY = hasSecondCorePort() ? y2 : y1;
                     const int orderItem = hasSecondCorePort() ? 2 : 1;
-                    if (settingsItem == orderItem) drawRoundRect(50.0f, orderY - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                    text::drawText("Cambiar orden de mandos  (A)", 60.0f, orderY, 22,
+                    if (settingsItem == orderItem) drawRoundRect(356.0f, orderY - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                    text::drawText("Cambiar orden de mandos  (A)", 370.0f, orderY, 22,
                                    settingsItem == orderItem ? white : muted);
-                    const float mapY = orderY + 70.0f;
+                    const float mapY = orderY + 60.0f;
                     const int mapItem = orderItem + 1;
-                    if (settingsItem == mapItem) drawRoundRect(50.0f, mapY - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                    text::drawText("Mapear botones  (A)", 60.0f, mapY, 22, settingsItem == mapItem ? white : muted);
+                    if (settingsItem == mapItem) drawRoundRect(356.0f, mapY - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                    text::drawText("Mapear botones  (A)", 370.0f, mapY, 22, settingsItem == mapItem ? white : muted);
                     const char *deviceLabels[3] = {"GamePad", "Pro / Classic", "Wii Remote / Nunchuk"};
                     for (int family = 0; family < 3; ++family) {
                         const int item = mapItem + 1 + family;
-                        const float y = mapY + 70.0f * (family + 1);
+                        const float y = mapY + 60.0f * (family + 1);
                         if (settingsItem == item)
-                            drawRoundRect(50.0f, y - 8.0f, 760.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                            drawRoundRect(356.0f, y - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
                         const std::string label = std::string("Menú ") + deviceLabels[family] +
                             ": " + kMenuShortcutLabels[family][menuShortcuts.choice[family]];
-                        text::drawText(label.c_str(), 60.0f, y, 19,
+                        text::drawText(label.c_str(), 370.0f, y, 19,
                                        settingsItem == item ? white : muted);
                     }
-                    text::drawText("Minus + Plus siempre abre el menú", 870.0f, 290.0f, 15, muted);
+                    text::drawText("Minus + Plus siempre abre el menú", 370.0f, 615.0f, 15, muted);
                 } else if (settingsSection == 4) {
                     const char *labels[2] = {"Aspecto", "Escala"};
                     const char *vals[2] = {aspectOpts[videoAspect], scaleOpts[videoScale]};
                     for (int i = 0; i < 2; ++i) {
-                        const float y = 120.0f + i * 70.0f;
+                        const float y = 220.0f + i * 70.0f;
                         if (settingsItem == i) {
-                            drawRoundRect(50.0f, y - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                            drawRoundRect(356.0f, y - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
                         }
                         text::drawText((std::string(labels[i]) + ": " + vals[i]).c_str(),
-                                       60.0f, y, 22, settingsItem == i ? white : muted);
+                                       370.0f, y, 22, settingsItem == i ? white : muted);
                     }
                 } else if (settingsSection == 3) {
                     const char *labels[3] = {"Sonido del menú", "Sonido del juego", "Efectos"};
                     std::string vals[3] = {std::to_string(uiVolume), std::to_string(coreVolume),
                                            sfxOn ? "Sí" : "No"};
                     for (int i = 0; i < 3; ++i) {
-                        const float y = 120.0f + i * 70.0f;
-                        if (settingsItem == i) drawRoundRect(50.0f, y - 8.0f, 700.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                        text::drawText((std::string(labels[i]) + ": " + vals[i]).c_str(), 60.0f, y, 22, settingsItem == i ? white : muted);
+                        const float y = 220.0f + i * 70.0f;
+                        if (settingsItem == i) drawRoundRect(356.0f, y - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
+                        text::drawText((std::string(labels[i]) + ": " + vals[i]).c_str(), 370.0f, y, 22, settingsItem == i ? white : muted);
                     }
                 } else {
-                    text::drawText("Pendiente", 60.0f, 120.0f, 22, muted);
+                    text::drawText("Pendiente", 370.0f, 220.0f, 22, muted);
                 }
                 text::drawText("IZQ/DER  CAMBIAR    B  ATRÁS", 28.0f, 672.0f, 15, muted);
             }
@@ -2761,6 +2849,7 @@ int main()
         }
     }
 
+    stopAssetDownload();
     bootLog("main_exit_clean");
     ProcUIShutdown();
     return 0;

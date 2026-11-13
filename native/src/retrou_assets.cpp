@@ -155,7 +155,8 @@ struct CatalogEntry {
 };
 
 std::vector<CatalogEntry> loadCatalog(const std::string &sdRoot,
-                                      const std::string &system, const char *type)
+                                      const std::string &system, const char *type,
+                                      const std::atomic<bool> *cancel)
 {
     const std::string dir = sdRoot + "/retrou/metadata";
     ensureDir(dir);
@@ -164,7 +165,7 @@ std::vector<CatalogEntry> loadCatalog(const std::string &sdRoot,
     const std::string url = "https://thumbnails.libretro.com/" +
         urlEncode(libretroSystemFolder(system)) + "/" + type + "/";
     std::string error;
-    if (downloadToFile(url, temporary, &error)) {
+    if (downloadToFile(url, temporary, &error, cancel)) {
         if (!replaceDownloadedFile(temporary, path))
             assetLog(sdRoot, "fallo guardar indice " + std::string(type));
     } else {
@@ -225,6 +226,11 @@ size_t curlWriteFile(void *ptr, size_t size, size_t nmemb, void *userdata)
     return std::fwrite(ptr, size, nmemb, static_cast<FILE *>(userdata));
 }
 
+int curlCancelTransfer(void *userdata, curl_off_t, curl_off_t, curl_off_t, curl_off_t)
+{
+    return static_cast<const std::atomic<bool> *>(userdata)->load() ? 1 : 0;
+}
+
 } // namespace
 
 std::string libretroSystemFolder(const std::string &system)
@@ -236,8 +242,12 @@ std::string libretroSystemFolder(const std::string &system)
 }
 
 bool downloadToFile(const std::string &url, const std::string &path,
-                    std::string *error)
+                    std::string *error, const std::atomic<bool> *cancel)
 {
+    if (cancel && cancel->load()) {
+        if (error) *error = "cancelado";
+        return false;
+    }
     FILE *fp = std::fopen(path.c_str(), "wb");
     if (!fp) {
         if (error) *error = std::strerror(errno);
@@ -255,6 +265,11 @@ bool downloadToFile(const std::string &url, const std::string &path,
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteFile);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+        if (cancel) {
+            curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+            curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, curlCancelTransfer);
+            curl_easy_setopt(curl, CURLOPT_XFERINFODATA, cancel);
+        }
         const CURLcode result = curl_easy_perform(curl);
         long http = 0;
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http);
@@ -276,8 +291,10 @@ bool downloadToFile(const std::string &url, const std::string &path,
 
 static bool downloadWithCatalog(const std::string &sdRoot, const std::string &system,
                                 const std::string &title, const char *kind, bool force,
-                                const std::vector<CatalogEntry> *catalog)
+                                const std::vector<CatalogEntry> *catalog,
+                                const std::atomic<bool> *cancel)
 {
+    if (cancel && cancel->load()) return false;
     const std::string folder = libretroSystemFolder(system);
     if (folder.empty()) {
         return false;
@@ -304,7 +321,7 @@ static bool downloadWithCatalog(const std::string &sdRoot, const std::string &sy
                              " / " + title);
             return false;
         }
-        if (downloadToFile(base + match->href, temporary, &error) &&
+        if (downloadToFile(base + match->href, temporary, &error, cancel) &&
             replaceDownloadedFile(temporary, dst)) {
             assetLog(sdRoot, "descargado " + std::string(kind) + " " + system +
                              " / " + title + " => " + match->name);
@@ -316,8 +333,9 @@ static bool downloadWithCatalog(const std::string &sdRoot, const std::string &sy
     }
     const char *suffixes[] = {"", " (USA)", " (Europe)", " (Japan)", " (World)"};
     for (const char *suffix : suffixes) {
+        if (cancel && cancel->load()) return false;
         const std::string url = base + urlEncode(safe + suffix) + ".png";
-        if (downloadToFile(url, temporary, &error)) {
+        if (downloadToFile(url, temporary, &error, cancel)) {
             if (replaceDownloadedFile(temporary, dst)) return true;
         }
     }
@@ -329,7 +347,7 @@ static bool downloadWithCatalog(const std::string &sdRoot, const std::string &sy
 bool downloadIfMissing(const std::string &sdRoot, const std::string &system,
                        const std::string &title, const char *kind, bool force)
 {
-    return downloadWithCatalog(sdRoot, system, title, kind, force, nullptr);
+    return downloadWithCatalog(sdRoot, system, title, kind, force, nullptr, nullptr);
 }
 
 int pendingAssetCount(const std::string &sdRoot, const std::string &system,
@@ -348,7 +366,7 @@ int pendingAssetCount(const std::string &sdRoot, const std::string &system,
 }
 
 void downloadMetadata(const std::string &sdRoot, const std::string &system,
-                      std::atomic<int> *progress)
+                      std::atomic<int> *progress, const std::atomic<bool> *cancel)
 {
     const std::string folder = libretroSystemFolder(system);
     if (folder.empty()) {
@@ -358,13 +376,14 @@ void downloadMetadata(const std::string &sdRoot, const std::string &system,
     ensureDir(dir);
     const char *kinds[] = {"developer", "genre", "releaseyear"};
     for (const char *kind : kinds) {
+        if (cancel && cancel->load()) break;
         const std::string path = dir + "/" + system + "-" + kind + ".dat";
         const std::string url =
             "https://raw.githubusercontent.com/libretro/libretro-database/master/metadat/" +
             std::string(kind) + "/" + urlEncode(folder) + ".dat";
         const std::string temporary = path + ".tmp";
         std::string error;
-        if (!downloadToFile(url, temporary, &error) || !replaceDownloadedFile(temporary, path))
+        if (!downloadToFile(url, temporary, &error, cancel) || !replaceDownloadedFile(temporary, path))
             assetLog(sdRoot, "fallo metadata " + system + " / " + kind + " " + error);
         if (progress) ++(*progress);
     }
@@ -372,7 +391,8 @@ void downloadMetadata(const std::string &sdRoot, const std::string &system,
 
 void downloadAll(const std::string &sdRoot, const std::string &system,
                  const std::vector<std::string> &titles, bool covers, bool backdrops,
-                 bool force, std::atomic<int> *progress, std::atomic<int> *failed)
+                 bool force, std::atomic<int> *progress, std::atomic<int> *failed,
+                 const std::atomic<bool> *cancel)
 {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     assetLog(sdRoot, "inicio " + system + " roms=" + std::to_string(titles.size()) +
@@ -382,30 +402,33 @@ void downloadAll(const std::string &sdRoot, const std::string &system,
                      " pendientes=" + std::to_string(pendingAssetCount(
                          sdRoot, system, titles, covers, backdrops, force)));
     const std::vector<CatalogEntry> coverCatalog = covers ?
-        loadCatalog(sdRoot, system, "Named_Boxarts") : std::vector<CatalogEntry>{};
+        loadCatalog(sdRoot, system, "Named_Boxarts", cancel) : std::vector<CatalogEntry>{};
     const std::vector<CatalogEntry> backdropCatalog = backdrops ?
-        loadCatalog(sdRoot, system, "Named_Snaps") : std::vector<CatalogEntry>{};
+        loadCatalog(sdRoot, system, "Named_Snaps", cancel) : std::vector<CatalogEntry>{};
     int failures = 0;
     for (const std::string &title : titles) {
+        if (cancel && cancel->load()) break;
         if (covers && (force || !assetExists(sdRoot, system, title, "thumbnails"))) {
             if (!downloadWithCatalog(sdRoot, system, title, "thumbnails", force,
-                                     &coverCatalog)) {
+                                     &coverCatalog, cancel)) {
                 ++failures;
                 if (failed) ++(*failed);
             }
             if (progress) ++(*progress);
         }
+        if (cancel && cancel->load()) break;
         if (backdrops && (force || !assetExists(sdRoot, system, title, "backdrops"))) {
             if (!downloadWithCatalog(sdRoot, system, title, "backdrops", force,
-                                     &backdropCatalog)) {
+                                     &backdropCatalog, cancel)) {
                 ++failures;
                 if (failed) ++(*failed);
             }
             if (progress) ++(*progress);
         }
     }
-    downloadMetadata(sdRoot, system);
-    assetLog(sdRoot, "fin " + system + " fallos=" + std::to_string(failures));
+    if (!cancel || !cancel->load()) downloadMetadata(sdRoot, system, nullptr, cancel);
+    assetLog(sdRoot, std::string(cancel && cancel->load() ? "cancelado " : "fin ") +
+                     system + " fallos=" + std::to_string(failures));
     curl_global_cleanup();
 }
 

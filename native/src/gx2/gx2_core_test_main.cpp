@@ -2259,7 +2259,11 @@ int main()
                             player2Device = globalPlayer2;
                             vpadMap = globalVpadMap;
                             proMap = globalProMap;
-                            if (loadControlOptions(library.sd_root, player1Device, player2Device,
+                            // El archivo por ROM define botones, no el orden global
+                            // de mandos. Un p1 antiguo no debe devolver GBA al GamePad.
+                            int romPlayer1 = globalPlayer1;
+                            int romPlayer2 = globalPlayer2;
+                            if (loadControlOptions(library.sd_root, romPlayer1, romPlayer2,
                                                    vpadMap, proMap,
                                                    romControlPath(library.sd_root,
                                                                   library.roms[activeRom].path)))
@@ -2271,6 +2275,10 @@ int main()
                                 proMap = globalProMap;
                                 bootLog("global_controls_used_for_rom");
                             }
+                            player1Device = globalPlayer1;
+                            player2Device = globalPlayer2;
+                            bootLog(("core_ports_global p1=" + std::to_string(player1Device) +
+                                     " p2=" + std::to_string(player2Device)).c_str());
                             refreshControllers();
                             inGame = true;
                             slotMode = 0;

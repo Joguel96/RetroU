@@ -20,11 +20,12 @@ de RetroU.
   independiente Not64 + GLideN64 (clon externo en `C:/proyectos/Our64`),
   parcheado para WUT 1.9.2 y rebrandeado como RetroU N64. Conserva la UI
   propia de Our64. Build reproducible: `tools/build-retrou-n64.sh` dentro de
-  ese clone. **Pendiente**: port del motor Our64 bajo la UI completa de RetroU
-  (varias rondas; registrado como pendiente). No probado en hardware.
+  ese clone. El usuario confirmó que funciona en hardware. **Pendiente**: port
+  del motor Our64 bajo la UI completa de RetroU (N64-2, fuera de esta tanda).
 - **Mapeo de controles GX2**: editor estilo Our64 por acción del core, con varias
   asignaciones por acción, `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás
-  y persistencia explícita de acciones `none` en `control-map.conf`. El menú de
+  y persistencia explícita de acciones `none` en `control-map.conf` formato `v2`.
+  El menú de
   partida permite ajustar cada ROM; hay tres perfiles por dispositivo y consola.
   En Ajustes → Controles se elige por familia de mando cómo abrir el menú;
   `Minus + Plus` sigue disponible en todos.
@@ -33,14 +34,15 @@ de RetroU.
   progreso de imágenes realmente pendientes, conteo de fallos, búsqueda en el
   índice de nombres de Libretro, cola para solicitudes durante la actualización
   de metadata y actualización de portadas visibles al terminar.
-  Estas mejoras están pendientes de comprobar en hardware.
+  El usuario confirmó estas funciones en hardware. El cierre de la app con
+  descargas activas requiere otra prueba tras la corrección AS-6.
 - **Biblioteca GX2**: vistas cards, lista y carrusel; las dos últimas ofrecen
   filtro alfabético con Favoritos junto a «All», navegable con L/R. El carrusel NES presenta
   portadas verticales y el de SNES muestra las imágenes completas.
   Personalizar permite activar el fondo dinámico y elegir
   su espera (0, 1, 3, 5 o 10 s; 3 s iniciales). Las
-  opciones de vista se guardan por consola en `view.conf` y esperan prueba
-  visual en hardware.
+  opciones de vista se guardan por consola en `view.conf`. Las vistas fueron
+  confirmadas en hardware; queda probar la nueva distribución de Ajustes.
 
 ## Estructura
 

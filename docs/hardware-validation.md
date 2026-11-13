@@ -10,8 +10,10 @@ Resultado de la ronda del 2026-11-12: el usuario confirmó en Wii U las
 pruebas de NES/SNES/GBA de navegación, controles, guardados y Assets. Quedan
 dos fallos detectados en hardware: salir al menú de Wii U con descargas
 activas bloquea la consola (AS-6) y reconectar un Pro/Classic no conserva su
-asignación (CTRL-8). La distribución de los dos paneles espera una referencia
-visual del usuario (UI-2). N64 aún no tiene validación en hardware.
+asignación (CTRL-8). La distribución de los dos paneles se ajustó con
+`ejemplos/Disposicion de menu.png` y espera prueba en Wii U (UI-2).
+Después, el usuario confirmó que RetroN64U es
+funcional en Wii U (N64-1); el port de su interfaz sigue pendiente.
 
 ## Preparación
 
@@ -23,8 +25,10 @@ visual del usuario (UI-2). N64 aún no tiene validación en hardware.
 
 ## Navegación y biblioteca
 
-1. En cada app, abre Ajustes con Plus. Comprueba los dos paneles, entra en
-   Personalizar y vuelve con B paso a paso.
+1. En cada app, abre Ajustes con Plus. Comprueba que las secciones ocupan
+   la columna izquierda y las opciones la derecha, según
+   `ejemplos/Disposicion de menu.png`. Entra en Personalizar, prueba touch en
+   ambos paneles y vuelve con B paso a paso.
 2. Cambia entre Cards, Lista y Carrusel. En Lista y Carrusel, mueve el filtro
    alfabético con L/R y abre el buscador con Minus. En Cards, Minus debe abrir
    el sidebar. El cambio de vista debe persistir tras reiniciar la app.
@@ -69,6 +73,11 @@ visual del usuario (UI-2). N64 aún no tiene validación en hardware.
    partida; Minus+Plus debe seguir abriendo el menú desde el mismo mando.
    Pulsar Minus en un mando y Plus en otro no debe abrirlo. Comprueba en el log
    `menu_shortcut_saved` y `core_menu_shortcut_opened` con su origen.
+7. Asigna Pro o Classic a Mando 1 (y Mando 2 en NES/SNES), desconéctalo durante
+   la biblioteca y luego durante una partida, y reconéctalo. Comprueba que
+   conserva puerto, mapa y navegación de la UI, incluso si cambia de canal.
+   En el log busca `controller_disconnected`, `controller_rebound` y, si cambió
+   de canal mientras aún figuraba el anterior, `controller_restored`.
 
 ## Guardados y Assets
 
@@ -93,12 +102,17 @@ visual del usuario (UI-2). N64 aún no tiene validación en hardware.
 5. Descarga portadas con la app abierta y vuelve a Cards, Lista y Carrusel sin
    reiniciarla. Cada vista debe mostrar las nuevas imágenes cuando termine el
    trabajo. Confirma `covers_refreshed` en `retrou_rpx.log`.
+6. Inicia una descarga larga y sal hacia el menú de Wii U. Comprueba que la
+   consola responde, que el log termina con `asset_shutdown_begin`,
+   `asset_shutdown_complete` y `main_exit_clean` (si la transferencia ya
+   había comenzado, también `GX2 asset: cancelado`), y que
+   la siguiente apertura puede reanudar «Solo faltantes».
 
 ## N64
 
-`RetroN64U.wuhb` sigue pendiente de prueba en hardware (N64-1). El port de
-Our64 a la interfaz RetroU (N64-2) está fuera de la autorización de esta
-tanda y no se tocó.
+`RetroN64U.wuhb` fue probado por el usuario en hardware y funciona (N64-1).
+El port de Our64 a la interfaz RetroU (N64-2) está fuera de la autorización
+de esta tanda y no se tocó.
 
 ## Trazabilidad y reversión
 
@@ -116,6 +130,7 @@ tanda y no se tocó.
 | `9bfce0e` | Favoritos junto a All, progreso de imágenes pendientes y diagnóstico de cierre GBA | `native/build/logs/build-20261112-142320.log` |
 | `2838306` | Recorte de títulos UTF-8 y traza del título enfocado en GBA P | `native/build/logs/build-20261112-143059.log` |
 | `67f44e5` | Rutas seguras GBA, índice de assets y cola de descargas manuales | `native/build/logs/build-20261112-150558.log` |
+| `a227b86` | Cancelación al salir, restauración de mandos y nueva distribución de Ajustes | `native/build/logs/build-20261112-234215.log` |
 
 Los logs y WUHB están ignorados por Git: conserva una copia antes de limpiar
 `native/build/` o `dist/`. Para retirar un cambio, revierte su commit con Git,

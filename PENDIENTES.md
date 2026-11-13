@@ -20,8 +20,8 @@ está**. Un cambio compilado pero sin verificar sigue siendo ⬜/🔧.
 Ronda en Wii U del 2026-11-12: el usuario confirmó las demás pruebas de
 navegación, controles, guardados y Assets de NES/SNES/GBA. Detectó dos fallos
 nuevos: bloqueo al salir con descargas activas y pérdida de asignación al
-reconectar un mando externo. La distribución visual de Ajustes espera su
-próxima referencia. N64 queda fuera de esta confirmación.
+reconectar un mando externo. La referencia de Ajustes ya está en
+`ejemplos/Disposicion de menu.png`. N64 se confirmó después por separado.
 
 ---
 
@@ -56,14 +56,14 @@ próxima referencia. N64 queda fuera de esta confirmación.
 | CTRL-5 | Diagnóstico temporal de input reducido a un resumen compacto por ROM tras confirmar VER-1..5; se conservan logs de carga y guardado de mapas/perfiles | ✅ 2026-11-12 |
 | CTRL-6 | GamePad asignable a **cualquier mando del core** (Mando 1 y Mando 2). `setVpadPort()` + opciones de Mando 2 con GamePad. Extendido: se listan **todos** los mandos conectados (4 canales KPAD + GamePad, sin límite de 2) y se nombran por tipo (Wii U Pro Controller, Classic Controller, Wii Remote, Wii Remote + Nunchuk) con sufijo numérico solo si hay varios del mismo tipo | ✅ 2026-11-11 |
 | CTRL-7 | Configurar por tipo de mando la combinación global que abre el menú durante el core, con opciones compatibles para GamePad, Pro/Classic y Wii Remote/Nunchuk; conservar Minus+Plus como emergencia y persistir el ajuste | ✅ 2026-11-12 |
-| CTRL-8 | Al desconectar y reconectar Wii U Pro Controller o Classic Controller durante la app, conservar o restaurar su asignación a Mando 1/Mando 2 y su mapeo; comprobar también la navegación de UI tras reconectar | ⬜ |
+| CTRL-8 | Al desconectar y reconectar Wii U Pro Controller o Classic Controller durante la app, conservar o restaurar su asignación a Mando 1/Mando 2 y su mapeo; comprobar también la navegación de UI tras reconectar | 🔧 En curso (Codex, rama main); compilado, falta Wii U |
 
 ## 4. UI / Apariencia
 
 | ID | Pendiente | Estado |
 |---|---|---|
 | UI-1 | Redondeo de cards: **bordes superiores rectos, base redondeada** (primera versión estaba invertida; corregida según `ejemplos/Retrou_resultados/error_cards.png`) | ✅ 2026-11-11 |
-| UI-2 | Ajustes en dos paneles: opciones a la izquierda y contexto a la derecha. El usuario confirmó el flujo, pero la distribución visual requiere una referencia adicional que aportará en `ejemplos/`. Falta revisión final en hardware | 🔧 En curso (Codex, rama main) |
+| UI-2 | Ajustes en dos paneles: secciones a la izquierda y opciones a la derecha según `ejemplos/Disposicion de menu.png`; conservar navegación con mando y touch | 🔧 En curso (Codex, rama main); compilado, falta Wii U |
 | UI-3 | Tres vistas de juegos: cards, lista y carrusel, elegibles en Personalizar; lista/carrusel con filtro alfabético y navegación propia. Referencias: `ejemplos/Our64/carrousel.png` y `list.png` | ✅ 2026-11-12 |
 | UI-4 | Casilla de «Fondo dinámico» en Ajustes → Personalizar; valor guardado por consola en `view.conf` | ✅ 2026-11-12 |
 | UI-5 | Carrusel y lista usan el backdrop de la ROM enfocada cuando el fondo dinámico está activo | ✅ 2026-11-12 |
@@ -101,7 +101,7 @@ próxima referencia. N64 queda fuera de esta confirmación.
 | AS-3 | Modo «Solo faltantes» / «Descargar todo» para descarga manual; auto-descarga usa solo faltantes. El contador incluye únicamente imágenes pendientes al reanudar, sin metadata ni archivos existentes | ✅ 2026-11-12 |
 | AS-4 | Barra y contador de progreso de descarga en Assets | ✅ 2026-11-12 |
 | AS-5 | Actualizar las portadas visibles en Cards, Lista y Carrusel al terminar una descarga, sin reiniciar la app | ✅ 2026-11-12 |
-| AS-6 | Al salir de RetroU hacia el menú de Wii U mientras hay descargas activas, terminar o cancelar el trabajo y cerrar sin bloquear la consola; conservar un log del cierre | ⬜ |
+| AS-6 | Al salir de RetroU hacia el menú de Wii U mientras hay descargas activas, terminar o cancelar el trabajo y cerrar sin bloquear la consola; conservar un log del cierre | 🔧 En curso (Codex, rama main); compilado, falta Wii U |
 
 ## 8. Documentación / cierre
 
@@ -109,14 +109,14 @@ Guía de la ronda en Wii U: `docs/hardware-validation.md`.
 
 | ID | Pendiente | Estado |
 |---|---|---|
-| DOC-1 | Actualizar `README.md` y `native/README.md` con la arquitectura WUHB actual, controles `v2`, guardados, Assets y logs; redactado, pendiente de cierre con pruebas de hardware | 🔧 En curso (Codex, rama main) |
+| DOC-1 | Actualizar `README.md` y `native/README.md` con la arquitectura WUHB actual, controles `v2`, guardados, Assets y logs; funciones documentadas confirmadas en hardware, nuevas correcciones identificadas como pendientes | ✅ 2026-11-12 |
 | DOC-2 | Validación final en hardware de todo el conjunto (ronda de pruebas completa con los 4 WUHB) | ⬜ |
 
 ## 9. N64 (RetroU N64)
 
 | ID | Pendiente | Estado |
 |---|---|---|
-| N64-1 | Probar `RetroN64U.wuhb` en hardware (generada desde Our64, rebrandeada) | ⬜ |
+| N64-1 | Probar `RetroN64U.wuhb` en hardware (generada desde Our64, rebrandeada); el usuario confirmó que es funcional | ✅ 2026-11-12 |
 | N64-2 | Port completo a la UI RetroU (varias rondas; clon externo en `C:/proyectos/Our64`) | ⬜ |
 
 ## 10. Ejemplos gráficos (referencias Our64)

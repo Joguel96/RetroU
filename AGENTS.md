@@ -295,8 +295,9 @@ solo mantiene el estado general.
 - NES/SNES/GBA: WUHB estática generada y compilada.
 - N64: `RetroN64U.wuhb` generada desde Our64 (Not64 + GLideN64, clon externo
   en `C:/proyectos/Our64`), parcheada para WUT 1.9.2 y rebrandeada como
-  RetroU N64 con la UI propia de Our64. No probado en hardware. Pendiente el
-  port con la UI completa de RetroU (varias rondas, ver `PENDIENTES.md`).
+  RetroU N64 con la UI propia de Our64. El usuario confirmó que funciona en
+  hardware el 2026-11-12. Pendiente el port con la UI completa de RetroU
+  (varias rondas, ver `PENDIENTES.md`; fuera de la autorización actual).
 - **Probado en hardware por el usuario**: HOME durante partida, audio del
   core y NES/SNES/GBA con ROMs reales. El 2026-11-12 confirmó además las
   pruebas restantes de navegación, controles, guardados y Assets, excepto
@@ -316,8 +317,8 @@ solo mantiene el estado general.
   portadas/backdrops con progreso: probados en hardware (NAV-1/7, UI-3..9,
   AS-1..5). GBA ya recorre más allá del juego 144. Pendiente: salir al menú
   de Wii U durante descargas activas bloquea la consola (AS-6).
-- Ajustes en dos paneles: el flujo funciona; falta la referencia visual para
-  corregir la distribución (UI-2).
+- Ajustes en dos paneles: nueva distribución según
+  `ejemplos/Disposicion de menu.png`; falta validarla en Wii U (UI-2).
 - Referencias visuales de UI en `ejemplos/` (raíz del proyecto).
 - No afirmar que algo está probado en hardware si no lo está.
 

@@ -42,13 +42,19 @@ sd:/retrou/snap/<consola>/
 ```
 
 Cada app crea sus carpetas y archivos de configuración si no existen.
+`control-map.conf` usa `v2`: `p1`/`p2` indican el slot asignado a cada puerto
+(`p2` no se usa en GBA) y las secciones `[gamepad]`/`[pro]` guardan por acción
+una o varias máscaras físicas en hexadecimal, o `none`. Los formatos `v1` y
+anterior se leen y migran al guardar. Los tres perfiles por dispositivo se
+guardan en `profiles/`; los mapas por ROM, en `rom-maps/`.
 
 ## Qué hace
 
 - Escanea `sd:/retrou/roms/<consola>/`.
 - Muestra la biblioteca en cards, lista o carrusel, sin barra de consolas.
 - **A** carga la ROM con el core integrado.
-- **Plus** abre Ajustes; **Minus** abre el sidebar de filtros en cards.
+- **Plus** abre Ajustes en dos paneles (secciones a la izquierda, opciones a
+  la derecha); **Minus** abre el sidebar de filtros en cards.
 - En lista y carrusel, **Minus** abre el buscador y **L/R** recorre «All»,
   la estrella de Favoritos, «#» y A–Z. La vista y el fondo dinámico se guardan por consola
   en `view.conf`, junto con la espera del backdrop (0, 1, 3, 5 o 10 s;
@@ -67,6 +73,9 @@ Cada app crea sus carpetas y archivos de configuración si no existen.
   muestra intentos procesados y fallos por separado, sin sumar metadata.
 - Las solicitudes manuales hechas mientras se actualiza metadata quedan en
   cola y comienzan al terminar el trabajo actual; Assets indica «En cola».
+- Al salir hacia el menú de Wii U, la app cancela las descargas pendientes,
+  espera al hilo de red y registra `asset_shutdown_begin` y
+  `asset_shutdown_complete` antes de `main_exit_clean`.
 - Cards conserva un máximo de 16 texturas de portada y una sola portada de
   respaldo. GBA registra cada selección, memoria libre y render completado
   para localizar un posible cierre al recorrer la biblioteca.
@@ -79,11 +88,9 @@ Cada app crea sus carpetas y archivos de configuración si no existen.
 
 No hay selector de cores: cada app es un sistema.
 
-## Lo que falta
+## Controles y verificación
 
-- Verificar en hardware los cuatro slots de savestate con miniatura y la
-  persistencia de SRAM al cargar, guardar y salir.
-- Mapeo de controles estilo Our64 funcional, con varias asignaciones por acción,
+- Mapeo de controles estilo Our64, con varias asignaciones por acción,
   `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás y persistencia de
   acciones desasignadas en `control-map.conf`. NES y SNES muestran su imagen
   completa en el editor, GBA usa un solo puerto y las fuentes distinguen
@@ -91,8 +98,14 @@ No hay selector de cores: cada app es un sistema.
 - En Controles, «Cambiar orden de mandos» espera A en el mando físico para
   cada puerto. Desde el editor, Plus abre tres perfiles por dispositivo:
   A carga el seleccionado, Y guarda el mapa actual.
-- Verificar en hardware la descarga separada de portadas/backdrops, metadatos
-  automáticos y barra de progreso.
+- La asignación externa conserva un slot lógico cuando el Pro/Classic se
+  desconecta; al reconectar en otro canal se intenta restaurar ese slot sin
+  cambiar el mapa. El log registra `controller_disconnected`,
+  `controller_rebound` y `controller_restored`.
+
+El usuario confirmó en hardware las funciones de biblioteca, navegación,
+guardados, mapeo y descargas de NES/SNES/GBA anteriores a AS-6, CTRL-8 y UI-2.
+Estas tres correcciones nuevas necesitan una ronda de prueba en Wii U.
 
 El input básico del core ya está conectado: A/B/X/Y/L/R, Start/Select y D-Pad/stick.
 
@@ -143,6 +156,10 @@ sd:/retrou/snap/<consola>/
   resumen de entrada por ROM. Los logs de compilación quedan en `native/build/logs/`.
 - El log registra `menu_shortcut_loaded`, `menu_shortcut_saved`, fallos de
   lectura/escritura y `core_menu_shortcut_opened`; también `covers_refreshed`.
+- La salida durante descargas registra `asset_shutdown_begin` y
+  `asset_shutdown_complete` (y `GX2 asset: cancelado` si el trabajo ya
+  comenzó). Un mando reconectado
+  registra su slot y canal en `controller_rebound`/`controller_restored`.
 - Si una máscara de `control-map.conf` no se puede leer, se usan los controles
   predeterminados y el log registra `control_map_parse_failed`.
 - Las descargas consultan los índices de nombres de Libretro y escriben líneas

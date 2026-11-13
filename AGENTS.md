@@ -298,23 +298,26 @@ solo mantiene el estado general.
   RetroU N64 con la UI propia de Our64. No probado en hardware. Pendiente el
   port con la UI completa de RetroU (varias rondas, ver `PENDIENTES.md`).
 - **Probado en hardware por el usuario**: HOME durante partida, audio del
-  core, NES/SNES/GBA con ROMs reales, savestates y carátulas, conexión de
-  Pro Controller.
+  core y NES/SNES/GBA con ROMs reales. El 2026-11-12 confirmó además las
+  pruebas restantes de navegación, controles, guardados y Assets, excepto
+  los dos fallos nuevos registrados como CTRL-8 y AS-6.
 - **Input del core implementado**: A/B/X/Y/L/R, Start/Select y D-pad/stick.
 - **Input UI**: GamePad (VPAD) + Pro Controller (WPAD) con detección en
   caliente; menú HOME del sistema vía ProcUI.
-- **Controles implementado**: asignación de mandos a los 2 puertos del core
-  (Mando 1/Mando 2) y remapeo estilo Our64 por acción del core, con múltiples
+- **Controles implementados y probados**: asignación de mandos a dos puertos
+  del core en NES/SNES y uno en GBA, y remapeo estilo Our64 con múltiples
   botones por acción, `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás y
-  migración de `v1`/conf viejo. VER-1..5 fueron confirmados por el usuario;
-  el nuevo flujo de orden, perfiles y mapas por ROM espera prueba en hardware.
-- SRAM automática al abrir/guardar/salir y cuatro slots con miniatura:
-  implementados, pendientes de verificar en hardware (SAVE-1/2).
-- Touch, búsqueda y descargas separadas de portadas/backdrops con progreso:
-  implementados, pendientes de verificar en hardware (NAV-1/7, AS-1..5).
-  «Solo faltantes» cuenta solo imágenes ausentes e informa los intentos fallidos.
-  GBA limita la caché de portadas a 16 y registra los cambios de letra en Cards;
-  el cierre reportado en P sigue pendiente de reproducción y validación.
+  migración de `v1`/conf viejo; también orden de mandos, perfiles, mapas por ROM
+  y atajos configurables del menú. Pendiente: al reconectar Pro/Classic no se
+  conserva o restaura su asignación (CTRL-8).
+- SRAM automática y cuatro slots con miniatura: probados en hardware
+  (SAVE-1/2).
+- Touch, búsqueda, vistas de biblioteca y descargas separadas de
+  portadas/backdrops con progreso: probados en hardware (NAV-1/7, UI-3..9,
+  AS-1..5). GBA ya recorre más allá del juego 144. Pendiente: salir al menú
+  de Wii U durante descargas activas bloquea la consola (AS-6).
+- Ajustes en dos paneles: el flujo funciona; falta la referencia visual para
+  corregir la distribución (UI-2).
 - Referencias visuales de UI en `ejemplos/` (raíz del proyecto).
 - No afirmar que algo está probado en hardware si no lo está.
 

@@ -17,10 +17,11 @@ como terminado aquí (y en `AGENTS.md` si cambia el estado general).
 Regla del proyecto: **no afirmar que algo está probado en hardware si no lo
 está**. Un cambio compilado pero sin verificar sigue siendo ⬜/🔧.
 
-Ronda en Cemu del 2026-11-12: el usuario confirmó el flujo de navegación y
-biblioteca (pasos 1–5), controles (1–5), guardados y Assets (1–4). La
-distribución visual de Ajustes queda pendiente de su próxima referencia.
-Estas confirmaciones no cambian el estado de las pruebas en Wii U.
+Ronda en Wii U del 2026-11-12: el usuario confirmó las demás pruebas de
+navegación, controles, guardados y Assets de NES/SNES/GBA. Detectó dos fallos
+nuevos: bloqueo al salir con descargas activas y pérdida de asignación al
+reconectar un mando externo. La distribución visual de Ajustes espera su
+próxima referencia. N64 queda fuera de esta confirmación.
 
 ---
 
@@ -34,7 +35,7 @@ Estas confirmaciones no cambian el estado de las pruebas en Wii U.
 | OK-4 | Savestates y carátulas funcionan | ✅ 2026-11-11 |
 | OK-5 | Pro Controller se conecta (WPADEnableURCC/WiiRemote) | ✅ 2026-11-11 |
 
-## 2. Verificación pendiente (implementado, sin confirmar)
+## 2. Verificaciones del mapeo
 
 | ID | Pendiente | Estado |
 |---|---|---|
@@ -48,13 +49,14 @@ Estas confirmaciones no cambian el estado de las pruebas en Wii U.
 
 | ID | Pendiente | Estado |
 |---|---|---|
-| CTRL-1 | Remapeo desde «Controles» en el menú de partida (Minus+Plus), con configuración propia por ROM en `rom-maps/<hash>.conf` y restauración del mapa global al salir. Compilado; falta probar en hardware | 🔧 En curso (Codex, rama main) |
-| CTRL-2 | Tres perfiles guardables/cargables para GamePad y Pro/Classic por consola en `profiles/`; `Plus` desde el editor abre la lista, `A` carga y `Y` guarda. Compilado; falta probar en hardware | 🔧 En curso (Codex, rama main) |
-| CTRL-3 | Visual de asignación y mapeo estilo Our64 con UI RetroU, imágenes aportadas, formato `v2`, acciones `none`, un puerto en GBA y fuentes `Stick L`/`Stick R`. «Cambiar orden de mandos» asigna al pulsar A en cada dispositivo. Una máscara inválida usa el mapa predeterminado y se registra en el log. Compilado; falta probar flujo y detalles visuales en hardware. Referencias en `ejemplos/Our64/` | 🔧 En curso (Codex, rama main) |
+| CTRL-1 | Remapeo desde «Controles» en el menú de partida (Minus+Plus), con configuración propia por ROM en `rom-maps/<hash>.conf` y restauración del mapa global al salir | ✅ 2026-11-12 |
+| CTRL-2 | Tres perfiles guardables/cargables para GamePad y Pro/Classic por consola en `profiles/`; `Plus` desde el editor abre la lista, `A` carga y `Y` guarda | ✅ 2026-11-12 |
+| CTRL-3 | Visual de asignación y mapeo estilo Our64 con UI RetroU, imágenes aportadas, formato `v2`, acciones `none`, un puerto en GBA y fuentes `Stick L`/`Stick R`. «Cambiar orden de mandos» asigna al pulsar A en cada dispositivo. Una máscara inválida usa el mapa predeterminado y se registra en el log. Referencias en `ejemplos/Our64/` | ✅ 2026-11-12 |
 | CTRL-4 | Que los mandos externos (Pro, Classic, Wii Remote...) también naveguen la UI (biblioteca/ajustes/menú del core), no solo el GamePad. Implementación: `wpadNavBits()` traduce sus botones a las constantes VPAD (Pro/Classic: A,B,X,Y,L,R,ZL→L,ZR→R,+,-,D-pad; Wii Remote: A,B,+,-,D-pad) y el stick se comporta como D-Pad edge-triggered | ✅ 2026-11-11 |
-| CTRL-5 | Diagnóstico temporal de input reducido a un resumen compacto por ROM tras confirmar VER-1..5; se conservan logs de carga y guardado de mapas/perfiles. Compilado; falta verificar log en hardware | 🔧 En curso (Codex, rama main) |
+| CTRL-5 | Diagnóstico temporal de input reducido a un resumen compacto por ROM tras confirmar VER-1..5; se conservan logs de carga y guardado de mapas/perfiles | ✅ 2026-11-12 |
 | CTRL-6 | GamePad asignable a **cualquier mando del core** (Mando 1 y Mando 2). `setVpadPort()` + opciones de Mando 2 con GamePad. Extendido: se listan **todos** los mandos conectados (4 canales KPAD + GamePad, sin límite de 2) y se nombran por tipo (Wii U Pro Controller, Classic Controller, Wii Remote, Wii Remote + Nunchuk) con sufijo numérico solo si hay varios del mismo tipo | ✅ 2026-11-11 |
-| CTRL-7 | Configurar por tipo de mando la combinación global que abre el menú durante el core, con opciones compatibles para GamePad, Pro/Classic y Wii Remote/Nunchuk; conservar Minus+Plus como emergencia y persistir el ajuste. Compilado; falta probar en hardware | 🔧 En curso (Codex, rama main) |
+| CTRL-7 | Configurar por tipo de mando la combinación global que abre el menú durante el core, con opciones compatibles para GamePad, Pro/Classic y Wii Remote/Nunchuk; conservar Minus+Plus como emergencia y persistir el ajuste | ✅ 2026-11-12 |
+| CTRL-8 | Al desconectar y reconectar Wii U Pro Controller o Classic Controller durante la app, conservar o restaurar su asignación a Mando 1/Mando 2 y su mapeo; comprobar también la navegación de UI tras reconectar | ⬜ |
 
 ## 4. UI / Apariencia
 
@@ -62,43 +64,44 @@ Estas confirmaciones no cambian el estado de las pruebas en Wii U.
 |---|---|---|
 | UI-1 | Redondeo de cards: **bordes superiores rectos, base redondeada** (primera versión estaba invertida; corregida según `ejemplos/Retrou_resultados/error_cards.png`) | ✅ 2026-11-11 |
 | UI-2 | Ajustes en dos paneles: opciones a la izquierda y contexto a la derecha. El usuario confirmó el flujo, pero la distribución visual requiere una referencia adicional que aportará en `ejemplos/`. Falta revisión final en hardware | 🔧 En curso (Codex, rama main) |
-| UI-3 | Tres vistas de juegos: cards, lista y carrusel, elegibles en Personalizar; lista/carrusel con filtro alfabético y navegación propia. Compilado; falta revisar presentación y flujo en hardware. Referencias: `ejemplos/Our64/carrousel.png` y `list.png` | 🔧 En curso (Codex, rama main) |
-| UI-4 | Casilla de «Fondo dinámico» en Ajustes → Personalizar; valor guardado por consola en `view.conf`. Compilado; falta probar en hardware | 🔧 En curso (Codex, rama main) |
-| UI-5 | Carrusel y lista usan el backdrop de la ROM enfocada cuando el fondo dinámico está activo. Compilado; falta comprobar en hardware | 🔧 En curso (Codex, rama main) |
-| UI-6 | Tiempo de aparición del backdrop configurable en Personalizar: 0, 1, 3, 5 o 10 segundos sin cambio de selección; 3 s por defecto y lectura compatible con `view.conf` anterior. Compilado; falta probar el tiempo elegido en hardware | 🔧 En curso (Codex, rama main) |
-| UI-7 | Carrusel NES con portadas verticales y SNES con carátulas completas sin recorte, incluida la imagen central y las laterales. Compilado; falta comprobar en hardware | 🔧 En curso (Codex, rama main) |
-| UI-8 | En Lista y Carrusel, mostrar estrella en juegos favoritos y Favoritos inmediatamente después de «All» en el filtro superior, navegable con L/R y touch. Falta comprobar en hardware | 🔧 En curso (Codex, rama main) |
-| UI-9 | Investigar el cierre de GBA cerca del juego 144: dos logs terminan al abrir la portada de «Pokémon» con nombre Latin-1; el usuario informó que también se cierra tras retirar los Pokémon, pero falta el log de ese intento. Se normalizaron títulos y rutas de assets, se usa una sola portada de respaldo y se registran índice, memoria libre y fin de render de cada selección. Falta validar la nueva WUHB en Cemu/hardware | 🔧 En curso (Codex, rama main) |
+| UI-3 | Tres vistas de juegos: cards, lista y carrusel, elegibles en Personalizar; lista/carrusel con filtro alfabético y navegación propia. Referencias: `ejemplos/Our64/carrousel.png` y `list.png` | ✅ 2026-11-12 |
+| UI-4 | Casilla de «Fondo dinámico» en Ajustes → Personalizar; valor guardado por consola en `view.conf` | ✅ 2026-11-12 |
+| UI-5 | Carrusel y lista usan el backdrop de la ROM enfocada cuando el fondo dinámico está activo | ✅ 2026-11-12 |
+| UI-6 | Tiempo de aparición del backdrop configurable en Personalizar: 0, 1, 3, 5 o 10 segundos sin cambio de selección; 3 s por defecto y lectura compatible con `view.conf` anterior | ✅ 2026-11-12 |
+| UI-7 | Carrusel NES con portadas verticales y SNES con carátulas completas sin recorte, incluida la imagen central y las laterales | ✅ 2026-11-12 |
+| UI-8 | En Lista y Carrusel, mostrar estrella en juegos favoritos y Favoritos inmediatamente después de «All» en el filtro superior, navegable con L/R y touch | ✅ 2026-11-12 |
+| UI-9 | Investigar el cierre de GBA cerca del juego 144: títulos y rutas de assets normalizados; una sola portada de respaldo y registros de índice, memoria libre y fin de render por selección. El usuario confirmó que la nueva WUHB recorre la biblioteca en hardware | ✅ 2026-11-12 |
 | ART-1 | Nuevos iconos y splash (icon/tv-splash/drc-splash) por consola (NES/SNES/GBA/N64) desde `assets/RetroU_consolas_12_PNG/` → `assets/console/<consola>/`; N64 además en `C:/proyectos/Our64/assets/console/n64/` y regenerar `RetroN64U.wuhb` | ✅ 2026-11-12 |
 
 ## 5. Navegación / Input UI
 
 | ID | Pendiente | Estado |
 |---|---|---|
-| NAV-1 | Touch del GamePad funcionando en la navegación de la UI; taps integrados con las acciones del mando en biblioteca, ajustes, sidebar, buscador, mapeo y menú del core. Falta probar en hardware | 🔧 En curso (Codex, rama main) |
+| NAV-1 | Touch del GamePad funcionando en la navegación de la UI; taps integrados con las acciones del mando en biblioteca, ajustes, sidebar, buscador, mapeo y menú del core | ✅ 2026-11-12 |
 | NAV-2 | ( = CTRL-4, referencia cruzada: navegación con mandos externos ) | ✅ 2026-11-11 |
 | NAV-3 | El sidebar solo se aplica en la vista cards y se muestra con **Minus** (en lista/carrusel no existe sidebar) | ✅ 2026-11-11 |
 | NAV-4 | **Plus** es el botón que abre Ajustes (ya no el sidebar); **L/R ya no navega entre biblioteca y ajustes** | ✅ 2026-11-11 |
 | NAV-5 | **B jerárquico**: B regresa un nivel a la vez hasta volver a la biblioteca (ej.: ajustes→personalizar→vista, B vuelve vista→personalizar, luego personalizar→ajustes, luego ajustes→biblioteca) | ✅ 2026-11-11 |
 | NAV-6 | El **stick L navega toda la UI** (biblioteca, Ajustes, sidebar, remapeo, menú del core), no solo el D-Pad. Edge-triggered: un empuje = un paso (igual que el D-Pad) | ✅ 2026-11-11 |
-| NAV-7 | El buscador usa B para borrar; con la consulta vacía B sale. X acepta y sale. Falta probar en hardware | 🔧 En curso (Codex, rama main) |
+| NAV-7 | El buscador usa B para borrar; con la consulta vacía B sale. X acepta y sale | ✅ 2026-11-12 |
 
 ## 6. Savestates
 
 | ID | Pendiente | Estado |
 |---|---|---|
-| SAVE-1 | Cuatro slots de savestate por juego con miniatura PNG del frame; selector en menú del core. Falta probar en hardware | 🔧 En curso (Codex, rama main) |
-| SAVE-2 | SRAM cargada tras abrir ROM y escrita al guardar estado, salir del juego y cerrar app; escritura temporal + rename. Falta probar persistencia en hardware | 🔧 En curso (Codex, rama main) |
+| SAVE-1 | Cuatro slots de savestate por juego con miniatura PNG del frame; selector en menú del core | ✅ 2026-11-12 |
+| SAVE-2 | SRAM cargada tras abrir ROM y escrita al guardar estado, salir del juego y cerrar app; escritura temporal + rename | ✅ 2026-11-12 |
 
 ## 7. Assets (descarga)
 
 | ID | Pendiente | Estado |
 |---|---|---|
-| AS-1 | Descargas manuales separadas de portadas y backdrops en Assets; buscar nombres reales en el índice de Libretro, registrar errores HTTP/red, poner en cola peticiones durante la actualización de metadata y conservar el archivo anterior si falla un reemplazo forzado. Falta probar en hardware | 🔧 En curso (Codex, rama main) |
-| AS-2 | Metadata se actualiza al iniciar aun con auto-descarga apagada. Falta probar red en hardware | 🔧 En curso (Codex, rama main) |
-| AS-3 | Modo «Solo faltantes» / «Descargar todo» para descarga manual; auto-descarga usa solo faltantes. El contador debe incluir únicamente imágenes pendientes al reanudar, sin contar metadata ni archivos existentes. Falta probar en hardware | 🔧 En curso (Codex, rama main) |
-| AS-4 | Barra y contador de progreso de descarga en Assets. Falta probar en hardware | 🔧 En curso (Codex, rama main) |
-| AS-5 | Actualizar las portadas visibles en Cards, Lista y Carrusel al terminar una descarga, sin reiniciar la app. Compilado; falta probar en hardware | 🔧 En curso (Codex, rama main) |
+| AS-1 | Descargas manuales separadas de portadas y backdrops en Assets; buscar nombres reales en el índice de Libretro, registrar errores HTTP/red, poner en cola peticiones durante la actualización de metadata y conservar el archivo anterior si falla un reemplazo forzado | ✅ 2026-11-12 |
+| AS-2 | Metadata se actualiza al iniciar aun con auto-descarga apagada | ✅ 2026-11-12 |
+| AS-3 | Modo «Solo faltantes» / «Descargar todo» para descarga manual; auto-descarga usa solo faltantes. El contador incluye únicamente imágenes pendientes al reanudar, sin metadata ni archivos existentes | ✅ 2026-11-12 |
+| AS-4 | Barra y contador de progreso de descarga en Assets | ✅ 2026-11-12 |
+| AS-5 | Actualizar las portadas visibles en Cards, Lista y Carrusel al terminar una descarga, sin reiniciar la app | ✅ 2026-11-12 |
+| AS-6 | Al salir de RetroU hacia el menú de Wii U mientras hay descargas activas, terminar o cancelar el trabajo y cerrar sin bloquear la consola; conservar un log del cierre | ⬜ |
 
 ## 8. Documentación / cierre
 

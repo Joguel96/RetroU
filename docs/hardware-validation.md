@@ -6,6 +6,13 @@ en hardware. Antes de cada ronda, conserva una copia de
 `sd:/retrou/retrou_rpx.log` y sus versiones `.1`, `.2`, `.3` si aparece un
 fallo. El arranque rota esos archivos.
 
+Resultado de la ronda del 2026-11-12: el usuario confirmó en Wii U las
+pruebas de NES/SNES/GBA de navegación, controles, guardados y Assets. Quedan
+dos fallos detectados en hardware: salir al menú de Wii U con descargas
+activas bloquea la consola (AS-6) y reconectar un Pro/Classic no conserva su
+asignación (CTRL-8). La distribución de los dos paneles espera una referencia
+visual del usuario (UI-2). N64 aún no tiene validación en hardware.
+
 ## Preparación
 
 1. Copia `RetroNESU`, `RetroSNESU` y `RetroGBAU` de `dist/wiiu/apps/` a

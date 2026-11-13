@@ -77,7 +77,7 @@ se probó y el ruido persistió; AUD-2 reemplaza ese intento.
 | UI-7 | Carrusel NES con portadas verticales y SNES con carátulas completas sin recorte, incluida la imagen central y las laterales | ✅ 2026-11-12 |
 | UI-8 | En Lista y Carrusel, mostrar estrella en juegos favoritos y Favoritos inmediatamente después de «All» en el filtro superior, navegable con L/R y touch | ✅ 2026-11-12 |
 | UI-9 | Investigar el cierre de GBA cerca del juego 144: títulos y rutas de assets normalizados; una sola portada de respaldo y registros de índice, memoria libre y fin de render por selección. El usuario confirmó que la nueva WUHB recorre la biblioteca en hardware | ✅ 2026-11-12 |
-| UI-10 | Y cambia entre cards, lista y carrusel desde la biblioteca en NES/SNES/GBA; la vista elegida se guarda por consola. Favoritos sigue en la barra superior con L/R | 🔧 2026-11-13; falta verificar en Wii U |
+| UI-10 | Y cambia entre cards, lista y carrusel desde la biblioteca en NES/SNES/GBA, conserva el juego seleccionado y guarda la vista por consola. Favoritos sigue en la barra superior con L/R | 🔧 2026-11-13; falta verificar en Wii U |
 | ART-1 | Nuevos iconos y splash (icon/tv-splash/drc-splash) por consola (NES/SNES/GBA/N64) desde `assets/RetroU_consolas_12_PNG/` → `assets/console/<consola>/`; N64 además en `C:/proyectos/Our64/assets/console/n64/` y regenerar `RetroN64U.wuhb` | ✅ 2026-11-12 |
 
 ## 5. Navegación / Input UI

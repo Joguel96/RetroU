@@ -2322,11 +2322,16 @@ int main()
                     searchActive = true;
                     searchCursor = 0;
                 } else if (navTrigger & VPAD_BUTTON_Y) {
+                    const int selectedRom = rc > 0 ? visible[focused] : -1;
                     viewMode = (viewMode + 1) % 3;
                     alphaFilter = viewMode != 0 && favoritesOnly ? 1 : 0;
-                    focused = 0;
-                    scroll = 0;
                     rebuildVisible();
+                    const auto selected = std::find(visible.begin(), visible.end(), selectedRom);
+                    if (selected != visible.end()) focused = static_cast<int>(selected - visible.begin());
+                    if (viewMode == 0)
+                        scroll = std::max(0, focused / columns - (rows - 1)) * columns;
+                    else if (viewMode == 1)
+                        scroll = std::max(0, focused - 4);
                     saveViewOptions();
                     bootLog(("library_view_changed mode=" + std::to_string(viewMode)).c_str());
                     navBlip();

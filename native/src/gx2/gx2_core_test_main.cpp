@@ -1007,7 +1007,7 @@ static bool g_sfxOn = true;
 
 static void initUiAudio()
 {
-    const int rate = 48000;
+    const int rate = std::string(RETROU_CORE_SYSTEM) == "gba" ? 48000 : 32000;
     SDL_AudioSpec want{};
     want.freq = rate;
     want.format = AUDIO_S16SYS;
@@ -1016,7 +1016,7 @@ static void initUiAudio()
     want.callback = nullptr;
     SDL_AudioSpec obtained{};
     g_uiDevice = SDL_OpenAudioDevice(nullptr, 0, &want, &obtained, 0);
-    if (!g_uiDevice) {
+    if (!g_uiDevice && rate == 48000) {
         bootLog((std::string("audio_48000_failed ") + SDL_GetError()).c_str());
         want.freq = 32000;
         g_uiDevice = SDL_OpenAudioDevice(nullptr, 0, &want, &obtained, 0);

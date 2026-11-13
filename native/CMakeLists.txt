@@ -295,9 +295,9 @@ function(add_gx2_retrou target system label app_name core)
     )
 endfunction()
 
-add_gx2_retrou(retrou_nes_gx2 nes "NES" "RetroU GX2 NES" "${FCEUMM_CORE}")
-add_gx2_retrou(retrou_snes_gx2 snes "SNES" "RetroU GX2 SNES" "${SNES9X_CORE}")
-add_gx2_retrou(retrou_gba_gx2 gba "GBA" "RetroU GX2 GBA" "${MGBA_CORE}")
+add_gx2_retrou(retrou_nes_gx2 nes "NES" "RetroU NES" "${FCEUMM_CORE}")
+add_gx2_retrou(retrou_snes_gx2 snes "SNES" "RetroU SNES" "${SNES9X_CORE}")
+add_gx2_retrou(retrou_gba_gx2 gba "GBA" "RetroU GBA" "${MGBA_CORE}")
 
 add_custom_target(stage_wuhb ALL
     COMMAND "${CMAKE_COMMAND}" -E make_directory

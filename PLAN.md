@@ -3,8 +3,8 @@
 > **Estado Global:** EN PROCESO (N64-2 permanece pendiente)
 > **Orquestador:** Codex
 > **Fecha:** 2026-11-13
-> **Ejecución:** el usuario autorizó TASK-001 a TASK-011 el 2026-11-13. TASK-012 en adelante requieren autorización adicional. AUD-2 y AUD-3 de GBA quedan aplazados.
-> **Avance:** TASK-001–011 tienen implementación y compilación Wii U. Falta verificar la WUHB nueva en hardware; por ello N64-2 permanece 🔧. Las casillas de verificación de éxito siguen abiertas hasta esa prueba.
+> **Ejecución:** el usuario autorizó TASK-001 a TASK-011 y después TASK-012 a TASK-016 el 2026-11-13. TASK-017 en adelante requieren autorización adicional. AUD-2 y AUD-3 de GBA quedan aplazados.
+> **Avance:** TASK-001–016 tienen implementación y compilación Wii U. Falta verificar la WUHB nueva en hardware; por ello N64-2 permanece 🔧. Las casillas de verificación de éxito siguen abiertas hasta esa prueba.
 
 ## Registro de commits de esta ronda
 
@@ -23,12 +23,21 @@
 | TASK-010 | Our64 | `a2072c5` |
 | TASK-011 | Our64 | `26c26a3` |
 | Render bajo demanda de TASK-010 | Our64 | `ad07ca5` |
+| TASK-012 | Our64 | `cd50bfa` |
+| TASK-013 | Our64 | `73ca4d3` |
+| TASK-014 | Our64 | `f7acfc5` |
+| TASK-015 | Our64 | `5992648` |
+| TASK-016 | Our64 | `0773b5f` |
 
-Compilación final: `C:/proyectos/Our64/player/build-release/logs/build-20261113-155910.log`.
+Compilación final: `C:/proyectos/Our64/player/build-release/logs/build-20261113-204114.log`.
 WUHB copiada: `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb`, SHA-256
-`0a39280d2fbdb8cebd76f4c2e810608a5dac2fbaf9578bf74d68d462d7d07ff8`.
+`60a9bc9404b9d64756a38fd580a5d3c4631a8844b26a0c47b4d1638f8e940514`.
 La prueba de capturas de escritorio no pudo arrancar en MSYS2 por falta de
-`freetype2`, `libpng`, `libturbojpeg` y `zlib`; la compilación Wii U sí pasó.
+`freetype2`, `libpng`, `libturbojpeg` y `zlib`; la compilación Wii U y la prueba
+portátil `test_covers` sí pasaron. Cemu arrancó y mostró la biblioteca, pero el
+perfil de entrada disponible no permitió abrir ajustes para inspección visual.
+TASK-016 amplió los cambios a la biblioteca y al menú de descarga porque el
+flujo anterior solo enumeraba juegos sin portada y omitía fondos faltantes.
 
 ---
 

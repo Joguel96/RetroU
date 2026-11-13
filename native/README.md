@@ -11,6 +11,11 @@ Libretro enlazado estáticamente** y se distribuye como WUHB independiente.
 | `RetroSNESU.wuhb` | snes9x | SNES |
 | `RetroGBAU.wuhb` | mgba | GBA |
 
+N64 se compila en el clon externo `C:/proyectos/Our64` (Not64 + GLideN64),
+fuera de `native/`. Su WUHB se copia en `dist/wiiu/apps/RetroN64U/` mediante
+`tools/build-retrou-n64.sh` de ese clon. La ronda TASK-001–011 del port de la
+biblioteca RetroU está compilada y pendiente de probar en Wii U.
+
 Los nombres visibles de las WUHB son `RetroU NES`, `RetroU SNES` y
 `RetroU GBA` (APP-1; pendiente verificar en el menú de Wii U).
 

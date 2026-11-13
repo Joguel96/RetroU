@@ -123,7 +123,7 @@ Guía de la ronda en Wii U: `docs/hardware-validation.md`.
 | ID | Pendiente | Estado |
 |---|---|---|
 | N64-1 | Probar `RetroN64U.wuhb` en hardware (generada desde Our64, rebrandeada); el usuario confirmó que es funcional | ✅ 2026-11-12 |
-| N64-2 | Port completo a la UI RetroU (varias rondas; clon externo en `C:/proyectos/Our64`) | ⬜ |
+| N64-2 | Port completo a la UI RetroU (varias rondas; clon externo en `C:/proyectos/Our64`). TASK-001–011 implementadas y compiladas; falta comprobar la nueva WUHB en Wii U y completar TASK-012–021 | 🔧 2026-11-13 |
 
 ## 10. Audio del core
 

@@ -18,10 +18,13 @@ de RetroU.
   `tools/generate_console_assets.py`).
 - **N64 (Our64)**: `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb` — emulador
   independiente Not64 + GLideN64 (clon externo en `C:/proyectos/Our64`),
-  parcheado para WUT 1.9.2 y rebrandeado como RetroU N64. Conserva la UI
-  propia de Our64. Build reproducible: `tools/build-retrou-n64.sh` dentro de
-  ese clone. El usuario confirmó que funciona en hardware. **Pendiente**: port
-  del motor Our64 bajo la UI completa de RetroU (N64-2, fuera de esta tanda).
+  parcheado para WUT 1.9.2. La base anterior funcionó en hardware; la ronda
+  TASK-001–011 añade biblioteca RetroU con grilla, lista, carrusel, búsqueda,
+  favoritos, arranque directo y rutas `sd:/retrou/roms/n64` y
+  `sd:/retrou/n64/`. La WUHB nueva compila, pero falta probarla en Wii U y
+  completar controles, menús y ajustes del port (N64-2). La compilación y
+  copia verificable se hacen con `tools/build-retrou-n64.sh` en Our64; cada
+  ejecución guarda un log en `player/build-release/logs/`.
 - **Mapeo de controles GX2**: editor estilo Our64 por acción del core, con varias
   asignaciones por acción, `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás
   y persistencia explícita de acciones `none` en `control-map.conf` formato `v2`.

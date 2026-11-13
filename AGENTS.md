@@ -302,10 +302,12 @@ solo mantiene el estado general.
 
 - NES/SNES/GBA: WUHB estática generada y compilada.
 - N64: `RetroN64U.wuhb` generada desde Our64 (Not64 + GLideN64, clon externo
-  en `C:/proyectos/Our64`), parcheada para WUT 1.9.2 y rebrandeada como
-  RetroU N64 con la UI propia de Our64. El usuario confirmó que funciona en
-  hardware el 2026-11-12. Pendiente el port con la UI completa de RetroU
-  (varias rondas, ver `PENDIENTES.md`; fuera de la autorización actual).
+  en `C:/proyectos/Our64`) y parcheada para WUT 1.9.2. La base anterior
+  funcionó en hardware el 2026-11-12. TASK-001–011 del port, autorizadas el
+  2026-11-13, están implementadas y compiladas: biblioteca RetroU con tres
+  vistas, búsqueda y favoritos, arranque directo y datos nuevos bajo `retrou`.
+  Esta nueva WUHB no está verificada en Wii U. TASK-012–021 siguen pendientes
+  y requieren autorización adicional (ver `PLAN.md` y `PENDIENTES.md`).
 - **Probado en hardware por el usuario**: HOME durante partida, audio del
   core y NES/SNES/GBA con ROMs reales. El 2026-11-12 confirmó además las
   pruebas restantes de navegación, controles, guardados y Assets. El

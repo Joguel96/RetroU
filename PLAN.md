@@ -4,6 +4,31 @@
 > **Orquestador:** Codex
 > **Fecha:** 2026-11-13
 > **Ejecución:** el usuario autorizó TASK-001 a TASK-011 el 2026-11-13. TASK-012 en adelante requieren autorización adicional. AUD-2 y AUD-3 de GBA quedan aplazados.
+> **Avance:** TASK-001–011 tienen implementación y compilación Wii U. Falta verificar la WUHB nueva en hardware; por ello N64-2 permanece 🔧. Las casillas de verificación de éxito siguen abiertas hasta esa prueba.
+
+## Registro de commits de esta ronda
+
+| Tarea | Repositorio | Commit |
+|---|---|---|
+| Plan | RetroU | `beeda76` |
+| TASK-001 | RetroU | `432a1e5` |
+| TASK-002 | Our64 | `93d365d` |
+| TASK-003 | Our64 | `9ae8d2c` |
+| TASK-004 | Our64 | `fc0b3ed` |
+| TASK-005 | Our64 | `826e701` |
+| TASK-006 | Our64 | `e855885` |
+| TASK-007 | Our64 | `d2c11a5` |
+| TASK-008 | Our64 | `c4a3cf3` |
+| TASK-009 | Our64 | `7122e99` |
+| TASK-010 | Our64 | `a2072c5` |
+| TASK-011 | Our64 | `26c26a3` |
+| Render bajo demanda de TASK-010 | Our64 | `ad07ca5` |
+
+Compilación final: `C:/proyectos/Our64/player/build-release/logs/build-20261113-155910.log`.
+WUHB copiada: `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb`, SHA-256
+`0a39280d2fbdb8cebd76f4c2e810608a5dac2fbaf9578bf74d68d462d7d07ff8`.
+La prueba de capturas de escritorio no pudo arrancar en MSYS2 por falta de
+`freetype2`, `libpng`, `libturbojpeg` y `zlib`; la compilación Wii U sí pasó.
 
 ---
 

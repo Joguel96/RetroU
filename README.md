@@ -1,8 +1,8 @@
 # RetroU
 
-Frontend propio para Nintendo Wii U (Aroma). Cada consola tiene una WUHB con
-un core Libretro enlazado estáticamente; la UI, los datos y los guardados son
-de RetroU.
+Frontend propio para Nintendo Wii U (Aroma). Cada consola tiene una WUHB
+independiente. NES, SNES y GBA enlazan un core Libretro estático; N64 usa
+Not64, GLideN64 y audio AX. La UI, los datos y los guardados son de RetroU.
 
 ## Estado
 
@@ -16,15 +16,19 @@ de RetroU.
 - **Branding**: `assets/icon.png`, `assets/tv-splash.png`, `assets/drc-splash.png`.
   Por consola: `assets/console/<consola>/` (generados con
   `tools/generate_console_assets.py`).
-- **N64 (Our64)**: `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb` — emulador
-  independiente Not64 + GLideN64 (clon externo en `C:/proyectos/Our64`),
-  parcheado para WUT 1.9.2. La base anterior funcionó en hardware; la ronda
-  TASK-001–011 añade biblioteca RetroU con grilla, lista, carrusel, búsqueda,
-  favoritos, arranque directo y rutas `sd:/retrou/roms/n64` y
-  `sd:/retrou/n64/`. La WUHB nueva compila, pero falta probarla en Wii U y
-  completar controles, menús y ajustes del port (N64-2). La compilación y
-  copia verificable se hacen con `tools/build-retrou-n64.sh` en Our64; cada
-  ejecución guarda un log en `player/build-release/logs/`.
+- **N64 (Our64)**: `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb` — WUHB
+  independiente, compilada en el clon externo `C:/proyectos/Our64` con
+  Not64 + GLideN64 + AX, sin core Libretro. Incluye biblioteca RetroU
+  (cards, lista y carrusel), controles, menú, guardados y Assets; sus ajustes
+  todavía requieren afinar la apariencia para igualar NES/SNES/GBA.
+  Lee ROMs de `sd:/retrou/roms/n64` y escribe datos en `sd:/retrou/n64/`;
+  si la carpeta nueva no tiene ROMs, puede leer las de
+  `sd:/wiiu/our64/roms` sin modificarlas. Los guardados anteriores se leen
+  cuando falta el equivalente nuevo. La base previa funcionó en Wii U,
+  pero esta ronda del port (N64-2) aún requiere verificación en hardware.
+  `C:/proyectos/Our64/tools/build-retrou-n64.sh` compila y copia la WUHB,
+  conserva el binario previo y guarda un log en `player/build-release/logs/`.
+  El log de ejecución N64 es `sd:/retrou/n64/retrou_n64.log`.
 - **Mapeo de controles GX2**: editor estilo Our64 por acción del core, con varias
   asignaciones por acción, `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás
   y persistencia explícita de acciones `none` en `control-map.conf` formato `v2`.
@@ -46,8 +50,8 @@ de RetroU.
 - **Salida de audio**: Sonido permite elegir frecuencia automática, 32 000 o
   48 000 Hz y búfer de 512, 1024 o 2048 muestras. Se guarda por consola en
   `sd:/retrou/config/<consola>/audio.conf` y se aplica al reiniciar esa app
-  (AUD-3, pendiente de probar en Wii U). La WUHB de N64 usa audio AX propio
-  y no lee este archivo.
+  (AUD-3, pendiente de probar en Wii U). AUD-2 también sigue pendiente de
+  comprobar en Wii U. La WUHB de N64 usa audio AX propio y no lee este archivo.
 - **Biblioteca GX2**: vistas cards, lista y carrusel; las dos últimas ofrecen
   filtro alfabético con Favoritos junto a «All», navegable con L/R. El carrusel NES presenta
   portadas verticales y el de SNES muestra las imágenes completas.
@@ -86,6 +90,7 @@ Salidas:
 dist/wiiu/apps/RetroNESU/RetroNESU.wuhb
 dist/wiiu/apps/RetroSNESU/RetroSNESU.wuhb
 dist/wiiu/apps/RetroGBAU/RetroGBAU.wuhb
+dist/wiiu/apps/RetroN64U/RetroN64U.wuhb
 ```
 
 ## Ejecutar la interfaz React
@@ -105,12 +110,15 @@ npm run dev
 sd:/wiiu/apps/RetroNESU/RetroNESU.wuhb
 sd:/wiiu/apps/RetroSNESU/RetroSNESU.wuhb
 sd:/wiiu/apps/RetroGBAU/RetroGBAU.wuhb
+sd:/wiiu/apps/RetroN64U/RetroN64U.wuhb
 sd:/retrou/roms/<consola>/
 sd:/retrou/config/<consola>/
 sd:/retrou/saves/<consola>/save/
 sd:/retrou/snap/<consola>/
 sd:/retrou/thumbnails/<consola>/
 sd:/retrou/backdrops/<consola>/
+sd:/retrou/roms/n64/
+sd:/retrou/n64/                 configuración, arte, guardados y log N64
 ```
 
 ## Hoja de ruta

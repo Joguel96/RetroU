@@ -119,11 +119,55 @@ menú de partida. Confirma que el log muestra
 que SDL haya abierto) y que no hay ruido, aceleración ni cortes. Repite una
 partida breve de NES o SNES para detectar una regresión en la ruta directa.
 
-## N64
+## N64: ronda del port RetroU (N64-2)
 
-`RetroN64U.wuhb` fue probado por el usuario en hardware y funciona (N64-1).
-El port de Our64 a la interfaz RetroU (N64-2) está fuera de la autorización
-de esta tanda y no se tocó.
+La WUHB base de Our64 funcionó en Wii U (N64-1). La WUHB nueva del port
+todavía **no** tiene una ronda completa de pruebas en hardware. Cemu solo
+confirmó el arranque y la entrada a la biblioteca con 82 ROMs; generó
+`sd:/retrou/n64/retrou_n64.log` con líneas `GAME:` e `INPUT:`.
+La apariencia de Ajustes difiere de NES/SNES/GBA y queda como pendiente
+visual separado.
+
+| Evidencia antes de sustituir la WUHB | Valor |
+|---|---|
+| Our64, código de la compilación | `29de243a851b49d032e1b369823f810e7255fbc1` |
+| Empaquetado y log | `869861dad914522ee8f07edbb167e9dfb24ab7e4` |
+| SHA-256 de la WUHB nueva | `9d5a7dabeb0b079f3e14192bf84437cfef5450ca4889e37bba43c37ea9b3190b` |
+| SHA-256 de la WUHB previa | `5f822245644f1634f05ff982561383b8d0bc15068328219d45118ee072b42177` |
+| Build | `C:/proyectos/Our64/player/build-release/logs/build-20261113-212647.log` |
+| Staging nuevo / reversión | `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb` / `RetroN64U.previous.wuhb` |
+| Log en SD | `sd:/retrou/n64/retrou_n64.log` |
+
+Conserva una copia de la WUHB previa y del log N64 antes de cada prueba.
+Copia solo la nueva `RetroN64U.wuhb` a
+`sd:/wiiu/apps/RetroN64U/RetroN64U.wuhb`. Registra modelo de mando,
+formato y nombre de ROM, número de jugadores, resultado y última línea del
+log en cada fallo. Estas casillas siguen abiertas hasta probarse en Wii U:
+
+| Prueba en Wii U | Resultado esperado | Estado |
+|---|---|---|
+| Arranque desde el menú, salida a biblioteca y cierre con HOME | Nombre RetroU N64, biblioteca visible; HOME devuelve el control al sistema | ⬜ |
+| Cargar una ROM `.z64`, otra `.n64` y otra `.v64` | Las tres arrancan; anotar título y rendimiento por separado | ⬜ |
+| Recorrer Cards, Lista y Carrusel, incluidos los extremos del catálogo | Selección, desplazamiento, filtro A–Z y proporciones de portadas correctos | ⬜ |
+| Buscar, marcar favorito, filtrar por estrella y volver a All | El filtro y las estrellas reflejan el cambio sin reiniciar | ⬜ |
+| Descargar portada y backdrop con la app abierta | Progreso y arte se actualizan sin reiniciar; el log registra `ASSETS:` | ⬜ |
+| Navegar y jugar con GamePad, Wii U Pro, Classic, Wii Remote y Nunchuk | Cada mando disponible responde según su perfil y asignación; anotar los no disponibles | ⬜ |
+| Asignar y jugar con 1, 2, 3 y 4 jugadores | Cada puerto recibe solo su mando y conserva su orden | ⬜ |
+| Desconectar y reconectar Pro/Classic durante biblioteca y partida | El mando recupera su puerto y el juego responde; revisar `INPUT:` | ⬜ |
+| Configurar y usar el atajo de menú por familia de mando | Abre y cierra la pausa con el mando asignado; el juego se detiene | ⬜ |
+| Crear y reabrir guardado SRAM del juego | Persiste tras salir y volver a entrar; queda bajo `sd:/retrou/n64/saves/` | ⬜ |
+| Guardar/cargar tres slots manuales y probar la cuarta tarjeta Undo | Los tres slots y la reversión de carga, sobrescritura o reset funcionan | ⬜ |
+| Escuchar música y efectos mediante AX, pausar y reanudar | Audio estable, sin ruido ni pérdida tras la pausa | ⬜ |
+| Volver del juego a la biblioteca, cerrar al menú y usar HOME | No se bloquea ni pierde guardados; revisar `PAUSE:` y `GAME:` | ⬜ |
+| Salir mientras se descargan Assets | Termina o cancela el trabajador sin congelar la Wii U; revisar `ASSETS:` | ⬜ |
+| Usar datos anteriores de Our64 sin moverlos | Si `sd:/retrou/roms/n64` está vacía, detecta las ROMs antiguas de solo lectura; lee controles/guardados previos cuando faltan los nuevos | ⬜ |
+| Revisar Ajustes frente a NES/SNES/GBA | Registrar diferencias visuales; su afinación está aplazada por indicación del usuario | ⬜ |
+
+Los estados son **tres slots manuales más Undo**, no cuatro slots manuales.
+Para revertir, cierra la app, restaura `RetroN64U.previous.wuhb` en
+`dist/wiiu/apps/RetroN64U/`, verifica el SHA-256 previo de la tabla y
+vuelve a copiarla a la SD. Conserva `sd:/retrou/n64/` y el log para
+diagnosticar; no presentes una prueba en Cemu como verificación de Wii U.
 
 ## Trazabilidad y reversión
 

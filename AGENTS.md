@@ -300,8 +300,8 @@ solo mantiene el estado general.
   (varias rondas, ver `PENDIENTES.md`; fuera de la autorización actual).
 - **Probado en hardware por el usuario**: HOME durante partida, audio del
   core y NES/SNES/GBA con ROMs reales. El 2026-11-12 confirmó además las
-  pruebas restantes de navegación, controles, guardados y Assets, excepto
-  los dos fallos nuevos registrados como CTRL-8 y AS-6.
+  pruebas restantes de navegación, controles, guardados y Assets. El
+  2026-11-13 confirmó UI-2, CTRL-8 y AS-6; falta verificar CTRL-9.
 - **Input del core implementado**: A/B/X/Y/L/R, Start/Select y D-pad/stick.
 - **Input UI**: GamePad (VPAD) + Pro Controller (WPAD) con detección en
   caliente; menú HOME del sistema vía ProcUI.
@@ -309,16 +309,18 @@ solo mantiene el estado general.
   del core en NES/SNES y uno en GBA, y remapeo estilo Our64 con múltiples
   botones por acción, `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás y
   migración de `v1`/conf viejo; también orden de mandos, perfiles, mapas por ROM
-  y atajos configurables del menú. Pendiente: al reconectar Pro/Classic no se
-  conserva o restaura su asignación (CTRL-8).
+  y atajos configurables del menú. La reconexión de Pro/Classic funciona
+  (CTRL-8, confirmado en Wii U). Pendiente:
+  GBA no aplicaba al core el Pro elegido como Mando 1 cuando una ROM cargaba
+  un mapa propio; la corrección CTRL-9 necesita prueba en Wii U.
 - SRAM automática y cuatro slots con miniatura: probados en hardware
   (SAVE-1/2).
 - Touch, búsqueda, vistas de biblioteca y descargas separadas de
   portadas/backdrops con progreso: probados en hardware (NAV-1/7, UI-3..9,
-  AS-1..5). GBA ya recorre más allá del juego 144. Pendiente: salir al menú
-  de Wii U durante descargas activas bloquea la consola (AS-6).
+  AS-1..5). GBA ya recorre más allá del juego 144. Salir al menú de Wii U
+  durante descargas activas funciona (AS-6, confirmado en Wii U).
 - Ajustes en dos paneles: nueva distribución según
-  `ejemplos/Disposicion de menu.png`; falta validarla en Wii U (UI-2).
+  `ejemplos/Disposicion de menu.png`, confirmada en Wii U (UI-2).
 - Referencias visuales de UI en `ejemplos/` (raíz del proyecto).
 - No afirmar que algo está probado en hardware si no lo está.
 

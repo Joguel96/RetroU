@@ -1,19 +1,16 @@
 # Validación en Wii U de la tanda GX2
 
-Esta guía cubre los cambios compilados el 12 de noviembre de 2026. Las tres
+Esta guía cubre las rondas del 12 y 13 de noviembre de 2026. Las tres
 WUHB están en `dist/wiiu/apps/`; Cemu y la compilación no cuentan como prueba
 en hardware. Antes de cada ronda, conserva una copia de
 `sd:/retrou/retrou_rpx.log` y sus versiones `.1`, `.2`, `.3` si aparece un
 fallo. El arranque rota esos archivos.
 
-Resultado de la ronda del 2026-11-12: el usuario confirmó en Wii U las
-pruebas de NES/SNES/GBA de navegación, controles, guardados y Assets. Quedan
-dos fallos detectados en hardware: salir al menú de Wii U con descargas
-activas bloquea la consola (AS-6) y reconectar un Pro/Classic no conserva su
-asignación (CTRL-8). La distribución de los dos paneles se ajustó con
-`ejemplos/Disposicion de menu.png` y espera prueba en Wii U (UI-2).
-Después, el usuario confirmó que RetroN64U es
-funcional en Wii U (N64-1); el port de su interfaz sigue pendiente.
+El usuario confirmó en Wii U la navegación, controles, guardados y Assets de
+NES/SNES/GBA, y que RetroN64U funciona (N64-1). En la ronda del 2026-11-13
+confirmó UI-2, CTRL-8 y AS-6. Detectó otro caso: en GBA, el Pro elegido como
+Mando 1 no llega al core si la ROM tiene mapa propio (CTRL-9). Este último
+arreglo requiere una nueva prueba; N64-2 sigue pendiente.
 
 ## Preparación
 
@@ -78,6 +75,10 @@ funcional en Wii U (N64-1); el port de su interfaz sigue pendiente.
    conserva puerto, mapa y navegación de la UI, incluso si cambia de canal.
    En el log busca `controller_disconnected`, `controller_rebound` y, si cambió
    de canal mientras aún figuraba el anterior, `controller_restored`.
+8. En GBA, elige el Pro como Mando 1 y abre una ROM que ya tenga archivo en
+   `rom-maps/`. Prueba D-Pad, A, B y Start con el Pro. El log debe mostrar
+   `rom_controls_loaded`, luego `core_ports_global p1=...` con el índice del
+   Pro y un `input summary` con `wpad=[<canal>,-1]`.
 
 ## Guardados y Assets
 
@@ -131,6 +132,7 @@ de esta tanda y no se tocó.
 | `2838306` | Recorte de títulos UTF-8 y traza del título enfocado en GBA P | `native/build/logs/build-20261112-143059.log` |
 | `67f44e5` | Rutas seguras GBA, índice de assets y cola de descargas manuales | `native/build/logs/build-20261112-150558.log` |
 | `a227b86` | Cancelación al salir, restauración de mandos y nueva distribución de Ajustes | `native/build/logs/build-20261112-234215.log` |
+| `826b787` | GBA conserva Mando 1 global al abrir una ROM con mapa propio | `native/build/logs/build-20261113-002521.log` |
 
 Los logs y WUHB están ignorados por Git: conserva una copia antes de limpiar
 `native/build/` o `dist/`. Para retirar un cambio, revierte su commit con Git,

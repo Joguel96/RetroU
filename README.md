@@ -34,15 +34,15 @@ de RetroU.
   progreso de imágenes realmente pendientes, conteo de fallos, búsqueda en el
   índice de nombres de Libretro, cola para solicitudes durante la actualización
   de metadata y actualización de portadas visibles al terminar.
-  El usuario confirmó estas funciones en hardware. El cierre de la app con
-  descargas activas requiere otra prueba tras la corrección AS-6.
+  El usuario confirmó estas funciones y el cierre con descargas activas en
+  hardware (AS-6).
 - **Biblioteca GX2**: vistas cards, lista y carrusel; las dos últimas ofrecen
   filtro alfabético con Favoritos junto a «All», navegable con L/R. El carrusel NES presenta
   portadas verticales y el de SNES muestra las imágenes completas.
   Personalizar permite activar el fondo dinámico y elegir
   su espera (0, 1, 3, 5 o 10 s; 3 s iniciales). Las
   opciones de vista se guardan por consola en `view.conf`. Las vistas fueron
-  confirmadas en hardware; queda probar la nueva distribución de Ajustes.
+  confirmadas en hardware, incluida la nueva distribución de Ajustes (UI-2).
 
 ## Estructura
 

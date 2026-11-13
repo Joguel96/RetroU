@@ -81,9 +81,11 @@ guardan en `profiles/`; los mapas por ROM, en `rom-maps/`.
   para localizar un posible cierre al recorrer la biblioteca.
 - Los títulos recibidos en Latin-1 se muestran como UTF-8; portadas y fondos
   usan el mismo nombre de archivo ASCII seguro al guardar y al cargar.
-- «Controles» en ese menú edita el mapa de la ROM; al salir se restablece el
-  mapa general. El archivo de la ROM se identifica con un hash estable de su
-  ruta y se guarda en `rom-maps/`.
+- «Controles» en ese menú edita el mapa de botones de la ROM; la asignación
+  de Mando 1/Mando 2 sigue siendo la global de Ajustes → Controles, incluso
+  si un archivo por ROM contiene `p1`/`p2` antiguos. Al salir se restablece
+  el mapa general. El archivo de la ROM se identifica con un hash estable de
+  su ruta y se guarda en `rom-maps/`.
 - La UI se dibuja en el bucle principal mientras la app está en primer plano.
 
 No hay selector de cores: cada app es un sistema.
@@ -105,7 +107,8 @@ No hay selector de cores: cada app es un sistema.
 
 El usuario confirmó en hardware las funciones de biblioteca, navegación,
 guardados, mapeo y descargas de NES/SNES/GBA anteriores a AS-6, CTRL-8 y UI-2.
-Estas tres correcciones nuevas necesitan una ronda de prueba en Wii U.
+AS-6, CTRL-8 y UI-2 se confirmaron en Wii U el 2026-11-13. La corrección
+CTRL-9 de la asignación global al abrir ROMs GBA necesita otra prueba.
 
 El input básico del core ya está conectado: A/B/X/Y/L/R, Start/Select y D-Pad/stick.
 
@@ -156,6 +159,8 @@ sd:/retrou/snap/<consola>/
   resumen de entrada por ROM. Los logs de compilación quedan en `native/build/logs/`.
 - El log registra `menu_shortcut_loaded`, `menu_shortcut_saved`, fallos de
   lectura/escritura y `core_menu_shortcut_opened`; también `covers_refreshed`.
+- Al cargar una ROM, `core_ports_global p1=... p2=...` permite comprobar qué
+  asignación de mandos se aplica al core tras leer el mapa de esa ROM.
 - La salida durante descargas registra `asset_shutdown_begin` y
   `asset_shutdown_complete` (y `GX2 asset: cancelado` si el trabajo ya
   comenzó). Un mando reconectado

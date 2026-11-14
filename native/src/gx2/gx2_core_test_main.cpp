@@ -1814,6 +1814,21 @@ int main()
                     const int row = static_cast<int>((ty - 130) / 58);
                     const int key = row * 6 + col;
                     if (key < 39) { searchCursor = key; navTrigger |= VPAD_BUTTON_A; }
+                } else if (settingsOpen && settingsSection == 2 && tx >= 70 && tx < 1210) {
+                    const int portCount = hasSecondCorePort() ? 2 : 1;
+                    if (ty >= 150 && ty < 430) {
+                        if (portCount == 2 || (tx >= 355 && tx < 905)) {
+                            settingsItem = portCount == 1 ? 0 : (tx < 640 ? 0 : 1);
+                            navTrigger |= VPAD_BUTTON_A;
+                        }
+                    } else if (ty >= 458 && ty < 524) {
+                        settingsItem = (tx < 640 ? portCount + 1 : portCount);
+                        navTrigger |= VPAD_BUTTON_A;
+                    } else if (ty >= 539 && ty < 661) {
+                        settingsItem = portCount + 2 +
+                            std::min(2, static_cast<int>((ty - 539) / 39));
+                        navTrigger |= VPAD_BUTTON_A;
+                    }
                 } else if (settingsOpen && tx >= 36 && tx < 312 &&
                            ty >= 110 && ty < 520) {
                     if (settingsSection == -1) {
@@ -2642,6 +2657,65 @@ int main()
             }
             text::drawText("B  CANCELAR", 28.0f, 672.0f, 16, muted);
         } else if (settingsOpen) {
+            if (settingsSection == 2) {
+                // CTRL-10: los puertos son el foco de Controles; la asignación
+                // sigue usando el mismo flujo y formato persistente.
+                const int portCount = hasSecondCorePort() ? 2 : 1;
+                const int orderItem = portCount;
+                const int mapItem = orderItem + 1;
+                drawRect(0.0f, 0.0f, 1280.0f, 720.0f, bg);
+                text::drawText("Controles", 48.0f, 22.0f, 36, white);
+                text::drawText("Elige un puerto y pulsa A en el mando que quieras asignar",
+                               50.0f, 78.0f, 17, muted);
+                for (int port = 0; port < portCount; ++port) {
+                    const float x = portCount == 1 ? 355.0f : 70.0f + port * 590.0f;
+                    const float w = 550.0f;
+                    const bool selected = settingsItem == port;
+                    const int device = port == 0 ? player1Device : player2Device;
+                    const auto &labels = port == 0 ? devOpts : p2Opts;
+                    const bool connected = port == 0
+                        ? (device == 0 ? vpadError == VPAD_READ_SUCCESS
+                                       : device - 1 < 4 && slotChannels[device - 1] >= 0)
+                        : (device == 1 ? vpadError == VPAD_READ_SUCCESS
+                                       : device >= 2 && device - 2 < 4 && slotChannels[device - 2] >= 0);
+                    drawRoundRect(x, 150.0f, w, 280.0f, 18.0f, selected ? panel : cardPanel);
+                    if (selected) drawRoundRect(x, 424.0f, w, 5.0f, 2.0f, accent);
+                    const std::string heading = "Mando " + std::to_string(port + 1);
+                    text::drawText(heading.c_str(), x + 30.0f, 176.0f, 27, selected ? white : muted);
+                    if (connected) {
+                        // Icono sencillo del mando: carcasa, pantalla y botones.
+                        drawRoundRect(x + 210.0f, 225.0f, 130.0f, 68.0f, 17.0f, white);
+                        drawRoundRect(x + 238.0f, 238.0f, 74.0f, 42.0f, 5.0f, muted);
+                    }
+                    const std::string deviceLabel = connected && device < static_cast<int>(labels.size())
+                        ? labels[device] : "Pulsa A para conectar";
+                    const std::string fitted = text::fitText(deviceLabel.c_str(), 21, w - 50.0f);
+                    text::drawText(fitted.c_str(), x + 25.0f, 333.0f, 21,
+                                   connected ? white : muted);
+                    if (selected)
+                        text::drawText("A  ASIGNAR", x + 25.0f, 391.0f, 15, accent);
+                }
+                const int actionItems[2] = {mapItem, orderItem};
+                const char *actionNames[2] = {"Mapear botones", "Cambiar orden"};
+                for (int action = 0; action < 2; ++action) {
+                    const float x = 70.0f + action * 590.0f;
+                    const bool selected = settingsItem == actionItems[action];
+                    drawRoundRect(x, 458.0f, 550.0f, 66.0f, 12.0f,
+                                  selected ? panel : cardPanel);
+                    text::drawText(actionNames[action], x + 26.0f, 474.0f, 22,
+                                   selected ? white : muted);
+                }
+                const char *familyNames[3] = {"GamePad", "Pro / Classic", "Wii Remote / Nunchuk"};
+                for (int family = 0; family < 3; ++family) {
+                    const bool selected = settingsItem == mapItem + 1 + family;
+                    const float y = 544.0f + family * 39.0f;
+                    if (selected) drawRoundRect(70.0f, y - 5.0f, 1140.0f, 34.0f, 8.0f, panel);
+                    const std::string line = std::string("Menú ") + familyNames[family] +
+                        ": " + kMenuShortcutLabels[family][menuShortcuts.choice[family]];
+                    text::drawText(line.c_str(), 92.0f, y, 17, selected ? white : muted);
+                }
+                text::drawText("A  ELEGIR    IZQ/DER  CAMBIAR    B  ATRÁS", 50.0f, 679.0f, 15, muted);
+            } else {
             const char *sections[] = {"PERSONALIZAR", "ASSETS", "CONTROLES", "SONIDO", "VÍDEO"};
             const char *sectionHelp[] = {"Vistas, tema y fondo", "Portadas y datos", "Mandos y botones", "Volumen, salida y efectos", "Imagen del juego"};
             const char *themeOpts[] = {"Gris", "Azul", "Verde", "Dorado", "Rosa"};
@@ -2720,37 +2794,6 @@ int main()
                                            560.0f, 20, accent);
                         }
                     }
-                } else if (settingsSection == 2) {
-                    const float y0 = 220.0f, y1 = 280.0f, y2 = 340.0f;
-                    if (settingsItem == 0) drawRoundRect(356.0f, y0 - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                    text::drawText(("Mando 1: " + devOpts[player1Device] + "  (A para conectar)").c_str(),
-                                   370.0f, y0, 22, settingsItem == 0 ? white : muted);
-                    if (hasSecondCorePort()) {
-                        if (settingsItem == 1) drawRoundRect(356.0f, y1 - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                        text::drawText(("Mando 2: " + p2Opts[player2Device] + "  (A para conectar)").c_str(),
-                                       370.0f, y1, 22, settingsItem == 1 ? white : muted);
-                    }
-                    const float orderY = hasSecondCorePort() ? y2 : y1;
-                    const int orderItem = hasSecondCorePort() ? 2 : 1;
-                    if (settingsItem == orderItem) drawRoundRect(356.0f, orderY - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                    text::drawText("Cambiar orden de mandos  (A)", 370.0f, orderY, 22,
-                                   settingsItem == orderItem ? white : muted);
-                    const float mapY = orderY + 60.0f;
-                    const int mapItem = orderItem + 1;
-                    if (settingsItem == mapItem) drawRoundRect(356.0f, mapY - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                    text::drawText("Mapear botones  (A)", 370.0f, mapY, 22, settingsItem == mapItem ? white : muted);
-                    const char *deviceLabels[3] = {"GamePad", "Pro / Classic", "Wii Remote / Nunchuk"};
-                    for (int family = 0; family < 3; ++family) {
-                        const int item = mapItem + 1 + family;
-                        const float y = mapY + 60.0f * (family + 1);
-                        if (settingsItem == item)
-                            drawRoundRect(356.0f, y - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                        const std::string label = std::string("Menú ") + deviceLabels[family] +
-                            ": " + kMenuShortcutLabels[family][menuShortcuts.choice[family]];
-                        text::drawText(label.c_str(), 370.0f, y, 19,
-                                       settingsItem == item ? white : muted);
-                    }
-                    text::drawText("Minus + Plus siempre abre el menú", 370.0f, 615.0f, 15, muted);
                 } else if (settingsSection == 4) {
                     const char *labels[3] = {"Aspecto", "Escala", "Salida de pantalla"};
                     const char *outputOpts[3] = {"TV + GamePad", "Solo TV", "Solo GamePad"};
@@ -2785,6 +2828,7 @@ int main()
                     text::drawText("Pendiente", 370.0f, 220.0f, 22, muted);
                 }
                 text::drawText("IZQ/DER  CAMBIAR    B  ATRÁS", 28.0f, 672.0f, 15, muted);
+            }
             }
         } else {
             text::drawText("Biblioteca", 28.0f, 18.0f, 34, white);

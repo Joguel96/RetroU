@@ -128,8 +128,12 @@ No hay selector de cores: cada app es un sistema.
   acciones desasignadas en `control-map.conf`. NES y SNES muestran su imagen
   completa en el editor, GBA usa un solo puerto y las fuentes distinguen
   `Stick L` de `Stick R`.
-- En Controles, A sobre «Mando 1» o «Mando 2» abre «Pulsa A para conectar»
-  para ese puerto. «Cambiar orden de mandos» recorre todos los puertos.
+- En Controles, los puertos aparecen como tarjetas: uno en GBA y dos en
+  NES/SNES. Cada tarjeta muestra el dispositivo conectado o «Pulsa A para
+  conectar». A sobre una tarjeta abre la captura de ese puerto; debajo están
+  «Mapear botones», «Cambiar orden» y los atajos del menú por familia de mando.
+  El touch del GamePad también permite seleccionar estas opciones.
+  «Cambiar orden» recorre todos los puertos.
   La asignación se registra como `controller_connect_prompt` y
   `controller_order_saved`; aún requiere verificación en Wii U. Desde el editor,
   Plus abre tres perfiles por dispositivo:

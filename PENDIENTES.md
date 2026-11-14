@@ -63,6 +63,7 @@ se probó y el ruido persistió; AUD-2 reemplaza ese intento.
 | CTRL-7 | Configurar por tipo de mando la combinación global que abre el menú durante el core, con opciones compatibles para GamePad, Pro/Classic y Wii Remote/Nunchuk; conservar Minus+Plus como emergencia y persistir el ajuste | ✅ 2026-11-12 |
 | CTRL-8 | Al desconectar y reconectar Wii U Pro Controller o Classic Controller durante la app, conservar o restaurar su asignación a Mando 1/Mando 2 y su mapeo; comprobar también la navegación de UI tras reconectar | ✅ 2026-11-13 |
 | CTRL-9 | GBA: al elegir Wii U Pro Controller como Mando 1, una ROM con mapa propio debe conservar ese mando durante el juego; el archivo por ROM solo modifica botones, no el orden global | ✅ 2026-11-13 |
+| CTRL-10 | Presentar la asignación de mandos como tarjetas por puerto con «Pulsa A para conectar», selección visible y acciones de mapeo y orden, según `ejemplos/organizacion de controles para retrou.png`. RetroU conserva uno o dos puertos según consola; N64 tendrá cuatro. | 🔧 2026-11-14 |
 
 ## 4. UI / Apariencia
 

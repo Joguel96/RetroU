@@ -47,6 +47,10 @@ includes=(
     "-I$DEVKITPRO/wut/include" \
     -c "$root/native/src/n64/n64_input.cpp" -o "$out/input.o"
 "$cxx" -std=gnu++17 -O2 -Wall -Wextra -Werror \
+    "-I$root/native/src" "-I$source_dir/player/source" \
+    "-I$DEVKITPRO/wut/include" \
+    -c "$root/native/src/n64/n64_session.cpp" -o "$out/session.o"
+"$cxx" -std=gnu++17 -O2 -Wall -Wextra -Werror \
     "-I$DEVKITPRO/wut/include" \
     -c "$root/native/src/wpad_input.cpp" -o "$out/wpad_input.o"
 "$cc" -std=gnu23 -O2 -Wall -Wextra -Werror \
@@ -58,8 +62,8 @@ includes=(
     "-L$source_dir/third_party/cafeglsl/lib" \
     "-specs=$DEVKITPRO/wut/share/wut.specs" -Wl,--wrap=doRspCycles \
     "$out/probe.o" "$out/engine.o" "$out/report.o" "$out/states.o" "$out/video.o" \
-    "$out/input.o" "$out/wpad_input.o" \
+    "$out/input.o" "$out/session.o" "$out/wpad_input.o" \
     "$archive" -lcafeglsl -lturbojpeg -lfreetype -lpng16 -lbz2 -lz \
     -lwut -lm -o "$out/probe.elf"
 echo "Enlace diagnóstico correcto: $(sha256sum "$out/probe.elf")"
-echo "Adaptador real de cuatro estados N64 enlazado; el binario no se distribuye."
+echo "Sesion, entrada de cuatro puertos y cuatro estados N64 enlazados; el binario no se distribuye."

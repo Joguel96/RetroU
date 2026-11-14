@@ -115,6 +115,10 @@ void N64InputBridge::setChannel(int slot, int channel)
                 }
         }
         channels_[slot] = channel;
+        if (channel >= 0) {
+            const auto &external = wpad_input_states();
+            if (external[channel].connected) types_[slot] = external[channel].type;
+        }
     }
 }
 
@@ -128,6 +132,43 @@ void N64InputBridge::poll(uint32_t ports[4])
 {
     wpad_input_poll();
     const auto &external = wpad_input_states();
+    for (int slot = 0; slot < 4; ++slot) {
+        const int channel = channels_[slot];
+        if (channel < 0) continue;
+        if (external[channel].connected &&
+            (types_[slot] < 0 || external[channel].type == types_[slot])) {
+            types_[slot] = external[channel].type;
+            continue;
+        }
+        for (int port = 0; port < 4; ++port)
+            if (devices_[port] == slot + 1 && motor_on_[port]) {
+                WPADControlMotor(static_cast<WPADChan>(channel), false);
+                motor_on_[port] = false;
+            }
+        channels_[slot] = -1;
+    }
+    for (int channel = 0; channel < 4; ++channel) {
+        if (!external[channel].connected) continue;
+        bool claimed = false;
+        for (int slot = 0; slot < 4; ++slot)
+            if (channels_[slot] == channel) claimed = true;
+        if (claimed) continue;
+        int target = -1;
+        for (int slot = 0; slot < 4; ++slot)
+            if (channels_[slot] < 0 && types_[slot] == external[channel].type) {
+                target = slot;
+                break;
+            }
+        if (target < 0) for (int slot = 0; slot < 4; ++slot)
+            if (channels_[slot] < 0 && types_[slot] < 0) {
+                target = slot;
+                break;
+            }
+        if (target >= 0) {
+            channels_[target] = channel;
+            types_[target] = external[channel].type;
+        }
+    }
     VPADStatus pad{};
     VPADReadError error = VPAD_READ_NO_SAMPLES;
     VPADRead(VPAD_CHAN_0, &pad, 1, &error);

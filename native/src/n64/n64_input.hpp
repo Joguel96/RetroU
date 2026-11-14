@@ -21,6 +21,7 @@ public:
 private:
     std::array<int, 4> devices_{{0, -1, -1, -1}};
     std::array<int, 4> channels_{{-1, -1, -1, -1}};
+    std::array<int, 4> types_{{-1, -1, -1, -1}};
     std::array<int, 4> present_{{-1, -1, -1, -1}};
     std::array<bool, 4> rumble_{{false, false, false, false}};
     std::array<bool, 4> motor_on_{{false, false, false, false}};

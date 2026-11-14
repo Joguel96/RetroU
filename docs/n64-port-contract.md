@@ -135,6 +135,19 @@ en `native/build/logs/n64-bridge-20261114-081246.log` (ELF SHA-256
 `d6fd2a253c8dc5fa07160bdb03f8fb59af44cf48019af3b29020d7f9d7c6a4cd`).
 No se han probado aún guardado ni carga en una ROM.
 
+Sexto hito (2026-11-14): `native/src/n64/n64_session.cpp` crea el hilo de CPU
+en el núcleo de generación de código, mantiene la gestión ProcUI fuera del
+motor y conecta `N64InputBridge` y los cuatro estados reales al callback VI.
+Expone parada, guardado, carga y resultado para que el frontend RetroU controle
+la partida. El puente de entrada ahora conserva el tipo de cada mando externo
+y vuelve a reclamar su slot tras una reconexión. El enlace diagnóstico pasó
+en `native/build/logs/n64-bridge-20261114-082241.log` (ELF SHA-256
+`7b4f05c9614a280cff6e9acef924e95145ca58f19de57755dc65bb40dfc5adfd`);
+la WUHB provisional sigue
+sin reemplazarse. La fuente GX2 de RetroU ya tiene `text::unloadFont()` para
+liberar el atlas antes del intercambio de renderizador. Falta conectar esta
+sesión al bucle de biblioteca y comprobar su comportamiento en Cemu y Wii U.
+
 La WUHB provisional permanece disponible para revertir y comparar el motor,
 pero su UI y descargador no son la base del port definitivo.
 

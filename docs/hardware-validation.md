@@ -56,7 +56,9 @@ pendiente; los resultados N64 de esta ronda proceden de Cemu.
 1. En Ajustes → Controles, pulsa A sobre cada puerto para conectarlo y prueba
    también «Cambiar orden de mandos». Pulsa A en el
    dispositivo elegido para Mando 1 y, en NES/SNES, para Mando 2. GBA debe
-   pedir solo Mando 1. Comprueba el orden dentro del juego.
+   pedir solo Mando 1. Comprueba el orden dentro del juego. El acceso directo
+   por puerto está en el commit `f0e5c00`; build y staging:
+   `native/build/logs/build-20261113-195251.log`.
 2. En Mapear botones, cambia una acción y reinicia la app. Confirma que el
    cambio persiste. Comprueba un Pro/Classic si está disponible.
 3. En el editor, pulsa Plus. Guarda un perfil con Y, cambia una asignación,
@@ -124,21 +126,24 @@ partida breve de NES o SNES para detectar una regresión en la ruta directa.
 ## N64: ronda del port RetroU (N64-2)
 
 La WUHB base de Our64 funcionó en Wii U (N64-1). La WUHB nueva del port
-todavía **no** tiene una ronda completa de pruebas en hardware. Cemu solo
-confirmó el arranque y la entrada a la biblioteca con 82 ROMs; generó
+todavía **no** tiene una ronda completa de pruebas en hardware. Cemu confirmó
+el arranque y las vistas de biblioteca con 82 ROMs; generó
 `sd:/retrou/n64/retrou_n64.log` con líneas `GAME:` e `INPUT:`.
 La apariencia de Ajustes difiere de NES/SNES/GBA y queda como pendiente
 visual separado.
 
 | Evidencia antes de sustituir la WUHB | Valor |
 |---|---|
-| Our64, código de la compilación | `29de243a851b49d032e1b369823f810e7255fbc1` |
-| Empaquetado y log | `869861dad914522ee8f07edbb167e9dfb24ab7e4` |
-| SHA-256 de la WUHB nueva | `9d5a7dabeb0b079f3e14192bf84437cfef5450ca4889e37bba43c37ea9b3190b` |
-| SHA-256 de la WUHB previa | `5f822245644f1634f05ff982561383b8d0bc15068328219d45118ee072b42177` |
-| Build | `C:/proyectos/Our64/player/build-release/logs/build-20261113-212647.log` |
+| Our64, código de la compilación | `d3c56db` (buscador y trazas de Assets; el commit se creó después de compilar el mismo árbol) |
+| SHA-256 de la WUHB nueva | `a9321c308f594a0f9e2f3762bdffd58f691fbbec8755a9978f4b691317536cea` |
+| SHA-256 de la WUHB previa | `9d5a7dabeb0b079f3e14192bf84437cfef5450ca4889e37bba43c37ea9b3190b` |
+| Build | `C:/proyectos/Our64/player/build-release/logs/build-20261114-024624.log` |
 | Staging nuevo / reversión | `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb` / `RetroN64U.previous.wuhb` |
 | Log en SD | `sd:/retrou/n64/retrou_n64.log` |
+
+La nueva WUHB guarda hitos `ASSETS:` antes del escaneo, al crear el worker,
+al iniciar la red y antes/después de cada juego. La reproducción del cierre
+con esta WUHB sigue pendiente; la última traza permitirá localizar el fallo.
 
 Conserva una copia de la WUHB previa y del log N64 antes de cada prueba.
 Copia solo la nueva `RetroN64U.wuhb` a

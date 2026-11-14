@@ -322,12 +322,14 @@ solo mantiene el estado general.
   implementadas o documentadas; la nueva WUHB arrancó en Cemu y escribió
   `sd:/retrou/n64/retrou_n64.log`. TASK-021 y N64-2 permanecen abiertos
   hasta completar la matriz en Wii U. El usuario señaló que la pantalla de
-  configuración N64 aún difiere de NES/SNES/GBA; se afinará después como N64-3
-  (ver `PLAN.md` y `PENDIENTES.md`).
+  configuración N64 aún difiere de NES/SNES/GBA; N64-3 y N64-7 registran la
+  paridad visual y funcional pendiente. La WUHB diagnóstica de `d3c56db`
+  incorpora trazas persistentes `ASSETS:` y la corrección del buscador.
 - **Probado en hardware por el usuario**: HOME durante partida, audio del
   core y NES/SNES/GBA con ROMs reales. El 2026-11-12 confirmó además las
   pruebas restantes de navegación, controles, guardados y Assets. El
-  2026-11-13 confirmó UI-2, CTRL-8, AS-6 y CTRL-9. Reportó ruido en el
+  2026-11-13 confirmó UI-2, UI-10, CTRL-8, AS-6, CTRL-9, AUD-3 y APP-1.
+  Reportó ruido en el
   audio de GBA. La conversión lineal AUD-1 no lo resolvió; AUD-2 solicita
   48 000 Hz y usa remuestreo sinc, pendiente de verificar en hardware.
 - **Input del core implementado**: A/B/X/Y/L/R, Start/Select y D-pad/stick.

@@ -128,8 +128,11 @@ No hay selector de cores: cada app es un sistema.
   acciones desasignadas en `control-map.conf`. NES y SNES muestran su imagen
   completa en el editor, GBA usa un solo puerto y las fuentes distinguen
   `Stick L` de `Stick R`.
-- En Controles, «Cambiar orden de mandos» espera A en el mando físico para
-  cada puerto. Desde el editor, Plus abre tres perfiles por dispositivo:
+- En Controles, A sobre «Mando 1» o «Mando 2» abre «Pulsa A para conectar»
+  para ese puerto. «Cambiar orden de mandos» recorre todos los puertos.
+  La asignación se registra como `controller_connect_prompt` y
+  `controller_order_saved`; aún requiere verificación en Wii U. Desde el editor,
+  Plus abre tres perfiles por dispositivo:
   A carga el seleccionado, Y guarda el mapa actual.
 - La asignación externa conserva un slot lógico cuando el Pro/Classic se
   desconecta; al reconectar en otro canal se intenta restaurar ese slot sin

@@ -129,7 +129,7 @@ Guía de la ronda en Wii U: `docs/hardware-validation.md`.
 | N64-3 | Igualar visualmente la pantalla de configuración N64 con la de RetroU NES/SNES/GBA. El usuario observó que la UI actual difiere y pidió afinarla después de TASK-017–021. | ⬜ |
 | N64-4 | En el buscador N64, B borra un carácter y solo sale si la consulta está vacía; X acepta y cierra | 🔧 2026-11-13 (Codex, Our64) |
 | N64-5 | Diagnosticar y corregir el cierre al descargar portadas o fondos en N64; dejar trazas `ASSETS:` y validar el resultado en Wii U | 🔧 2026-11-13 (Codex, Our64); log del cierre solicitado |
-| N64-6 | Integrar en el apartado de Controles RetroU el flujo de «Pulsa A para conectar» por puerto, conservando el estilo visual de RetroU | 🔧 2026-11-13 (Codex, Our64) |
+| N64-6 | Integrar en Controles RetroU el flujo de «Pulsa A para conectar» por puerto: acceso directo en NES/SNES/GBA compilado, pendiente verificar en Wii U; adaptar también N64 con estilo RetroU | 🔧 2026-11-13 (Codex, main/Our64) |
 | N64-7 | Migrar las opciones funcionales de Ajustes y Assets desde RetroU a N64, incluida la descarga automática; conservar de Our64 la ejecución N64 | 🔧 2026-11-13 (Codex, Our64); alcance en revisión |
 
 ## 10. Audio del core

@@ -1207,6 +1207,7 @@ int main()
     int profileSlot = 0;
     std::string profileStatus;
     bool orderMode = false;
+    bool orderSingle = false;
     int orderPort = 0;
     bool orderArmed = false;
     int orderOriginal1 = 0;
@@ -2092,9 +2093,9 @@ int main()
                     if (selected >= 0) {
                         if (orderPort == 0) player1Device = selected;
                         else player2Device = selected;
-                        ++orderPort;
+                        if (!orderSingle) ++orderPort;
                         orderArmed = false;
-                        if (orderPort >= (hasSecondCorePort() ? 2 : 1)) {
+                        if (orderSingle || orderPort >= (hasSecondCorePort() ? 2 : 1)) {
                             refreshControllers();
                             persistControls();
                             bootLog("controller_order_saved");
@@ -2133,8 +2134,19 @@ int main()
                         if (settingsSection == 0 && settingsItem == 3) {
                             dynamicBg = !dynamicBg;
                             saveViewOptions();
+                        } else if (settingsSection == 2 &&
+                                   (settingsItem == 0 || (hasSecondCorePort() && settingsItem == 1))) {
+                            // Cada puerto permite reclamar un mando pulsando A en ese dispositivo.
+                            orderMode = true;
+                            orderSingle = true;
+                            orderPort = settingsItem;
+                            orderArmed = false;
+                            orderOriginal1 = player1Device;
+                            orderOriginal2 = player2Device;
+                            bootLog(("controller_connect_prompt port=" + std::to_string(orderPort + 1)).c_str());
                         } else if (settingsSection == 2 && settingsItem == (hasSecondCorePort() ? 2 : 1)) {
                             orderMode = true;
+                            orderSingle = false;
                             orderPort = 0;
                             orderArmed = false;
                             orderOriginal1 = player1Device;
@@ -2623,8 +2635,8 @@ int main()
                                x + 35.0f, 205.0f, 28, white);
                 const int device = i == 0 ? player1Device : player2Device;
                 const auto &labels = i == 0 ? devOpts : p2Opts;
-                const std::string label = i < orderPort && device < static_cast<int>(labels.size())
-                    ? labels[device] : "Pulsa A";
+                const std::string label = i != orderPort && device < static_cast<int>(labels.size())
+                    ? labels[device] : "Pulsa A para conectar";
                 text::drawText(label.c_str(), x + 35.0f, 335.0f, 22,
                                i == orderPort ? accent : muted);
             }
@@ -2711,11 +2723,11 @@ int main()
                 } else if (settingsSection == 2) {
                     const float y0 = 220.0f, y1 = 280.0f, y2 = 340.0f;
                     if (settingsItem == 0) drawRoundRect(356.0f, y0 - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                    text::drawText(("Mando 1: " + devOpts[player1Device]).c_str(),
+                    text::drawText(("Mando 1: " + devOpts[player1Device] + "  (A para conectar)").c_str(),
                                    370.0f, y0, 22, settingsItem == 0 ? white : muted);
                     if (hasSecondCorePort()) {
                         if (settingsItem == 1) drawRoundRect(356.0f, y1 - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});
-                        text::drawText(("Mando 2: " + p2Opts[player2Device]).c_str(),
+                        text::drawText(("Mando 2: " + p2Opts[player2Device] + "  (A para conectar)").c_str(),
                                        370.0f, y1, 22, settingsItem == 1 ? white : muted);
                     }
                     const float orderY = hasSecondCorePort() ? y2 : y1;

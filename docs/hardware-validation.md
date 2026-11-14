@@ -53,7 +53,8 @@ pendiente; los resultados N64 de esta ronda proceden de Cemu.
 
 ## Controles
 
-1. En Ajustes → Controles, usa «Cambiar orden de mandos». Pulsa A en el
+1. En Ajustes → Controles, pulsa A sobre cada puerto para conectarlo y prueba
+   también «Cambiar orden de mandos». Pulsa A en el
    dispositivo elegido para Mando 1 y, en NES/SNES, para Mando 2. GBA debe
    pedir solo Mando 1. Comprueba el orden dentro del juego.
 2. En Mapear botones, cambia una acción y reinicia la app. Confirma que el

@@ -33,11 +33,22 @@ if [ ! -f "$source_dir/third_party/cafeglsl/include/cafeglsl/CafeGLSLCompiler.h"
 fi
 echo "CafeGLSL archive SHA-256: $(sha256sum "$source_dir/third_party/cafeglsl/lib/libcafeglsl.a")"
 
+patched_video="$root/.cores/n64/video-retrou.cpp"
+if command -v python3 >/dev/null 2>&1; then
+    python3 "$here/patch-n64-video.py" "$source_dir/player/source/video.cpp" "$patched_video"
+elif command -v python >/dev/null 2>&1; then
+    python "$here/patch-n64-video.py" "$source_dir/player/source/video.cpp" "$patched_video"
+else
+    py -3 "$here/patch-n64-video.py" "$source_dir/player/source/video.cpp" "$patched_video"
+fi
+echo "RetroU graphics adapter SHA-256: $(sha256sum "$patched_video")"
+
 : "${DEVKITPRO:=/opt/devkitpro}"
 export DEVKITPRO
 rm -f "$archive"
 make -C "$source_dir/player" -f Makefile -f "$here/n64-engine.mk" \
-    RELEASE=1 N64_ENGINE_OUT="$archive" n64_engine -j"${JOBS:-4}"
+    RELEASE=1 N64_ENGINE_OUT="$archive" N64_ENGINE_PATCHED_VIDEO="$patched_video" \
+    n64_engine -j"${JOBS:-4}"
 ar_bin="$DEVKITPRO/devkitPPC/bin/powerpc-eabi-ar"
 "$ar_bin" t "$archive" > "$root/.cores/n64/archive-members.txt"
 if grep -E '^(main|library(_wiiu)?|setup(_wiiu)?|covers(_wiiu)?|ui(_wiiu|_draw)?|theme|pause(_wiiu)?|prompt|notices|input_wiiu|report|states_wiiu|tpak_wiiu|alloc_stats)\.o$' "$root/.cores/n64/archive-members.txt"; then

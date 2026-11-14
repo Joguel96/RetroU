@@ -113,6 +113,17 @@ botones C/Z del Nunchuk. Se compiló y enlazó en
 Faltan la pantalla de asignación N64, persistencia de sus mapas, estados y
 ejecución real de ROM desde RetroU; la WUHB provisional sigue intacta.
 
+Cuarto hito (2026-11-14): el script genera una copia adaptada de
+`video.cpp` en `.cores/n64/` sin modificar la revisión fijada de Our64.
+Reinicia el estado del hilo y la cola gráfica antes de cada ROM, y espera al
+hilo si falla la inicialización de GX2. La biblioteca resultante tiene
+SHA-256 `17d2758187363bcce05734cc0c094a722aed29875705a919572395b44c11fa79`;
+el enlace diagnóstico consta en
+`native/build/logs/n64-bridge-20261114-005832.log` (ELF SHA-256
+`cf58717fe0466663ce0f467f92e7a5d25d49c409294a38ce4d067372c3a1c36f`).
+Es una verificación de compilación y enlace, no una prueba de partidas
+consecutivas en Cemu ni en Wii U.
+
 La WUHB provisional permanece disponible para revertir y comparar el motor,
 pero su UI y descargador no son la base del port definitivo.
 

@@ -4,16 +4,22 @@
 N64_ENGINE_OUT ?= $(CURDIR)/../../.cores/n64/not64_gliden64_wiiu.a
 
 N64_ENGINE_BENCH := our64_jit lwp_heap romcache
-N64_ENGINE_PLAYER := plugins audio video saves saves_wiiu states input \
+N64_ENGINE_PLAYER := plugins audio saves saves_wiiu states input \
 	writer gamedb tpak gb_tower_hle
 N64_ENGINE_OBJECTS := \
 	$(addprefix $(BUILD)/not64/,$(NOT64_SRC:.c=.o)) \
 	$(addprefix $(BUILD)/bench/,$(addsuffix .o,$(N64_ENGINE_BENCH))) \
 	$(addprefix $(BUILD)/source/,$(addsuffix .o,$(N64_ENGINE_PLAYER))) \
+	$(BUILD)/n64-retrou-video.o \
 	$(BUILD)/minilzo.o $(BUILD)/cxd4.o $(BUILD)/replay/core_wiiu.o \
 	$(addprefix $(BUILD)/gliden64/,$(GLIDEN64_CORE:.cpp=.o) $(GLIDEN64_C:.c=.o))
 
 .PHONY: n64_engine
+
+$(BUILD)/n64-retrou-video.o: $(N64_ENGINE_PATCHED_VIDEO)
+	@mkdir -p $(dir $@)
+	@echo n64-retrou-video.cpp
+	@$(CXX) -MMD -MP $(CXXFLAGS) -I$(CURDIR)/source -Wall -c $< -o $@
 n64_engine: $(N64_ENGINE_OUT)
 
 $(N64_ENGINE_OUT): $(N64_ENGINE_OBJECTS)

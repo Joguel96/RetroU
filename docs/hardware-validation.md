@@ -157,7 +157,7 @@ log en cada fallo. Estas casillas siguen abiertas hasta probarse en Wii U:
 | Cargar una ROM `.z64`, otra `.n64` y otra `.v64` | Las tres arrancan; anotar título y rendimiento por separado | ⬜ |
 | Recorrer Cards, Lista y Carrusel, incluidos los extremos del catálogo | Selección, desplazamiento, filtro A–Z y proporciones de portadas correctos | Cemu: «ok»; falta Wii U |
 | Buscar, marcar favorito, filtrar por estrella y volver a All | El filtro y las estrellas reflejan el cambio sin reiniciar | Cemu: filtrado/favoritos «ok»; B/X del buscador fallan (N64-4); falta Wii U |
-| Descargar portada y backdrop con la app abierta | Progreso y arte se actualizan sin reiniciar; el log registra `ASSETS:` | Cemu: la app se cierra; los logs disponibles terminan antes de `ASSETS:` (N64-5) |
+| Descargar portada y backdrop con la app abierta | Progreso y arte se actualizan sin reiniciar; el log registra `ASSETS:` | Cemu: la WUHB provisional de Our64 se cierra. El log `sd:/retrou/n64/retrou_n64.log` llega a `ASSETS: existing network result=00d00000 connected=1` y no registra el siguiente hito. El usuario pidió sustituir por el descargador de RetroU y las URL de Libretro; N64-5 sigue abierto. |
 | Navegar y jugar con GamePad, Wii U Pro, Classic, Wii Remote y Nunchuk | Cada mando disponible responde según su perfil y asignación; anotar los no disponibles | ⬜ |
 | Asignar y jugar con 1, 2, 3 y 4 jugadores | Cada puerto recibe solo su mando y conserva su orden | ⬜ |
 | Desconectar y reconectar Pro/Classic durante biblioteca y partida | El mando recupera su puerto y el juego responde; revisar `INPUT:` | ⬜ |

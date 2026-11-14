@@ -166,6 +166,27 @@ bool loadFont(const unsigned char *data, size_t size)
     return g_atlas >= 0;
 }
 
+void unloadFont()
+{
+    if (g_atlas >= 0) {
+        destroyTexture(g_atlas);
+        g_atlas = -1;
+    }
+    g_glyphs.clear();
+    g_atlasPixels.clear();
+    g_atlasDirty = false;
+    g_cursorX = g_cursorY = g_rowHeight = 0;
+    g_lastSize = -1;
+    if (g_face) {
+        FT_Done_Face(g_face);
+        g_face = nullptr;
+    }
+    if (g_library) {
+        FT_Done_FreeType(g_library);
+        g_library = nullptr;
+    }
+}
+
 int measureText(const char *text, int pixelSize)
 {
     if (!text || !g_face) return 0;

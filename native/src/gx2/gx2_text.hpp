@@ -10,6 +10,8 @@ namespace retrou::gx2::text {
 // Loads a TrueType font from memory. Call after gx2::init(). Returns false on
 // failure.
 bool loadFont(const unsigned char *data, size_t size);
+// Releases the font atlas and FreeType face before GX2 changes owner.
+void unloadFont();
 
 // Width in pixels of the UTF-8 string at the given pixel size.
 int measureText(const char *text, int pixelSize);

@@ -77,7 +77,8 @@ se probó y el ruido persistió; AUD-2 reemplaza ese intento.
 | UI-7 | Carrusel NES con portadas verticales y SNES con carátulas completas sin recorte, incluida la imagen central y las laterales | ✅ 2026-11-12 |
 | UI-8 | En Lista y Carrusel, mostrar estrella en juegos favoritos y Favoritos inmediatamente después de «All» en el filtro superior, navegable con L/R y touch | ✅ 2026-11-12 |
 | UI-9 | Investigar el cierre de GBA cerca del juego 144: títulos y rutas de assets normalizados; una sola portada de respaldo y registros de índice, memoria libre y fin de render por selección. El usuario confirmó que la nueva WUHB recorre la biblioteca en hardware | ✅ 2026-11-12 |
-| UI-10 | Y cambia entre cards, lista y carrusel desde la biblioteca en NES/SNES/GBA, conserva el juego seleccionado y guarda la vista por consola. Favoritos sigue en la barra superior con L/R | 🔧 2026-11-13; falta verificar en Wii U |
+| UI-10 | Y cambia entre cards, lista y carrusel desde la biblioteca en NES/SNES/GBA, conserva el juego seleccionado y guarda la vista por consola. Favoritos sigue en la barra superior con L/R | ✅ 2026-11-13 |
+| UI-11 | En Vídeo, elegir salida TV, GamePad o ambas para NES/SNES/GBA; guardar por consola y verificar en Wii U | 🔧 2026-11-13 (Codex, main) |
 | ART-1 | Nuevos iconos y splash (icon/tv-splash/drc-splash) por consola (NES/SNES/GBA/N64) desde `assets/RetroU_consolas_12_PNG/` → `assets/console/<consola>/`; N64 además en `C:/proyectos/Our64/assets/console/n64/` y regenerar `RetroN64U.wuhb` | ✅ 2026-11-12 |
 
 ## 5. Navegación / Input UI
@@ -126,6 +127,10 @@ Guía de la ronda en Wii U: `docs/hardware-validation.md`.
 | N64-1 | Probar `RetroN64U.wuhb` en hardware (generada desde Our64, rebrandeada); el usuario confirmó que es funcional | ✅ 2026-11-12 |
 | N64-2 | Port N64 en `C:/proyectos/Our64`: TASK-001–020 implementadas, TASK-017 en `869861d`, compatibilidad WUT en `29de243`; documentación en `d1cc7c2`, `9cf0e3b`, `ac8062d`. WUHB nueva SHA-256 `9d5a7dabeb0b079f3e14192bf84437cfef5450ca4889e37bba43c37ea9b3190b`; build `C:/proyectos/Our64/player/build-release/logs/build-20261113-212647.log`. Cemu arrancó y generó `sd:/retrou/n64/retrou_n64.log`. TASK-021 y la matriz de Wii U siguen sin confirmar; conservar como reversión `dist/wiiu/apps/RetroN64U/RetroN64U.previous.wuhb` (SHA-256 `5f822245644f1634f05ff982561383b8d0bc15068328219d45118ee072b42177`). | 🔧 2026-11-13 |
 | N64-3 | Igualar visualmente la pantalla de configuración N64 con la de RetroU NES/SNES/GBA. El usuario observó que la UI actual difiere y pidió afinarla después de TASK-017–021. | ⬜ |
+| N64-4 | En el buscador N64, B borra un carácter y solo sale si la consulta está vacía; X acepta y cierra | 🔧 2026-11-13 (Codex, Our64) |
+| N64-5 | Diagnosticar y corregir el cierre al descargar portadas o fondos en N64; dejar trazas `ASSETS:` y validar el resultado en Wii U | 🔧 2026-11-13 (Codex, Our64); log del cierre solicitado |
+| N64-6 | Integrar en el apartado de Controles RetroU el flujo de «Pulsa A para conectar» por puerto, conservando el estilo visual de RetroU | 🔧 2026-11-13 (Codex, Our64) |
+| N64-7 | Migrar las opciones funcionales de Ajustes y Assets desde RetroU a N64, incluida la descarga automática; conservar de Our64 la ejecución N64 | 🔧 2026-11-13 (Codex, Our64); alcance en revisión |
 
 ## 10. Audio del core
 
@@ -133,13 +138,13 @@ Guía de la ronda en Wii U: `docs/hardware-validation.md`.
 |---|---|---|
 | AUD-1 | Conversión lineal de 65 536 Hz a la salida de 32 000 Hz para el core GBA | ❌ 2026-11-13: probada en Wii U; el ruido persistió |
 | AUD-2 | Corregir el ruido de GBA siguiendo la ruta de RetroArch: salida Wii U a 48 000 Hz y remuestreo con filtro sinc antes de encolar; comprobar el resultado en hardware | 🔧 En curso (Codex, rama main); falta Wii U |
-| AUD-3 | Configurar frecuencia de salida y tamaño del búfer desde Sonido, guardados en `audio.conf` independiente para NES/SNES/GBA; aplicar al próximo inicio y verificar en Wii U | 🔧 En curso (Codex, rama main); falta Wii U |
+| AUD-3 | Configurar frecuencia de salida y tamaño del búfer desde Sonido, guardados en `audio.conf` independiente para NES/SNES/GBA; aplicar al próximo inicio y verificar en Wii U | ✅ 2026-11-13 |
 
 ## 11. Nombre de las apps
 
 | ID | Pendiente | Estado |
 |---|---|---|
-| APP-1 | Mostrar `RetroU NES`, `RetroU SNES` y `RetroU GBA` como nombre de las WUHB, sin `GX2`; verificar en el menú de Wii U | 🔧 En curso (Codex, rama main); falta Wii U |
+| APP-1 | Mostrar `RetroU NES`, `RetroU SNES` y `RetroU GBA` como nombre de las WUHB, sin `GX2`; verificar en el menú de Wii U | ✅ 2026-11-13 |
 
 ## 12. Ejemplos gráficos (referencias Our64)
 

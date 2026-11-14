@@ -265,22 +265,24 @@ static void saveThemeIndex(const std::string &sdRoot, int idx)
     }
 }
 
-static void loadVideoOptions(const std::string &sdRoot, int &aspect, int &scale, int &filter)
+static void loadVideoOptions(const std::string &sdRoot, int &aspect, int &scale, int &filter, int &output)
 {
     std::ifstream in(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/video.conf");
     if (in >> aspect >> scale >> filter) {
+        if (!(in >> output) || output < 0 || output > 2) output = 0;
         return;
     }
     aspect = 0;
     scale = 0;
     filter = 1;
+    output = 0;
 }
 
-static void saveVideoOptions(const std::string &sdRoot, int aspect, int scale, int filter)
+static void saveVideoOptions(const std::string &sdRoot, int aspect, int scale, int filter, int output)
 {
     std::ofstream out(sdRoot + "/retrou/config/" RETROU_CORE_SYSTEM "/video.conf", std::ios::trunc);
     if (out) {
-        out << aspect << " " << scale << " " << filter << "\n";
+        out << aspect << " " << scale << " " << filter << " " << output << "\n";
     }
 }
 
@@ -1179,7 +1181,11 @@ int main()
     int videoAspect = 0;
     int videoScale = 0;
     int videoFilter = 1;
-    loadVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter);
+    int videoOutput = 0;
+    loadVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter, videoOutput);
+    setOutputMode(videoOutput);
+    bootLog(("video_output_loaded system=" RETROU_CORE_SYSTEM " mode=" +
+             std::to_string(videoOutput)).c_str());
     int player1Device = 0;
     int player2Device = 0;
     ActionSources vpadMap;
@@ -2115,7 +2121,7 @@ int main()
                     else if (settingsSection == 1) itemCount = 5;
                     else if (settingsSection == 2) itemCount = hasSecondCorePort() ? 7 : 6;
                     else if (settingsSection == 3) itemCount = 5;
-                    else if (settingsSection == 4) itemCount = 2;
+                    else if (settingsSection == 4) itemCount = 3;
 
                     if (navTrigger & VPAD_BUTTON_B) {
                         settingsSection = -1; // NAV-5: sección -> raíz de Ajustes
@@ -2217,12 +2223,18 @@ int main()
                                      " buffer_mode=" + std::to_string(audioOutput.bufferMode)).c_str());
                         } else if (settingsSection == 4 && settingsItem == 0) {
                             videoAspect = (videoAspect + dir + 3) % 3;
-                            saveVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter);
+                            saveVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter, videoOutput);
                             core.setVideoOptions(videoAspect, videoScale, videoFilter);
                         } else if (settingsSection == 4 && settingsItem == 1) {
                             videoScale = (videoScale + dir + 3) % 3;
-                            saveVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter);
+                            saveVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter, videoOutput);
                             core.setVideoOptions(videoAspect, videoScale, videoFilter);
+                        } else if (settingsSection == 4 && settingsItem == 2) {
+                            videoOutput = (videoOutput + dir + 3) % 3;
+                            saveVideoOptions(library.sd_root, videoAspect, videoScale, videoFilter, videoOutput);
+                            setOutputMode(videoOutput);
+                            bootLog(("video_output_changed system=" RETROU_CORE_SYSTEM " mode=" +
+                                     std::to_string(videoOutput)).c_str());
                         } else if (settingsSection == 2 && settingsItem == 0) {
                             const int n = static_cast<int>(devOpts.size());
                             for (int step = 0; step < n; ++step) {
@@ -2728,9 +2740,10 @@ int main()
                     }
                     text::drawText("Minus + Plus siempre abre el menú", 370.0f, 615.0f, 15, muted);
                 } else if (settingsSection == 4) {
-                    const char *labels[2] = {"Aspecto", "Escala"};
-                    const char *vals[2] = {aspectOpts[videoAspect], scaleOpts[videoScale]};
-                    for (int i = 0; i < 2; ++i) {
+                    const char *labels[3] = {"Aspecto", "Escala", "Salida de pantalla"};
+                    const char *outputOpts[3] = {"TV + GamePad", "Solo TV", "Solo GamePad"};
+                    const char *vals[3] = {aspectOpts[videoAspect], scaleOpts[videoScale], outputOpts[videoOutput]};
+                    for (int i = 0; i < 3; ++i) {
                         const float y = 220.0f + i * 70.0f;
                         if (settingsItem == i) {
                             drawRoundRect(356.0f, y - 8.0f, 884.0f, 44.0f, 8.0f, Color{245, 217, 127, 40});

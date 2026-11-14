@@ -5,6 +5,7 @@
 #include <coreinit/memdefaultheap.h>
 #include <gx2/clear.h>
 #include <gx2/draw.h>
+#include <gx2/display.h>
 #include <gx2/mem.h>
 #include <gx2/registers.h>
 #include <gx2/sampler.h>
@@ -21,6 +22,8 @@
 namespace retrou::gx2 {
 
 namespace {
+
+int g_outputMode = 0;
 
 constexpr float kScreenW = 1280.0f;
 constexpr float kScreenH = 720.0f;
@@ -304,6 +307,7 @@ bool init()
     GX2InitSampler(&g_samplerNearest, GX2_TEX_CLAMP_MODE_CLAMP,
                    GX2_TEX_XY_FILTER_MODE_POINT);
     g_ready = true;
+    setOutputMode(g_outputMode);
     return true;
 }
 
@@ -323,6 +327,15 @@ void shutdown()
     WHBGfxFreeShaderGroup(&g_textureGroup);
     WHBGfxShutdown();
     g_ready = false;
+}
+
+void setOutputMode(int mode)
+{
+    g_outputMode = mode >= 0 && mode <= 2 ? mode : 0;
+    if (g_ready) {
+        GX2SetTVEnable(g_outputMode != 2);
+        GX2SetDRCEnable(g_outputMode != 1);
+    }
 }
 
 void beginFrame(Color clear)
@@ -354,7 +367,8 @@ void endFrame()
     }
     flushFrame();
     WHBGfxFinishRenderTV();
-    GX2CopyColorBufferToScanBuffer(WHBGfxGetTVColourBuffer(), GX2_SCAN_TARGET_DRC);
+    if (g_outputMode != 1)
+        GX2CopyColorBufferToScanBuffer(WHBGfxGetTVColourBuffer(), GX2_SCAN_TARGET_DRC);
     WHBGfxFinishRender();
     g_inFrame = false;
 }

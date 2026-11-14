@@ -75,6 +75,9 @@ porque el dispositivo SDL permanece abierto durante la sesión. Si falla la
 frecuencia elegida, se prueba la otra; `retrou_rpx.log` registra la selección,
 la frecuencia real y los fallos de apertura. N64 usa audio AX en otra WUHB y
 no lee este `audio.conf`.
+Vídeo añade salida TV + GamePad, solo TV o solo GamePad como cuarto valor
+de `video.conf` en NES/SNES/GBA. Los archivos de tres valores siguen cargando
+con ambas pantallas; la selección de salida aún requiere prueba en Wii U.
 
 ## Qué hace
 

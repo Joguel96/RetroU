@@ -19,8 +19,9 @@ Not64, GLideN64 y audio AX. La UI, los datos y los guardados son de RetroU.
 - **N64 (Our64)**: `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb` — WUHB
   independiente, compilada en el clon externo `C:/proyectos/Our64` con
   Not64 + GLideN64 + AX, sin core Libretro. Incluye biblioteca RetroU
-  (cards, lista y carrusel), controles, menú, guardados y Assets; sus ajustes
-  todavía requieren afinar la apariencia para igualar NES/SNES/GBA.
+  (cards, lista y carrusel). Ajustes y parte del flujo de controles, guardados
+  y Assets todavía siguen el modelo de Our64; su migración funcional y visual
+  a RetroU está pendiente (N64-3/N64-7).
   Lee ROMs de `sd:/retrou/roms/n64` y escribe datos en `sd:/retrou/n64/`;
   si la carpeta nueva no tiene ROMs, puede leer las de
   `sd:/wiiu/our64/roms` sin modificarlas. Los guardados anteriores se leen
@@ -50,8 +51,12 @@ Not64, GLideN64 y audio AX. La UI, los datos y los guardados son de RetroU.
 - **Salida de audio**: Sonido permite elegir frecuencia automática, 32 000 o
   48 000 Hz y búfer de 512, 1024 o 2048 muestras. Se guarda por consola en
   `sd:/retrou/config/<consola>/audio.conf` y se aplica al reiniciar esa app
-  (AUD-3, pendiente de probar en Wii U). AUD-2 también sigue pendiente de
+  (AUD-3, confirmado en Wii U). AUD-2 sigue pendiente de
   comprobar en Wii U. La WUHB de N64 usa audio AX propio y no lee este archivo.
+- **Salida de pantalla**: Vídeo permite elegir TV + GamePad, solo TV o solo
+  GamePad en NES/SNES/GBA. Cada app guarda la elección en su `video.conf`;
+  las configuraciones previas de tres valores conservan ambas pantallas.
+  La nueva opción requiere verificación en Wii U.
 - **Biblioteca GX2**: vistas cards, lista y carrusel; las dos últimas ofrecen
   filtro alfabético con Favoritos junto a «All», navegable con L/R. El carrusel NES presenta
   portadas verticales y el de SNES muestra las imágenes completas.

@@ -4,7 +4,7 @@
 //
 // Single-render architecture: the whole UI (and the core game frame) is drawn
 // once into a 1280x720 TV color buffer. At endFrame() that same buffer is
-// copied to the TV scan buffer AND to the DRC (GamePad) scan buffer, so there
+// copied to the selected TV and/or DRC (GamePad) scan buffers, so there
 // is only one render pass and one set of UI textures — no second renderer and
 // no duplicated framebuffer for the GamePad.
 //
@@ -35,8 +35,11 @@ void shutdown();
 // Begins a frame: clears the color buffer to `clear` and starts drawing to TV.
 void beginFrame(Color clear);
 
-// Finishes a frame: copies the TV buffer to TV + DRC scan buffers and swaps.
+// Finishes a frame: presents the TV buffer on the selected output(s) and swaps.
 void endFrame();
+
+// 0: TV + GamePad, 1: TV, 2: GamePad.
+void setOutputMode(int mode);
 
 // Draws an axis-aligned, screen-space rectangle (pixels, top-left origin).
 void drawRect(float x, float y, float w, float h, Color color);

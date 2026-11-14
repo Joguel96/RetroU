@@ -10,8 +10,9 @@ El usuario confirmó en Wii U la navegación, controles, guardados y Assets de
 NES/SNES/GBA, y que RetroN64U funciona (N64-1). En la ronda del 2026-11-13
 confirmó UI-2, CTRL-8 y AS-6. También confirmó que el Pro llega al core de
 GBA aunque la ROM tenga mapa propio (CTRL-9). Reportó ruido en el audio de
-GBA (AUD-1); la conversión de frecuencia requiere otra prueba. N64-2 sigue
-pendiente.
+GBA (AUD-1); la conversión de frecuencia requiere otra prueba. El usuario
+confirmó UI-10, AUD-3 y APP-1 en Wii U física el 2026-11-13. N64-2 sigue
+pendiente; los resultados N64 de esta ronda proceden de Cemu.
 
 ## Preparación
 
@@ -148,20 +149,20 @@ log en cada fallo. Estas casillas siguen abiertas hasta probarse en Wii U:
 |---|---|---|
 | Arranque desde el menú, salida a biblioteca y cierre con HOME | Nombre RetroU N64, biblioteca visible; HOME devuelve el control al sistema | ⬜ |
 | Cargar una ROM `.z64`, otra `.n64` y otra `.v64` | Las tres arrancan; anotar título y rendimiento por separado | ⬜ |
-| Recorrer Cards, Lista y Carrusel, incluidos los extremos del catálogo | Selección, desplazamiento, filtro A–Z y proporciones de portadas correctos | ⬜ |
-| Buscar, marcar favorito, filtrar por estrella y volver a All | El filtro y las estrellas reflejan el cambio sin reiniciar | ⬜ |
-| Descargar portada y backdrop con la app abierta | Progreso y arte se actualizan sin reiniciar; el log registra `ASSETS:` | ⬜ |
+| Recorrer Cards, Lista y Carrusel, incluidos los extremos del catálogo | Selección, desplazamiento, filtro A–Z y proporciones de portadas correctos | Cemu: «ok»; falta Wii U |
+| Buscar, marcar favorito, filtrar por estrella y volver a All | El filtro y las estrellas reflejan el cambio sin reiniciar | Cemu: filtrado/favoritos «ok»; B/X del buscador fallan (N64-4); falta Wii U |
+| Descargar portada y backdrop con la app abierta | Progreso y arte se actualizan sin reiniciar; el log registra `ASSETS:` | Cemu: la app se cierra; los logs disponibles terminan antes de `ASSETS:` (N64-5) |
 | Navegar y jugar con GamePad, Wii U Pro, Classic, Wii Remote y Nunchuk | Cada mando disponible responde según su perfil y asignación; anotar los no disponibles | ⬜ |
 | Asignar y jugar con 1, 2, 3 y 4 jugadores | Cada puerto recibe solo su mando y conserva su orden | ⬜ |
 | Desconectar y reconectar Pro/Classic durante biblioteca y partida | El mando recupera su puerto y el juego responde; revisar `INPUT:` | ⬜ |
-| Configurar y usar el atajo de menú por familia de mando | Abre y cierra la pausa con el mando asignado; el juego se detiene | ⬜ |
+| Configurar y usar el atajo de menú por familia de mando | Abre y cierra la pausa con el mando asignado; el juego se detiene | ⬜ No ejecutada; el usuario la dejó para hardware |
 | Crear y reabrir guardado SRAM del juego | Persiste tras salir y volver a entrar; queda bajo `sd:/retrou/n64/saves/` | ⬜ |
 | Guardar/cargar tres slots manuales y probar la cuarta tarjeta Undo | Los tres slots y la reversión de carga, sobrescritura o reset funcionan | ⬜ |
 | Escuchar música y efectos mediante AX, pausar y reanudar | Audio estable, sin ruido ni pérdida tras la pausa | ⬜ |
 | Volver del juego a la biblioteca, cerrar al menú y usar HOME | No se bloquea ni pierde guardados; revisar `PAUSE:` y `GAME:` | ⬜ |
 | Salir mientras se descargan Assets | Termina o cancela el trabajador sin congelar la Wii U; revisar `ASSETS:` | ⬜ |
 | Usar datos anteriores de Our64 sin moverlos | Si `sd:/retrou/roms/n64` está vacía, detecta las ROMs antiguas de solo lectura; lee controles/guardados previos cuando faltan los nuevos | ⬜ |
-| Revisar Ajustes frente a NES/SNES/GBA | Registrar diferencias visuales; su afinación está aplazada por indicación del usuario | ⬜ |
+| Revisar Ajustes frente a NES/SNES/GBA | Igualar secciones, contenido y flujo con RetroU, manteniendo la ejecución N64 de Our64 | Cemu: discrepancias visuales y funcionales confirmadas (N64-3/N64-7) |
 
 Los estados son **tres slots manuales más Undo**, no cuatro slots manuales.
 Para revertir, cierra la app, restaura `RetroN64U.previous.wuhb` en

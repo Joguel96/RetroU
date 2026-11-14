@@ -136,6 +136,9 @@ en mayúscula por compatibilidad. La ruta canónica es minúscula.
 512/1024/2048 muestras. Los cambios en Sonido se aplican al reiniciar la app
 porque el dispositivo SDL no se cierra durante la sesión (AUD-3).
 
+`video.conf` admite un cuarto valor para la salida: 0 = TV + GamePad,
+1 = solo TV, 2 = solo GamePad. Los archivos anteriores de tres valores usan 0.
+
 `control-map.conf` usa el formato `v2` estilo Our64 (acción del core → una o
 varias máscaras de botones físicos): secciones `[gamepad]` y `[pro]`, líneas
 `p1`/`p2` y una línea por acción. Las acciones sin asignación se escriben como
@@ -341,7 +344,7 @@ solo mantiene el estado general.
   (SAVE-1/2).
 - Touch, búsqueda, vistas de biblioteca y descargas separadas de
   portadas/backdrops con progreso: probados en hardware (NAV-1/7, UI-3..9,
-  AS-1..5). El atajo `Y Vista` (UI-10) aún requiere prueba en Wii U.
+  AS-1..5). El atajo `Y Vista` (UI-10) está confirmado en Wii U.
   GBA ya recorre más allá del juego 144. Salir al menú de Wii U
   durante descargas activas funciona (AS-6, confirmado en Wii U).
 - Ajustes en dos paneles: nueva distribución según
@@ -350,10 +353,10 @@ solo mantiene el estado general.
   Wii U. AUD-2 solicita 48 000 Hz y filtra con sinc antes de la salida SDL;
   falta prueba en Wii U.
 - Sonido permite configurar frecuencia y búfer de salida por app NES/SNES/GBA
-  en `audio.conf`; AUD-3 requiere comprobación en Wii U. La WUHB de N64 usa
+  en `audio.conf`; AUD-3 está confirmado en Wii U. La WUHB de N64 usa
   audio AX en Our64 y no lee este archivo.
 - Los nombres visibles de las WUHB de NES, SNES y GBA ya son `RetroU NES`,
-  `RetroU SNES` y `RetroU GBA` (APP-1, pendiente confirmar en Wii U).
+  `RetroU SNES` y `RetroU GBA` (APP-1, confirmado en Wii U).
 - Referencias visuales de UI en `ejemplos/` (raíz del proyecto).
 - No afirmar que algo está probado en hardware si no lo está.
 

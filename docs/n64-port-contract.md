@@ -76,13 +76,14 @@ Secuencia verificable:
 Primer hito de extracción (2026-11-14):
 `native/cores/build-n64-engine.sh` compila la revisión fija
 `d3c56db253cd1b20987eb33ecd5797c60e527b64` en
-`.cores/n64/not64_gliden64_wiiu.a`. El archivo contiene 163 objetos del motor
+`.cores/n64/not64_gliden64_wiiu.a`. El archivo contiene 161 objetos del motor
 Not64/GLideN64 y servicios de audio y guardado; excluye el `main`,
-biblioteca, ajustes, carátulas, menús, entrada, log y descargador de Our64.
+biblioteca, ajustes, carátulas, menús, entrada, log, descargador, controlador
+de estados y cliente Transfer Pak de Our64.
 La entrada y los mensajes deben conectarse con RetroU. El log con auditoría de
-miembros está en `native/build/logs/n64-engine-20261114-002714.log`.
+miembros está en `native/build/logs/n64-engine-20261114-003411.log`.
 SHA-256 del archivo:
-`5c543c86d313fbc5f05ad0d5d6c068ab33797298a2f578c052cba2db0c2d269f`.
+`b2941c1c2d0c4be7b57edd142c07bd0feb9deea1a48f30438e2e01c303df6f92`.
 Es una biblioteca de objetos, aún sin entrada ni puente al frontend RetroU;
 no sustituye todavía a la WUHB N64 provisional.
 

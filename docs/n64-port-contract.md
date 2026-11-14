@@ -124,6 +124,17 @@ el enlace diagnóstico consta en
 Es una verificación de compilación y enlace, no una prueba de partidas
 consecutivas en Cemu ni en Wii U.
 
+Quinto hito (2026-11-14): `native/src/n64/n64_states.c` reemplaza los
+símbolos vacíos del enlace diagnóstico con captura real del estado de CPU,
+RDRAM, TLB, registros y cola de eventos. Escribe cuatro slots bajo
+`sd:/retrou/n64/states/<juego>/` con el formato v4 del motor fijado. Para
+cargar un estado, detiene `go()`, sincroniza y reinicia gráficos, restaura
+el estado y desvincula el código recompilado antes de reanudar; sigue el
+ciclo técnico de Our64 sin incorporar sus menús. El enlace diagnóstico pasó
+en `native/build/logs/n64-bridge-20261114-081246.log` (ELF SHA-256
+`d6fd2a253c8dc5fa07160bdb03f8fb59af44cf48019af3b29020d7f9d7c6a4cd`).
+No se han probado aún guardado ni carga en una ROM.
+
 La WUHB provisional permanece disponible para revertir y comparar el motor,
 pero su UI y descargador no son la base del port definitivo.
 

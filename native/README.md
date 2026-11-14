@@ -126,7 +126,9 @@ biblioteca estática de Not64/GLideN64 a partir de la revisión de Our64 fijada
 en el propio script. Si CafeGLSL ya está instalado localmente, se puede indicar
 `CAFEGLSL_SOURCE`; de otro modo el script usa el descargador verificado de
 Our64. El resultado en `.cores/n64/` aún no se enlaza a una WUHB RetroU y no
-se distribuye. Véase `docs/n64-port-contract.md`.
+se distribuye. `cores/check-n64-bridge.sh` verifica el enlace del motor con
+los adaptadores de video, cuatro mandos y cuatro estados de RetroU, sin
+ejecutar una ROM. Véase `docs/n64-port-contract.md`.
 
 ## Controles y verificación
 

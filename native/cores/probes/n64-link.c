@@ -1,9 +1,6 @@
-/* Enlace diagnóstico: estos estados vacíos NO deben usarse en una WUHB. */
+/* Enlace diagnóstico del motor y del adaptador de estados; no se distribuye. */
 #include "../../src/n64/n64_engine.h"
 
-int savestates_job;
-void savestates_save(void) {}
-void savestates_load(void) {}
 
 static int on_vi(void *user, unsigned vi, unsigned ports[4])
 {

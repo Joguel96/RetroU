@@ -1,5 +1,6 @@
 #include "n64_engine.h"
 #include "n64_report.h"
+#include "n64_states.h"
 #include "n64_video.h"
 
 #include <gctypes.h>
@@ -39,6 +40,7 @@ extern const float two16;
 extern double our64_cvt_tmp;
 extern const double our64_cvt_magic;
 void format_mempacks(void);
+void our64_dynarec_unlink(void);
 
 static N64EngineHost s_host;
 static uint32_t s_ports[4];
@@ -76,6 +78,8 @@ static int is_pal(void)
     default: return 0;
     }
 }
+
+int player_is_pal(void) { return is_pal(); }
 
 void n64_engine_request_stop(void)
 {
@@ -165,7 +169,7 @@ int n64_engine_play(const char *rom_path, const char *root, const N64EngineHost 
     memset(&g_bench, 0, sizeof(g_bench));
     s_running = s_stop_requested = 0;
     int result = -4, graphics_up = 0, audio_up = 0;
-    int cpu_up = 0, memory_up = 0, saves_up = 0, writer_up = 0;
+    int cpu_up = 0, memory_up = 0, saves_up = 0, writer_up = 0, states_up = 0;
     int rom_opened = 0, video_up = 0;
     unsigned gfx_core = OSGetCodegenCore() == 1 ? 2 : 1;
     if (video_thread_start(gfx_core)) goto done;
@@ -188,6 +192,8 @@ int n64_engine_play(const char *rom_path, const char *root, const N64EngineHost 
     count_per_op = 2;
     cpu_init();
     cpu_up = 1;
+    if (!n64_states_init(root)) states_up = 1;
+    else report_line("N64: estados no disponibles en esta sesion");
     if (!writer_start()) writer_up = 1;
     if (writer_up && !saves_start(root)) saves_up = 1;
     if (video_start()) { result = -7; goto done; }
@@ -198,13 +204,21 @@ int n64_engine_play(const char *rom_path, const char *root, const N64EngineHost 
     stop = 0;
     s_running = 1;
     report_line("N64: ejecutando region=%c", ROM_HEADER.Country_code);
-    go();
+    for (;;) {
+        go();
+        if (s_stop_requested || !n64_states_load_pending()) break;
+        gfx_reset();
+        if (!n64_states_apply_load()) our64_dynarec_unlink();
+        s_next_vi = OSGetSystemTime();
+        stop = 0;
+    }
     s_running = 0;
     result = 0;
     report_line("N64: detenido tras %u VI", g_bench.vis);
 done:
     s_running = 0;
     if (video_up) video_stop();
+    if (states_up) n64_states_finish();
     if (saves_up) saves_stop();
     if (writer_up) writer_stop();
     if (cpu_up) cpu_deinit();

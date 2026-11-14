@@ -34,6 +34,11 @@ includes=(
 "$cc" -std=gnu11 -O2 -Wall -Wextra -Werror \
     "-I$DEVKITPRO/wut/include" \
     -c "$root/native/src/n64/n64_report.c" -o "$out/report.o"
+"$cc" -std=gnu23 -O2 -Wall -Wextra -Werror -Wno-old-style-declaration -fgnu89-inline \
+    -fno-strict-aliasing -D__WIIU__ -D__WUT__ -DHW_RVL -DNOASM \
+    -DUSE_EXPANSION -DUSE_RECOMP_CACHE -DPPC_DYNAREC -DFASTMEM \
+    -DRELEASE -DPROFILE "${includes[@]}" \
+    -c "$root/native/src/n64/n64_states.c" -o "$out/states.o"
 "$cxx" -std=gnu++17 -O2 -Wall -Wextra -Werror \
     "-I$source_dir/bench/source" "-I$DEVKITPRO/wut/include" \
     -c "$root/native/src/n64/n64_video.cpp" -o "$out/video.o"
@@ -52,9 +57,9 @@ includes=(
     "-L$DEVKITPRO/portlibs/ppc/lib" \
     "-L$source_dir/third_party/cafeglsl/lib" \
     "-specs=$DEVKITPRO/wut/share/wut.specs" -Wl,--wrap=doRspCycles \
-    "$out/probe.o" "$out/engine.o" "$out/report.o" "$out/video.o" \
+    "$out/probe.o" "$out/engine.o" "$out/report.o" "$out/states.o" "$out/video.o" \
     "$out/input.o" "$out/wpad_input.o" \
     "$archive" -lcafeglsl -lturbojpeg -lfreetype -lpng16 -lbz2 -lz \
     -lwut -lm -o "$out/probe.elf"
 echo "Enlace diagnóstico correcto: $(sha256sum "$out/probe.elf")"
-echo "Estados vacíos exclusivamente en probes/n64-link.c; no se distribuye."
+echo "Adaptador real de cuatro estados N64 enlazado; el binario no se distribuye."

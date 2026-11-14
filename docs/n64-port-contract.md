@@ -87,6 +87,20 @@ SHA-256 del archivo:
 Es una biblioteca de objetos, aún sin entrada ni puente al frontend RetroU;
 no sustituye todavía a la WUHB N64 provisional.
 
+Segundo hito (2026-11-14): `native/src/n64/` añade una entrada de sesión
+`n64_engine_play`, registro propio y el puente GX2 de GLideN64. Se verificó
+que los módulos compilan sin advertencias y enlazan con la biblioteca de 161
+objetos mediante `native/cores/check-n64-bridge.sh`; la prueba de enlace usa
+tres funciones vacías de estados solo en `native/cores/probes/n64-link.c`
+para identificar dependencias. El registro de compilación y enlace es
+`native/build/logs/n64-bridge-20261114-004720.log` y el ELF de diagnóstico
+tiene SHA-256
+`d05388a416bbabfc737d13f009650f84dfcd3f6e3c9fb821cb2a3da4ca322b4d`.
+**Esto no es una WUHB distribuible:** faltan el adaptador real de estados, la
+cesión y recuperación de GX2 entre frontend y motor, la entrada de cuatro
+mandos, el menú de juego y pruebas de ejecución en Cemu y Wii U. Tampoco se
+ha sustituido la WUHB provisional de `dist/`.
+
 La WUHB provisional permanece disponible para revertir y comparar el motor,
 pero su UI y descargador no son la base del port definitivo.
 

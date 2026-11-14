@@ -4,7 +4,7 @@
 > **Orquestador:** Codex
 > **Fecha:** 2026-11-13
 > **Ejecución:** el usuario autorizó TASK-001–011, luego TASK-012–016 y finalmente TASK-017–021 el 2026-11-13. AUD-2 y AUD-3 de GBA quedan aplazados.
-> **Avance:** TASK-001–020 tienen implementación, compilación y documentación. TASK-017 arrancó en Cemu y creó el log N64. TASK-021 depende de la matriz en Wii U, aún sin confirmar; N64-2 permanece 🔧. El ajuste visual de configuración se registró como N64-3 para después.
+> **Avance:** TASK-001–020 produjeron una WUHB provisional basada en la aplicación Our64. El 2026-11-14 el usuario precisó el destino: el frontend completo debe ser el de RetroU y de Our64 solo se conserva el motor N64. Por ello estas tareas no cierran N64-2; la nueva frontera y secuencia de integración constan en `docs/n64-port-contract.md`. TASK-021 y la matriz de Wii U siguen pendientes.
 
 ## Registro de commits de esta ronda
 

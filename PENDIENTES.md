@@ -125,12 +125,12 @@ Guía de la ronda en Wii U: `docs/hardware-validation.md`.
 | ID | Pendiente | Estado |
 |---|---|---|
 | N64-1 | Probar `RetroN64U.wuhb` en hardware (generada desde Our64, rebrandeada); el usuario confirmó que es funcional | ✅ 2026-11-12 |
-| N64-2 | Port N64 en `C:/proyectos/Our64`: TASK-001–020 implementadas, TASK-017 en `869861d`, compatibilidad WUT en `29de243`; buscador y trazas en `d3c56db`. WUHB actual SHA-256 `a9321c308f594a0f9e2f3762bdffd58f691fbbec8755a9978f4b691317536cea`; build `C:/proyectos/Our64/player/build-release/logs/build-20261114-024624.log`. Cemu arrancó; TASK-021 y la matriz de Wii U siguen sin confirmar. Reversión: `dist/wiiu/apps/RetroN64U/RetroN64U.previous.wuhb` (SHA-256 `9d5a7dabeb0b079f3e14192bf84437cfef5450ca4889e37bba43c37ea9b3190b`). | 🔧 2026-11-13 |
+| N64-2 | Integrar N64 en el frontend real de RetroU. La WUHB actual todavía es la aplicación Our64 adaptada y no cumple el alcance definitivo. Binario diagnóstico actual SHA-256 `b6461f04f2d747f8f6f18a7599c33c41f468ec8f2a4c5778dfe901d575adf293`; build `C:/proyectos/Our64/player/build-release/logs/build-20261114-030227.log`. Reversión: `dist/wiiu/apps/RetroN64U/RetroN64U.previous.wuhb` (SHA-256 `a9321c308f594a0f9e2f3762bdffd58f691fbbec8755a9978f4b691317536cea`). | 🔧 2026-11-14 |
 | N64-3 | Igualar visualmente la pantalla de configuración N64 con la de RetroU NES/SNES/GBA. El usuario observó que la UI actual difiere y pidió afinarla después de TASK-017–021. | ⬜ |
 | N64-4 | En el buscador N64, B borra un carácter y solo sale si la consulta está vacía; X acepta y cierra | 🔧 2026-11-13 (Codex, Our64) |
-| N64-5 | Diagnosticar y corregir el cierre al descargar portadas o fondos en N64; WUHB diagnóstica con trazas `ASSETS:` lista, falta reproducir el cierre con ella y validar el arreglo en Wii U | 🔧 2026-11-13 (Codex, Our64) |
+| N64-5 | Sustituir la descarga de Our64 por `retrou_assets` en el frontend N64 de RetroU: índice, portadas y fondos desde `thumbnails.libretro.com/Nintendo - Nintendo 64/`; el cierre en Cemu se reprodujo y el log termina tras `ACIsApplicationConnected`. No reparar el cliente `nn::ac` de Our64. | 🔧 2026-11-14 |
 | N64-6 | Integrar en Controles RetroU el flujo de «Pulsa A para conectar» por puerto: acceso directo en NES/SNES/GBA compilado, pendiente verificar en Wii U; adaptar también N64 con estilo RetroU | 🔧 2026-11-13 (Codex, main/Our64) |
-| N64-7 | Migrar las opciones funcionales de Ajustes y Assets desde RetroU a N64, incluida la descarga automática; conservar de Our64 la ejecución N64 | 🔧 2026-11-13 (Codex, Our64); alcance en revisión |
+| N64-7 | Reemplazar biblioteca, ajustes, controles, búsqueda, assets y demás frontend de Our64 por el código de RetroU. Extraer de Our64 solo el motor N64 y adaptar su ejecución al ciclo de RetroU; el RPX actual de Our64 no es un núcleo aislado. Conservar descarga automática y configuración independiente N64. | 🔧 2026-11-14 |
 
 ## 10. Audio del core
 

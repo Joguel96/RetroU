@@ -1,8 +1,11 @@
 # Contrato del port N64 a RetroU
 
-Fecha: 2026-11-13. Alcance autorizado: TASK-001 a TASK-011 de `PLAN.md`.
-N64-2 seguirá abierto hasta la prueba completa en Wii U. AUD-2 y AUD-3
-(audio de GBA) quedan aplazados.
+Fecha: 2026-11-13; alcance corregido por el usuario el 2026-11-14. Las
+TASK-001–020 de `PLAN.md` produjeron una WUHB basada en la aplicación Our64,
+pero **no son el port definitivo**. N64-2 sigue abierto. El usuario pide que
+la biblioteca, descargas, ajustes, controles y UI sean los de RetroU; de
+Our64 solo debe conservarse el motor de ejecución N64. AUD-2 (audio de GBA)
+queda aplazado.
 
 ## Línea base verificable
 
@@ -30,7 +33,7 @@ de estos cambios previos; el hash de Git por sí solo **no** reproduce la WUHB
 base. Cada build nuevo debe registrar la revisión, los cambios sucios y el
 checksum de la WUHB.
 
-## Frontera técnica
+## Frontera técnica de la WUHB provisional
 
 - **Motor conservado:** recompiler y hardware N64 de Not64, GLideN64 para GX2,
   audio AX, pacing, hilos y lógica de estados/guardados de Our64. N64 no es un
@@ -43,6 +46,35 @@ checksum de la WUHB.
 - **Binario:** una WUHB independiente llamada `RetroU N64`, ubicada en
   `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb`. NES, SNES y GBA se compilan y se
   configuran por separado.
+
+## Frontera definitiva solicitada
+
+El RPX de Our64 compilado actualmente contiene `main`, biblioteca, menús,
+descargador y motor N64 juntos. No se puede tratar ese archivo como un núcleo
+aislado. El port definitivo requiere separar el motor Not64/GLideN64 y sus
+servicios de ejecución de la aplicación Our64, y conectarlo a una WUHB cuyo
+frontend sea el de `native/src/gx2/` de RetroU. La propiedad de GX2, el audio,
+la entrada, los guardados y el ciclo de pausa deben tener un solo dueño.
+
+Secuencia verificable:
+
+1. Usar en `retrou_assets` el índice y las URL HTTPS de Libretro para N64,
+   con `Named_Boxarts` y `Named_Snaps`, cancelación y actualización en vivo.
+   Guardar en `sd:/retrou/thumbnails/n64` y `sd:/retrou/backdrops/n64`, como
+   las demás consolas. No continuar el cliente `nn::ac` de Our64.
+2. Definir una interfaz pequeña para iniciar, ejecutar, pausar y cerrar el
+   motor N64 sin compilar `main.c`, `setup_wiiu.c`, `library_wiiu.c`,
+   `covers_wiiu.c` ni la UI de Our64 dentro del frontend nuevo.
+3. Resolver la propiedad única de GX2: adaptar el motor/GLideN64 al ciclo del
+   renderizador RetroU y probar apertura y regreso repetidos de una ROM.
+4. Conectar entrada de hasta cuatro jugadores, audio, SRAM y estados N64 al
+   frontend RetroU sin leer ni sobrescribir los perfiles de otras consolas.
+5. Compilar y distribuir `RetroN64U.wuhb` desde el frontend nuevo; verificar
+   biblioteca, tres vistas, controles, ajustes, descargas y cierre primero en
+   Cemu y después en Wii U física. Solo entonces cerrar N64-2/N64-5/N64-7.
+
+La WUHB provisional permanece disponible para revertir y comparar el motor,
+pero su UI y descargador no son la base del port definitivo.
 
 ## Datos y compatibilidad
 

@@ -238,6 +238,7 @@ std::string libretroSystemFolder(const std::string &system)
     if (system == "nes") return "Nintendo - Nintendo Entertainment System";
     if (system == "snes") return "Nintendo - Super Nintendo Entertainment System";
     if (system == "gba") return "Nintendo - Game Boy Advance";
+    if (system == "n64") return "Nintendo - Nintendo 64";
     return "";
 }
 

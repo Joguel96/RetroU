@@ -17,6 +17,7 @@ struct WpadSnapshot {
     bool connected = false;
     int type = WPAD_TYPE_NONE;
     uint32_t buttons = 0;
+    uint32_t extension_buttons = 0; // Nunchuk C/Z; los demás tipos usan 0.
     int left_x = 0;
     int left_y = 0;
     int right_x = 0;

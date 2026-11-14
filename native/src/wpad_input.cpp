@@ -78,6 +78,7 @@ void wpad_input_poll()
                     // The Wiimote part uses the top-level hold; the stick
                     // comes from the nunchuk.
                     snap.buttons = s.hold;
+                    snap.extension_buttons = s.nunchuk.hold;
                     snap.left_x = static_cast<int>(s.nunchuk.stick.x * 32767.0f);
                     snap.left_y = static_cast<int>(s.nunchuk.stick.y * 32767.0f);
                     break;

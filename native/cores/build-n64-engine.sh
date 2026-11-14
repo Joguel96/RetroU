@@ -22,7 +22,7 @@ if [ -n "$(git -C "$source_dir" status --porcelain)" ]; then
     exit 1
 fi
 echo "Our64 engine source: $(git -C "$source_dir" rev-parse HEAD)"
-echo "Excluded: main.c, library*, setup*, covers*, ui*, theme, pause*, input*, report.c, states_wiiu.c, tpak_wiiu.c"
+echo "Excluded: main.c, library*, setup*, covers*, ui*, theme, pause*, input_wiiu.c, report.c, states_wiiu.c, tpak_wiiu.c"
 if [ ! -f "$source_dir/third_party/cafeglsl/include/cafeglsl/CafeGLSLCompiler.h" ]; then
     if [ -n "${CAFEGLSL_SOURCE:-}" ]; then
         mkdir -p "$source_dir/third_party/cafeglsl"
@@ -40,7 +40,7 @@ make -C "$source_dir/player" -f Makefile -f "$here/n64-engine.mk" \
     RELEASE=1 N64_ENGINE_OUT="$archive" n64_engine -j"${JOBS:-4}"
 ar_bin="$DEVKITPRO/devkitPPC/bin/powerpc-eabi-ar"
 "$ar_bin" t "$archive" > "$root/.cores/n64/archive-members.txt"
-if grep -E '^(main|library(_wiiu)?|setup(_wiiu)?|covers(_wiiu)?|ui(_wiiu|_draw)?|theme|pause(_wiiu)?|prompt|notices|input(_wiiu)?|report|states_wiiu|tpak_wiiu|alloc_stats)\.o$' "$root/.cores/n64/archive-members.txt"; then
+if grep -E '^(main|library(_wiiu)?|setup(_wiiu)?|covers(_wiiu)?|ui(_wiiu|_draw)?|theme|pause(_wiiu)?|prompt|notices|input_wiiu|report|states_wiiu|tpak_wiiu|alloc_stats)\.o$' "$root/.cores/n64/archive-members.txt"; then
     echo "Frontend object found in the N64 engine archive" >&2
     exit 1
 fi

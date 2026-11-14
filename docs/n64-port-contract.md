@@ -101,6 +101,18 @@ cesión y recuperación de GX2 entre frontend y motor, la entrada de cuatro
 mandos, el menú de juego y pruebas de ejecución en Cemu y Wii U. Tampoco se
 ha sustituido la WUHB provisional de `dist/`.
 
+Tercer hito (2026-11-14): la biblioteca añade `input.c`, el evaluador puro
+de botones y sticks del motor, y ahora contiene 162 objetos (SHA-256
+`33b8915e57ea780ef708b48a46f47732c6207a56ab9f6376ac209c9bb92c8841`).
+`native/src/n64/n64_input.cpp` convierte las lecturas VPAD/KPAD de RetroU
+en hasta cuatro estados N64 y permite asignar cada puerto a GamePad o un slot
+externo. Conserva la detección de reconexión de `wpad_input` y transmite los
+botones C/Z del Nunchuk. Se compiló y enlazó en
+`native/build/logs/n64-bridge-20261114-005223.log` (ELF SHA-256
+`84383bec9d002520e22455f11a14eef24d0f92d428d0f6b1e19ddab85600e25b`).
+Faltan la pantalla de asignación N64, persistencia de sus mapas, estados y
+ejecución real de ROM desde RetroU; la WUHB provisional sigue intacta.
+
 La WUHB provisional permanece disponible para revertir y comparar el motor,
 pero su UI y descargador no son la base del port definitivo.
 

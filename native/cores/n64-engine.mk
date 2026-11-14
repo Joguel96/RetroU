@@ -4,7 +4,7 @@
 N64_ENGINE_OUT ?= $(CURDIR)/../../.cores/n64/not64_gliden64_wiiu.a
 
 N64_ENGINE_BENCH := our64_jit lwp_heap romcache
-N64_ENGINE_PLAYER := plugins audio video saves saves_wiiu states \
+N64_ENGINE_PLAYER := plugins audio video saves saves_wiiu states input \
 	writer gamedb tpak gb_tower_hle
 N64_ENGINE_OBJECTS := \
 	$(addprefix $(BUILD)/not64/,$(NOT64_SRC:.c=.o)) \

@@ -124,7 +124,8 @@ Guía de la ronda en Wii U: `docs/hardware-validation.md`.
 | ID | Pendiente | Estado |
 |---|---|---|
 | N64-1 | Probar `RetroN64U.wuhb` en hardware (generada desde Our64, rebrandeada); el usuario confirmó que es funcional | ✅ 2026-11-12 |
-| N64-2 | Port completo a la UI RetroU (varias rondas; clon externo en `C:/proyectos/Our64`). TASK-001–016 implementadas y compiladas; TASK-012–016 en commits `cd50bfa`, `73ca4d3`, `f7acfc5`, `5992648`, `0773b5f`, con ajuste de contraste `7b72e99`. WUHB SHA-256 `5f822245644f1634f05ff982561383b8d0bc15068328219d45118ee072b42177`; log `C:/proyectos/Our64/player/build-release/logs/build-20261113-204348.log`. Falta comprobar ajustes, controles, guardados, descargas y salida en Wii U, y completar TASK-017–021 | 🔧 2026-11-13 |
+| N64-2 | Port N64 en `C:/proyectos/Our64`: TASK-001–020 implementadas, TASK-017 en `869861d`, compatibilidad WUT en `29de243`; documentación en `d1cc7c2`, `9cf0e3b`, `ac8062d`. WUHB nueva SHA-256 `9d5a7dabeb0b079f3e14192bf84437cfef5450ca4889e37bba43c37ea9b3190b`; build `C:/proyectos/Our64/player/build-release/logs/build-20261113-212647.log`. Cemu arrancó y generó `sd:/retrou/n64/retrou_n64.log`. TASK-021 y la matriz de Wii U siguen sin confirmar; conservar como reversión `dist/wiiu/apps/RetroN64U/RetroN64U.previous.wuhb` (SHA-256 `5f822245644f1634f05ff982561383b8d0bc15068328219d45118ee072b42177`). | 🔧 2026-11-13 |
+| N64-3 | Igualar visualmente la pantalla de configuración N64 con la de RetroU NES/SNES/GBA. El usuario observó que la UI actual difiere y pidió afinarla después de TASK-017–021. | ⬜ |
 
 ## 10. Audio del core
 

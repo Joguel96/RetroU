@@ -52,11 +52,14 @@ Requisitos históricos del usuario:
 Modelo elegido: **una WUHB independiente por consola**, como las apps virtuales
 de Switch. No hay launcher ni carpeta de cores en la SD.
 
-Cada app contiene:
+NES, SNES y GBA contienen:
 
 ```text
 RetroU frontend + un core Libretro enlazado estáticamente
 ```
+
+N64 se compila aparte en `C:/proyectos/Our64`: interfaz RetroU + Not64 +
+GLideN64 + audio AX, sin Libretro.
 
 Apps:
 
@@ -65,6 +68,7 @@ Apps:
 | `retrou_nes_gx2` | fceumm | NES |
 | `retrou_snes_gx2` | snes9x | SNES |
 | `retrou_gba_gx2` | mgba | GBA |
+| `player/release/our64.wuhb` (Our64) | Not64 + GLideN64 + AX | N64 |
 
 Salidas:
 
@@ -72,6 +76,7 @@ Salidas:
 native/build/retrou_nes_gx2.wuhb
 native/build/retrou_snes_gx2.wuhb
 native/build/retrou_gba_gx2.wuhb
+C:/proyectos/Our64/player/release/our64.wuhb
 ```
 
 Distribución:
@@ -80,6 +85,7 @@ Distribución:
 dist/wiiu/apps/RetroNESU/RetroNESU.wuhb
 dist/wiiu/apps/RetroSNESU/RetroSNESU.wuhb
 dist/wiiu/apps/RetroGBAU/RetroGBAU.wuhb
+dist/wiiu/apps/RetroN64U/RetroN64U.wuhb
 ```
 
 No se distribuyen RPX sueltos ni `RetroU.wuhb` launcher.
@@ -246,10 +252,13 @@ Ya no se usa `launcher.log` ni `launch/last.txt`.
 sd:/wiiu/apps/RetroNESU/RetroNESU.wuhb
 sd:/wiiu/apps/RetroSNESU/RetroSNESU.wuhb
 sd:/wiiu/apps/RetroGBAU/RetroGBAU.wuhb
+sd:/wiiu/apps/RetroN64U/RetroN64U.wuhb
 
 sd:/retrou/roms/nes/
 sd:/retrou/roms/snes/
 sd:/retrou/roms/gba/
+sd:/retrou/roms/n64/
+sd:/retrou/n64/retrou_n64.log
 
 sd:/retrou/config/theme.conf
 sd:/retrou/config/<consola>/<consola>.conf
@@ -284,7 +293,9 @@ cd native
 cmake --build build -j"$(nproc)"
 ```
 
-En Windows se usa MSYS2 bash para CMake/make.
+En Windows se usa MSYS2 bash para CMake/make. N64 usa
+`C:/proyectos/Our64/tools/build-retrou-n64.sh` y se copia a
+`dist/wiiu/apps/RetroN64U/`; no entra en los targets CMake.
 
 No commitear:
 
@@ -302,13 +313,14 @@ antes de empezar una actividad hay que revisarlo, y cada pendiente terminado
 solo mantiene el estado general.
 
 - NES/SNES/GBA: WUHB estática generada y compilada.
-- N64: `RetroN64U.wuhb` generada desde Our64 (Not64 + GLideN64, clon externo
-  en `C:/proyectos/Our64`) y parcheada para WUT 1.9.2. La base anterior
-  funcionó en hardware el 2026-11-12. TASK-001–011 del port, autorizadas el
-  2026-11-13, están implementadas y compiladas: biblioteca RetroU con tres
-  vistas, búsqueda y favoritos, arranque directo y datos nuevos bajo `retrou`.
-  Esta nueva WUHB no está verificada en Wii U. TASK-012–021 siguen pendientes
-  y requieren autorización adicional (ver `PLAN.md` y `PENDIENTES.md`).
+- N64: `RetroN64U.wuhb` sale de Our64 (Not64 + GLideN64 + AX, clon externo
+  `C:/proyectos/Our64`) con compatibilidad WUT 1.9.2. La base anterior
+  funcionó en hardware el 2026-11-12. TASK-001–020 del port están
+  implementadas o documentadas; la nueva WUHB arrancó en Cemu y escribió
+  `sd:/retrou/n64/retrou_n64.log`. TASK-021 y N64-2 permanecen abiertos
+  hasta completar la matriz en Wii U. El usuario señaló que la pantalla de
+  configuración N64 aún difiere de NES/SNES/GBA; se afinará después como N64-3
+  (ver `PLAN.md` y `PENDIENTES.md`).
 - **Probado en hardware por el usuario**: HOME durante partida, audio del
   core y NES/SNES/GBA con ROMs reales. El 2026-11-12 confirmó además las
   pruebas restantes de navegación, controles, guardados y Assets. El

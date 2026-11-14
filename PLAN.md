@@ -3,8 +3,8 @@
 > **Estado Global:** EN PROCESO (N64-2 permanece pendiente)
 > **Orquestador:** Codex
 > **Fecha:** 2026-11-13
-> **Ejecución:** el usuario autorizó TASK-001 a TASK-011 y después TASK-012 a TASK-016 el 2026-11-13. TASK-017 en adelante requieren autorización adicional. AUD-2 y AUD-3 de GBA quedan aplazados.
-> **Avance:** TASK-001–016 tienen implementación y compilación Wii U. Falta verificar la WUHB nueva en hardware; por ello N64-2 permanece 🔧. Las casillas de verificación de éxito siguen abiertas hasta esa prueba.
+> **Ejecución:** el usuario autorizó TASK-001–011, luego TASK-012–016 y finalmente TASK-017–021 el 2026-11-13. AUD-2 y AUD-3 de GBA quedan aplazados.
+> **Avance:** TASK-001–020 tienen implementación, compilación y documentación. TASK-017 arrancó en Cemu y creó el log N64. TASK-021 depende de la matriz en Wii U, aún sin confirmar; N64-2 permanece 🔧. El ajuste visual de configuración se registró como N64-3 para después.
 
 ## Registro de commits de esta ronda
 
@@ -29,14 +29,22 @@
 | TASK-015 | Our64 | `5992648` |
 | TASK-016 | Our64 | `0773b5f` |
 | Contraste de diálogos TASK-015 | Our64 | `7b72e99` |
+| TASK-017 | Our64 | `869861d` |
+| Compatibilidad WUT 1.9.2 usada por TASK-017 | Our64 | `29de243` |
+| TASK-018 | RetroU | `d1cc7c2` |
+| TASK-019 | RetroU | `9cf0e3b` |
+| TASK-020 | RetroU | `ac8062d` |
 
-Compilación final: `C:/proyectos/Our64/player/build-release/logs/build-20261113-204348.log`.
+Compilación final: `C:/proyectos/Our64/player/build-release/logs/build-20261113-212647.log`.
 WUHB copiada: `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb`, SHA-256
+`9d5a7dabeb0b079f3e14192bf84437cfef5450ca4889e37bba43c37ea9b3190b`.
+La WUHB anterior se conservó como `RetroN64U.previous.wuhb`, SHA-256
 `5f822245644f1634f05ff982561383b8d0bc15068328219d45118ee072b42177`.
 La prueba de capturas de escritorio no pudo arrancar en MSYS2 por falta de
 `freetype2`, `libpng`, `libturbojpeg` y `zlib`; la compilación Wii U y la prueba
 portátil `test_covers` sí pasaron. Cemu arrancó y mostró la biblioteca, pero el
 perfil de entrada disponible no permitió abrir ajustes para inspección visual.
+La nueva WUHB volvió a arrancar en Cemu y generó `sd:/retrou/n64/retrou_n64.log`.
 TASK-016 amplió los cambios a la biblioteca y al menú de descarga porque el
 flujo anterior solo enumeraba juegos sin portada y omitía fondos faltantes.
 
@@ -299,7 +307,7 @@ flujo anterior solo enumeraba juegos sin portada y omitía fondos faltantes.
 
 ---
 
-### [ ] Tarea 17: Finalizar nombre, recursos y log N64
+### [x] Tarea 17: Finalizar nombre, recursos y log N64
 
 - **ID:** TASK-017
 - **Depende de:** TASK-015, TASK-016
@@ -310,12 +318,16 @@ flujo anterior solo enumeraba juegos sin portada y omitía fondos faltantes.
 - **Instrucción para el Worker Local:**
   > "Modificar solo `C:/proyectos/Our64/player/Makefile`: mantener `APP_NAME`/`APP_SHORTNAME` como `RetroU N64`, integrar los recursos autorizados de `C:/proyectos/RetroU/assets/console/n64` y `assets/controles/n64.png`, compilar el log como `retrou_n64.log` dentro de `sd:/retrou/n64`, y conservar Not64, GLideN64, AX y sus licencias. No incluir SDL/Libretro ni alterar los otros targets. Compilar RELEASE=1 y crear commit descriptivo. Imprimir `[TASK_COMPLETE]` al finalizar."
 - **Verificación de Éxito:**
-  - [ ] WUHB arranca en Cemu, se identifica como RetroU N64 y genera log N64 propio.
+  - [x] WUHB arranca en Cemu, se identifica como RetroU N64 y genera log N64 propio.
+- **Implementación real:** además del Makefile se registraron los tres PNG de
+  metadata, la imagen del mando integrada y el filtro de logs `INPUT:`,
+  `PAUSE:` y `ASSETS:`; los cuatro parches WUT existentes quedaron en un
+  commit separado para que el código de la WUHB tenga una revisión fija.
 - **Criterio de Parada:** Imprimir `[TASK_COMPLETE]` al finalizar.
 
 ---
 
-### [ ] Tarea 18: Actualizar el resumen del proyecto
+### [x] Tarea 18: Actualizar el resumen del proyecto
 
 - **ID:** TASK-018
 - **Depende de:** TASK-017
@@ -326,12 +338,12 @@ flujo anterior solo enumeraba juegos sin portada y omitía fondos faltantes.
 - **Instrucción para el Worker Local:**
   > "Modificar solo `C:/proyectos/RetroU/README.md`: describir N64 como WUHB independiente basada en Not64 + GLideN64 + AX y con interfaz RetroU; registrar build en Our64, staging, rutas nuevas bajo `retrou`, lectura compatible de datos anteriores y prueba en hardware pendiente o confirmada según evidencia. Aclarar que N64 no usa Libretro y que AUD-2/AUD-3 de GBA siguen pendientes. Crear commit descriptivo. Imprimir `[TASK_COMPLETE]` al finalizar."
 - **Verificación de Éxito:**
-  - [ ] README coincide con el binario construido y no declara verificación inexistente.
+  - [x] README coincide con el binario construido y no declara verificación inexistente.
 - **Criterio de Parada:** Imprimir `[TASK_COMPLETE]` al finalizar.
 
 ---
 
-### [ ] Tarea 19: Actualizar instrucciones de compilación nativa
+### [x] Tarea 19: Actualizar instrucciones de compilación nativa
 
 - **ID:** TASK-019
 - **Depende de:** TASK-017
@@ -342,12 +354,12 @@ flujo anterior solo enumeraba juegos sin portada y omitía fondos faltantes.
 - **Instrucción para el Worker Local:**
   > "Modificar solo `C:/proyectos/RetroU/native/README.md`: documentar que NES/SNES/GBA salen de CMake y que N64 sale de `C:/proyectos/Our64/tools/build-retrou-n64.sh`, con versión fijada, log de build, destino `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb`, log runtime N64 y procedimiento de volver al hash/WUHB previo. No sugerir un core Libretro N64. Crear commit descriptivo. Imprimir `[TASK_COMPLETE]` al finalizar."
 - **Verificación de Éxito:**
-  - [ ] Las instrucciones de build reproducen N64 sin tocar los tres targets GX2.
+  - [x] Las instrucciones de build reproducen N64 sin tocar los tres targets GX2.
 - **Criterio de Parada:** Imprimir `[TASK_COMPLETE]` al finalizar.
 
 ---
 
-### [ ] Tarea 20: Documentar la ronda de hardware N64
+### [x] Tarea 20: Documentar la ronda de hardware N64
 
 - **ID:** TASK-020
 - **Depende de:** TASK-017
@@ -358,7 +370,7 @@ flujo anterior solo enumeraba juegos sin portada y omitía fondos faltantes.
 - **Instrucción para el Worker Local:**
   > "Modificar solo `C:/proyectos/RetroU/docs/hardware-validation.md`: agregar pruebas N64 en Wii U para arranque, ROMs `.z64/.n64/.v64`, grilla/lista/carrusel, favoritos, búsqueda, portadas, GamePad/Pro/Classic/Wiimote/Nunchuk, 1–4 jugadores, reconexión, atajos de menú, guardado SRAM, cuatro estados, audio AX, retorno y HOME, salida con descarga activa y datos antiguos. Anotar hash de cada WUHB, hash del commit Our64 y ruta `sd:/retrou/n64/retrou_n64.log`. No afirmar que pasó ninguna prueba no realizada. Crear commit descriptivo. Imprimir `[TASK_COMPLETE]` al finalizar."
 - **Verificación de Éxito:**
-  - [ ] La matriz diferencia claramente pruebas en Cemu, en hardware y pendientes.
+  - [x] La matriz diferencia claramente pruebas en Cemu, en hardware y pendientes.
 - **Criterio de Parada:** Imprimir `[TASK_COMPLETE]` al finalizar.
 
 ---

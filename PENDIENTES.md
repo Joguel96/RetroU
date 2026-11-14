@@ -131,7 +131,7 @@ Guía de la ronda en Wii U: `docs/hardware-validation.md`.
 | N64-4 | En el buscador N64, B borra un carácter y solo sale si la consulta está vacía; X acepta y cierra | 🔧 2026-11-13 (Codex, Our64) |
 | N64-5 | Sustituir la descarga de Our64 por `retrou_assets` en el frontend N64 de RetroU: índice, portadas y fondos desde `thumbnails.libretro.com/Nintendo - Nintendo 64/`; el cierre en Cemu se reprodujo y el log termina tras `ACIsApplicationConnected`. No reparar el cliente `nn::ac` de Our64. | 🔧 2026-11-14 |
 | N64-6 | Integrar en Controles RetroU el flujo de «Pulsa A para conectar» por puerto: acceso directo en NES/SNES/GBA compilado, pendiente verificar en Wii U; adaptar también N64 con estilo RetroU | 🔧 2026-11-13 (Codex, main/Our64) |
-| N64-7 | Reemplazar biblioteca, ajustes, controles, búsqueda, assets y demás frontend de Our64 por el código de RetroU. Extraer de Our64 solo el motor N64 y adaptar su ejecución al ciclo de RetroU; el RPX actual de Our64 no es un núcleo aislado. Conservar descarga automática y configuración independiente N64. | 🔧 2026-11-14 |
+| N64-7 | Reemplazar biblioteca, ajustes, controles, búsqueda, assets y demás frontend de Our64 por el código de RetroU. Extraer de Our64 solo el motor N64 y adaptar su ejecución al ciclo de RetroU; el RPX actual de Our64 no es un núcleo aislado. Conservar descarga automática y configuración independiente N64. Primer hito: biblioteca estática del motor compilada sin frontend de Our64; falta enlazarla y ejecutar ROMs desde RetroU. | 🔧 2026-11-14 |
 
 ## 10. Audio del core
 

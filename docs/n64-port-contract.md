@@ -73,6 +73,19 @@ Secuencia verificable:
    biblioteca, tres vistas, controles, ajustes, descargas y cierre primero en
    Cemu y después en Wii U física. Solo entonces cerrar N64-2/N64-5/N64-7.
 
+Primer hito de extracción (2026-11-14):
+`native/cores/build-n64-engine.sh` compila la revisión fija
+`d3c56db253cd1b20987eb33ecd5797c60e527b64` en
+`.cores/n64/not64_gliden64_wiiu.a`. El archivo contiene 172 objetos del motor
+Not64/GLideN64 y servicios de entrada, audio y guardado; excluye el `main`,
+biblioteca, ajustes, carátulas, menús y descargador de Our64. El log de la
+primera compilación exitosa está en
+`native/build/logs/n64-engine-20261114-002235.log`; auditoría de miembros en
+`native/build/logs/n64-engine-20261114-002510.log`. SHA-256 del archivo:
+`829ef3f0aec58b685ea6b24dccb05b3b3b3d86ebbeedfabb73994a03ce5f538a`.
+Es una biblioteca de objetos, aún sin entrada ni puente al frontend RetroU;
+no sustituye todavía a la WUHB N64 provisional.
+
 La WUHB provisional permanece disponible para revertir y comparar el motor,
 pero su UI y descargador no son la base del port definitivo.
 

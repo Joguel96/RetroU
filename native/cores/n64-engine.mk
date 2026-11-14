@@ -3,12 +3,12 @@
 # Our64 application entry point, library, settings, artwork and UI stay out.
 N64_ENGINE_OUT ?= $(CURDIR)/../../.cores/n64/not64_gliden64_wiiu.a
 
+N64_ENGINE_BENCH := our64_jit lwp_heap romcache
 N64_ENGINE_PLAYER := plugins audio video alloc_stats saves saves_wiiu states \
-	states_wiiu writer input input_wiiu gamedb tpak tpak_wiiu mocha_wiiu \
-	usbfs usbfs_wiiu cpuprof gb_tower_hle
+	writer gamedb tpak tpak_wiiu gb_tower_hle
 N64_ENGINE_OBJECTS := \
 	$(addprefix $(BUILD)/not64/,$(NOT64_SRC:.c=.o)) \
-	$(addprefix $(BUILD)/bench/,$(BENCH_SRC:.c=.o)) \
+	$(addprefix $(BUILD)/bench/,$(addsuffix .o,$(N64_ENGINE_BENCH))) \
 	$(addprefix $(BUILD)/source/,$(addsuffix .o,$(N64_ENGINE_PLAYER))) \
 	$(BUILD)/minilzo.o $(BUILD)/cxd4.o $(BUILD)/replay/core_wiiu.o \
 	$(addprefix $(BUILD)/gliden64/,$(GLIDEN64_CORE:.cpp=.o) $(GLIDEN64_C:.c=.o))

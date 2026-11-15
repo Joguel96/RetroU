@@ -43,11 +43,23 @@ else
 fi
 echo "RetroU graphics adapter SHA-256: $(sha256sum "$patched_video")"
 
+patched_common="$root/.cores/n64/gliden64-common-retrou.cpp"
+patched_window="$root/.cores/n64/gliden64-window-retrou.cpp"
+if command -v python3 >/dev/null 2>&1; then
+    python3 "$here/patch-n64-gliden64.py" "$source_dir/third_party/gliden64/src" "$patched_common" "$patched_window"
+elif command -v python >/dev/null 2>&1; then
+    python "$here/patch-n64-gliden64.py" "$source_dir/third_party/gliden64/src" "$patched_common" "$patched_window"
+else
+    py -3 "$here/patch-n64-gliden64.py" "$source_dir/third_party/gliden64/src" "$patched_common" "$patched_window"
+fi
+echo "RetroU GLideN64 diagnostics SHA-256: $(sha256sum "$patched_common" "$patched_window")"
+
 : "${DEVKITPRO:=/opt/devkitpro}"
 export DEVKITPRO
 rm -f "$archive"
 make -C "$source_dir/player" -f Makefile -f "$here/n64-engine.mk" \
     RELEASE=1 N64_ENGINE_OUT="$archive" N64_ENGINE_PATCHED_VIDEO="$patched_video" \
+    N64_ENGINE_PATCHED_GLIDEN64_COMMON="$patched_common" N64_ENGINE_PATCHED_GLIDEN64_WINDOW="$patched_window" \
     n64_engine -j"${JOBS:-4}"
 ar_bin="$DEVKITPRO/devkitPPC/bin/powerpc-eabi-ar"
 "$ar_bin" t "$archive" > "$root/.cores/n64/archive-members.txt"

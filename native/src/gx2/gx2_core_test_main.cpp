@@ -3045,20 +3045,21 @@ int main()
                 drawAlphaBar();
                 const int count = static_cast<int>(visible.size());
                 const bool nesCarousel = std::string(RETROU_CORE_SYSTEM) == "nes";
-                const bool snesCarousel = std::string(RETROU_CORE_SYSTEM) == "snes";
+                const bool wideCarousel = std::string(RETROU_CORE_SYSTEM) == "snes" ||
+                                          std::string(RETROU_CORE_SYSTEM) == "n64";
                 const float sideX = 40.0f;
-                const float sideY = snesCarousel ? 230.0f : 185.0f;
-                const float sideW = snesCarousel ? 270.0f : 230.0f;
-                const float sideH = snesCarousel ? 260.0f : 330.0f;
-                const float rightX = snesCarousel ? 970.0f : 1010.0f;
+                const float sideY = wideCarousel ? 230.0f : 185.0f;
+                const float sideW = wideCarousel ? 270.0f : 230.0f;
+                const float sideH = wideCarousel ? 260.0f : 330.0f;
+                const float rightX = wideCarousel ? 970.0f : 1010.0f;
                 if (focused > 0 && showCovers) {
                     const Texture cover = getCover(visible[focused - 1]);
-                    if (nesCarousel || snesCarousel) drawTextureContain(cover, sideX, sideY, sideW, sideH);
+                    if (nesCarousel || wideCarousel) drawTextureContain(cover, sideX, sideY, sideW, sideH);
                     else drawTextureCover(cover, sideX, sideY, sideW, sideH);
                 }
                 if (focused + 1 < count && showCovers) {
                     const Texture cover = getCover(visible[focused + 1]);
-                    if (nesCarousel || snesCarousel) drawTextureContain(cover, rightX, sideY, sideW, sideH);
+                    if (nesCarousel || wideCarousel) drawTextureContain(cover, rightX, sideY, sideW, sideH);
                     else drawTextureCover(cover, rightX, sideY, sideW, sideH);
                 }
                 drawRoundRect(295.0f, 130.0f, 690.0f, 450.0f, 20.0f, panel);
@@ -3066,7 +3067,7 @@ int main()
                     const Texture cover = getCover(visible[focused]);
                     if (nesCarousel)
                         drawTextureContain(cover, 438.0f, 143.0f, 404.0f, 424.0f);
-                    else if (snesCarousel)
+                    else if (wideCarousel)
                         drawTextureContain(cover, 308.0f, 143.0f, 664.0f, 424.0f);
                     else drawTextureCover(cover, 308.0f, 143.0f, 664.0f, 424.0f);
                 }

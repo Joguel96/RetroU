@@ -11,8 +11,10 @@ N64_ENGINE_OBJECTS := \
 	$(addprefix $(BUILD)/bench/,$(addsuffix .o,$(N64_ENGINE_BENCH))) \
 	$(addprefix $(BUILD)/source/,$(addsuffix .o,$(N64_ENGINE_PLAYER))) \
 	$(BUILD)/n64-retrou-video.o \
+	$(BUILD)/n64-retrou-gliden64-common.o $(BUILD)/n64-retrou-gliden64-window.o \
 	$(BUILD)/minilzo.o $(BUILD)/cxd4.o $(BUILD)/replay/core_wiiu.o \
-	$(addprefix $(BUILD)/gliden64/,$(GLIDEN64_CORE:.cpp=.o) $(GLIDEN64_C:.c=.o))
+	$(filter-out $(BUILD)/gliden64/common/CommonAPIImpl_common.o $(BUILD)/gliden64/DisplayWindow.o, \
+	$(addprefix $(BUILD)/gliden64/,$(GLIDEN64_CORE:.cpp=.o) $(GLIDEN64_C:.c=.o)))
 
 .PHONY: n64_engine
 
@@ -20,6 +22,12 @@ $(BUILD)/n64-retrou-video.o: $(N64_ENGINE_PATCHED_VIDEO)
 	@mkdir -p $(dir $@)
 	@echo n64-retrou-video.cpp
 	@$(CXX) -MMD -MP $(CXXFLAGS) -I$(CURDIR)/source -Wall -c $< -o $@
+$(BUILD)/n64-retrou-gliden64-common.o: $(N64_ENGINE_PATCHED_GLIDEN64_COMMON)
+	@mkdir -p $(dir $@)
+	@$(CXX) -MMD -MP $(CXXFLAGS) -c $< -o $@
+$(BUILD)/n64-retrou-gliden64-window.o: $(N64_ENGINE_PATCHED_GLIDEN64_WINDOW)
+	@mkdir -p $(dir $@)
+	@$(CXX) -MMD -MP $(CXXFLAGS) -c $< -o $@
 n64_engine: $(N64_ENGINE_OUT)
 
 $(N64_ENGINE_OUT): $(N64_ENGINE_OBJECTS)

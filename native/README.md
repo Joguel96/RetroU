@@ -91,8 +91,9 @@ con ambas pantallas; la selección de salida aún requiere prueba en Wii U.
   en `view.conf`, junto con la espera del backdrop (0, 1, 3, 5 o 10 s;
   3 s iniciales). **Y** cambia entre cards, lista y carrusel;
   **X** marca la ROM y su estrella se muestra en lista y carrusel.
-- El carrusel NES muestra las portadas verticales; el SNES ajusta las imágenes
-  completas en el centro y en los laterales, sin recortarlas.
+- El carrusel NES muestra las portadas verticales; SNES y N64 ajustan las imágenes
+  completas en el centro y en los laterales, sin recortarlas. N64 requiere
+  comprobar el cambio visual en la WUHB de desarrollo.
 - El touch del GamePad selecciona juegos y opciones en la UI.
 - En Ajustes → Controles se elige la combinación de apertura del menú por
   GamePad, Pro/Classic y Wii Remote/Nunchuk. Es global para NES, SNES y GBA;
@@ -128,7 +129,9 @@ en el propio script. Si CafeGLSL ya está instalado localmente, se puede indicar
 Our64. El motor de `.cores/n64/` se enlaza al target interno
 `retrou_n64_gx2`; su WUHB de desarrollo se copia a una carpeta propia en
 `dist` para pruebas y no sustituye `RetroN64U.wuhb`. Aún se bloquea en el
-inicio de video de GLideN64 al abrir una ROM. `cores/check-n64-bridge.sh`
+inicio de video de GLideN64 al abrir una ROM. El log N64 de desarrollo registra
+ahora los pasos internos de `RomOpen` para localizar el bloqueo sin controlar
+Cemu. `cores/check-n64-bridge.sh`
 verifica el enlace del motor con los adaptadores de video, cuatro mandos y
 cuatro estados de RetroU, sin ejecutar una ROM. Véase
 `docs/n64-port-contract.md`.

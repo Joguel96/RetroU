@@ -56,7 +56,7 @@ add_custom_command(
 # Per-console default thumbnail (the RetroU icon), embedded as an object so it
 # does not depend on the SD card. The symbol is always _binary_icon_png_start.
 set(ICON_OBJECT_DIR "${CMAKE_CURRENT_BINARY_DIR}/embedded_icons")
-foreach(ICON_SYSTEM nes snes gba)
+foreach(ICON_SYSTEM nes snes gba n64)
     set(ICON_OBJ_${ICON_SYSTEM} "${ICON_OBJECT_DIR}/${ICON_SYSTEM}_icon.o")
     add_custom_command(
         OUTPUT "${ICON_OBJ_${ICON_SYSTEM}}"
@@ -72,7 +72,7 @@ endforeach()
 # CTRL-3: controller image per console (assets/controles/<system>.png),
 # embedded so the mapping editor does not depend on the SD card.
 set(PAD_OBJECT_DIR "${CMAKE_CURRENT_BINARY_DIR}/embedded_pads")
-foreach(PAD_SYSTEM nes snes gba)
+foreach(PAD_SYSTEM nes snes gba n64)
     set(PAD_OBJ_${PAD_SYSTEM} "${PAD_OBJECT_DIR}/${PAD_SYSTEM}_pad.o")
     add_custom_command(
         OUTPUT "${PAD_OBJ_${PAD_SYSTEM}}"
@@ -298,6 +298,85 @@ endfunction()
 add_gx2_retrou(retrou_nes_gx2 nes "NES" "RetroU NES" "${FCEUMM_CORE}")
 add_gx2_retrou(retrou_snes_gx2 snes "SNES" "RetroU SNES" "${SNES9X_CORE}")
 add_gx2_retrou(retrou_gba_gx2 gba "GBA" "RetroU GBA" "${MGBA_CORE}")
+
+# Development build of the definitive N64 port. Keep its staged bundle separate
+# from the provisional Our64-based RetroN64U app until the port is verified.
+set(N64_ENGINE_CORE "${CMAKE_CURRENT_SOURCE_DIR}/../.cores/n64/not64_gliden64_wiiu.a"
+    CACHE FILEPATH "extracted Not64 and GLideN64 engine")
+set(N64_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/../.cores/our64")
+add_executable(retrou_n64_gx2 EXCLUDE_FROM_ALL
+    src/gx2/gx2_core_test_main.cpp
+    src/gx2/gx2_renderer.cpp
+    src/gx2/gx2_text.cpp
+    src/gx2/gx2_image.cpp
+    src/gx2/retrou_data.cpp
+    src/wpad_input.cpp
+    src/retrou_assets.cpp
+    src/n64/n64_engine.c
+    src/n64/n64_report.c
+    src/n64/n64_states.c
+    src/n64/n64_video.cpp
+    src/n64/n64_input.cpp
+    src/n64/n64_session.cpp
+    "${FONT_REGULAR_OBJ}"
+    "${ICON_OBJ_n64}"
+    "${PAD_OBJ_n64}"
+)
+set_source_files_properties("${ICON_OBJ_n64}" "${PAD_OBJ_n64}"
+    PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
+set_source_files_properties(src/n64/n64_engine.c src/n64/n64_states.c
+    PROPERTIES COMPILE_OPTIONS
+        "-std=gnu23;-fgnu89-inline;-fno-strict-aliasing;-Wno-old-style-declaration")
+target_compile_definitions(retrou_n64_gx2 PRIVATE
+    RETROU_N64_ENGINE=1
+    RETROU_CORE_SYSTEM="n64"
+    RETROU_CORE_LABEL="N64"
+    RETROU_PAD_PNG=n64
+    __WIIU__ __WUT__ HW_RVL NOASM USE_EXPANSION USE_RECOMP_CACHE PPC_DYNAREC FASTMEM RELEASE PROFILE
+)
+target_include_directories(retrou_n64_gx2 PRIVATE
+    src
+    "${LIBRETRO_COMMON}/include"
+    "${N64_SOURCE}/bench/shim"
+    "${N64_SOURCE}/bench/source"
+    "${N64_SOURCE}"
+    "${N64_SOURCE}/player/source"
+    "${N64_SOURCE}/third_party/not64"
+    "${N64_SOURCE}/third_party/minilzo"
+    /opt/devkitpro/wut/include
+    /opt/devkitpro/portlibs/wiiu/include
+    /opt/devkitpro/portlibs/wiiu/include/SDL2
+    /opt/devkitpro/portlibs/ppc/include
+    /opt/devkitpro/portlibs/ppc/include/freetype2
+)
+target_compile_options(retrou_n64_gx2 PRIVATE -Wall -Wextra)
+target_link_options(retrou_n64_gx2 PRIVATE -Wl,--wrap=doRspCycles)
+target_link_libraries(retrou_n64_gx2 PRIVATE
+    "${N64_ENGINE_CORE}"
+    "${N64_SOURCE}/third_party/cafeglsl/lib/libcafeglsl.a"
+    turbojpeg
+    SDL2 curl mbedtls mbedx509 mbedcrypto
+    freetype png16 z bz2 brotlidec brotlicommon m
+)
+wut_create_rpx(retrou_n64_gx2)
+wut_create_wuhb(retrou_n64_gx2
+    CONTENT    "${CMAKE_CURRENT_SOURCE_DIR}/content"
+    NAME       "RetroU N64 (desarrollo)"
+    SHORTNAME  "RetroU N64 Dev"
+    AUTHOR     "joguel96"
+    ICON       "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/n64/icon.png"
+    TVSPLASH   "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/n64/tv-splash.png"
+    DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/n64/drc-splash.png"
+)
+add_custom_target(stage_n64_dev
+    COMMAND "${CMAKE_COMMAND}" -E make_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroN64U-Dev"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "${CMAKE_CURRENT_BINARY_DIR}/retrou_n64_gx2.wuhb"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroN64U-Dev/RetroN64U-Dev.wuhb"
+    DEPENDS retrou_n64_gx2_wuhb
+    COMMENT "Staging the separate RetroU N64 development bundle"
+)
 
 add_custom_target(stage_wuhb ALL
     COMMAND "${CMAKE_COMMAND}" -E make_directory

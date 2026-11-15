@@ -43,11 +43,11 @@ includes=(
     "-I$source_dir/bench/source" "-I$DEVKITPRO/wut/include" \
     -c "$root/native/src/n64/n64_video.cpp" -o "$out/video.o"
 "$cxx" -std=gnu++17 -O2 -Wall -Wextra -Werror \
-    "-I$root/native/src" "-I$source_dir/player/source" \
+    "-I$root/native/src" "-I$source_dir" "-I$source_dir/player/source" \
     "-I$DEVKITPRO/wut/include" \
     -c "$root/native/src/n64/n64_input.cpp" -o "$out/input.o"
 "$cxx" -std=gnu++17 -O2 -Wall -Wextra -Werror \
-    "-I$root/native/src" "-I$source_dir/player/source" \
+    "-I$root/native/src" "-I$source_dir" "-I$source_dir/player/source" \
     "-I$DEVKITPRO/wut/include" \
     -c "$root/native/src/n64/n64_session.cpp" -o "$out/session.o"
 "$cxx" -std=gnu++17 -O2 -Wall -Wextra -Werror \

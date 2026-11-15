@@ -57,6 +57,35 @@ def main() -> None:
         '\tg_gfx_ok = false;\n'
         '\tg_ready = false;\n}',
     )
+    source = replace_once(
+        source,
+        '\tif (!g_plugin_up && PluginStartup(nullptr, nullptr, debug) != M64ERR_SUCCESS) {',
+        '\treport_line("N64 video: PluginStartup begin");\n'
+        '\tif (!g_plugin_up && PluginStartup(nullptr, nullptr, debug) != M64ERR_SUCCESS) {',
+    )
+    source = replace_once(
+        source,
+        '\tg_plugin_up = true;\n\tour64_gx2_shader_progress = ui_gfx_loading_progress;\n'
+        '\tif (!InitiateGFX(gi)) {',
+        '\tg_plugin_up = true;\n'
+        '\treport_line("N64 video: PluginStartup done");\n'
+        '\tour64_gx2_shader_progress = ui_gfx_loading_progress;\n'
+        '\treport_line("N64 video: InitiateGFX begin");\n'
+        '\tif (!InitiateGFX(gi)) {',
+    )
+    source = replace_once(
+        source,
+        '\tif (!RomOpen()) {',
+        '\treport_line("N64 video: InitiateGFX done");\n'
+        '\treport_line("N64 video: RomOpen begin");\n'
+        '\tif (!RomOpen()) {',
+    )
+    source = replace_once(
+        source,
+        '\tViStatusChanged();\n\tViWidthChanged();\n\tg_started = true;',
+        '\treport_line("N64 video: RomOpen done");\n'
+        '\tViStatusChanged();\n\tViWidthChanged();\n\tg_started = true;',
+    )
     target = Path(sys.argv[2])
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(source, encoding="utf-8")

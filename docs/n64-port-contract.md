@@ -143,10 +143,24 @@ la partida. El puente de entrada ahora conserva el tipo de cada mando externo
 y vuelve a reclamar su slot tras una reconexión. El enlace diagnóstico pasó
 en `native/build/logs/n64-bridge-20261114-082241.log` (ELF SHA-256
 `7b4f05c9614a280cff6e9acef924e95145ca58f19de57755dc65bb40dfc5adfd`);
-la WUHB provisional sigue
-sin reemplazarse. La fuente GX2 de RetroU ya tiene `text::unloadFont()` para
-liberar el atlas antes del intercambio de renderizador. Falta conectar esta
-sesión al bucle de biblioteca y comprobar su comportamiento en Cemu y Wii U.
+la WUHB provisional sigue sin reemplazarse. La fuente GX2 de RetroU tiene
+`text::unloadFont()` para liberar el atlas antes del intercambio de
+renderizador. El target interno `retrou_n64_gx2` ya abre la biblioteca de
+RetroU en Cemu y se copia a
+`dist/wiiu/apps/RetroN64U-Dev/RetroN64U-Dev.wuhb` con
+`native/build-retrou-n64-dev.sh`. Lee la ROM e inicia la CPU, pero la prueba
+anterior quedó bloqueada dentro de `video_start` de GLideN64. La compilación
+actual añade trazas para localizar la llamada exacta; no se ha verificado
+todavía en Wii U.
+
+En Our64 original, `main.c` inicia `video_thread_start` una sola vez al
+arrancar la app, antes de la biblioteca. La carga de cada juego ejecuta
+`rom_read`, `init_memory`, `player_plugins_init`, configura guardados y
+entrada, hace `cpu_init`, `video_set_picture` y finalmente `video_start`.
+El target interno de RetroU inicia el hilo gráfico después de liberar su
+propio GX2, al abrir la ROM. Esa diferencia en la propiedad del dispositivo
+gráfico es la primera hipótesis a comprobar; aún no demuestra la causa del
+bloqueo.
 
 La WUHB provisional permanece disponible para revertir y comparar el motor,
 pero su UI y descargador no son la base del port definitivo.

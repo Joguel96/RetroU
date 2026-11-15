@@ -325,6 +325,11 @@ solo mantiene el estado general.
   configuración N64 aún difiere de NES/SNES/GBA; N64-3 y N64-7 registran la
   paridad visual y funcional pendiente. La WUHB diagnóstica de `d3c56db`
   incorpora trazas persistentes `ASSETS:` y la corrección del buscador.
+- El port definitivo tiene un target de desarrollo `retrou_n64_gx2` que
+  enlaza el motor extraído dentro del frontend RetroU. El build separado
+  `native/build-retrou-n64-dev.sh` deja su WUHB en
+  `dist/wiiu/apps/RetroN64U-Dev/`; no reemplaza la provisional. La biblioteca
+  abrió en Cemu, pero falta resolver la inicialización de video al jugar.
 - **Probado en hardware por el usuario**: HOME durante partida, audio del
   core y NES/SNES/GBA con ROMs reales. El 2026-11-12 confirmó además las
   pruebas restantes de navegación, controles, guardados y Assets. El

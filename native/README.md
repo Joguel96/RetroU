@@ -125,10 +125,13 @@ El port N64 está en extracción. `cores/build-n64-engine.sh` genera una
 biblioteca estática de Not64/GLideN64 a partir de la revisión de Our64 fijada
 en el propio script. Si CafeGLSL ya está instalado localmente, se puede indicar
 `CAFEGLSL_SOURCE`; de otro modo el script usa el descargador verificado de
-Our64. El resultado en `.cores/n64/` aún no se enlaza a una WUHB RetroU y no
-se distribuye. `cores/check-n64-bridge.sh` verifica el enlace del motor con
-los adaptadores de video, cuatro mandos y cuatro estados de RetroU, sin
-ejecutar una ROM. Véase `docs/n64-port-contract.md`.
+Our64. El motor de `.cores/n64/` se enlaza al target interno
+`retrou_n64_gx2`; su WUHB de desarrollo se copia a una carpeta propia en
+`dist` para pruebas y no sustituye `RetroN64U.wuhb`. Aún se bloquea en el
+inicio de video de GLideN64 al abrir una ROM. `cores/check-n64-bridge.sh`
+verifica el enlace del motor con los adaptadores de video, cuatro mandos y
+cuatro estados de RetroU, sin ejecutar una ROM. Véase
+`docs/n64-port-contract.md`.
 
 ## Controles y verificación
 
@@ -191,7 +194,23 @@ native/build/retrou_snes_gx2.wuhb
 native/build/retrou_gba_gx2.wuhb
 ```
 
-### Compilar y recuperar RetroU N64
+### Compilar el port N64 de desarrollo
+
+Desde MSYS2/devkitPro:
+
+```sh
+bash native/build-retrou-n64-dev.sh
+```
+
+El script reconstruye el motor fijado, compila el frontend RetroU y copia
+`native/build/retrou_n64_gx2.wuhb` a
+`dist/wiiu/apps/RetroN64U-Dev/RetroN64U-Dev.wuhb`. Guarda logs en
+`native/build/logs/` y registra el SHA-256 del binario copiado. La app lleva
+el nombre `RetroU N64 Dev` y un Title ID distinto; todavía no está lista
+para reemplazar la app N64 de uso normal. Al probarla, conservar
+`sd:/retrou/retrou_rpx.log` y `sd:/retrou/n64/retrou_n64.log`.
+
+### Compilar y recuperar la WUHB provisional de N64
 
 Desde MSYS2/devkitPro, con el clon Our64 fijado en `29de243`:
 

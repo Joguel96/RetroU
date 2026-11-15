@@ -30,6 +30,10 @@ Not64, GLideN64 y audio AX. La UI, los datos y los guardados son de RetroU.
   `C:/proyectos/Our64/tools/build-retrou-n64.sh` compila y copia la WUHB,
   conserva el binario previo y guarda un log en `player/build-release/logs/`.
   El log de ejecución N64 es `sd:/retrou/n64/retrou_n64.log`.
+  El port definitivo en desarrollo enlaza Not64 + GLideN64 al frontend RetroU;
+  `bash native/build-retrou-n64-dev.sh` lo copia por separado a
+  `dist/wiiu/apps/RetroN64U-Dev/RetroN64U-Dev.wuhb`. Todavía no completa el
+  inicio de video de una ROM y no sustituye la WUHB anterior.
 - **Mapeo de controles GX2**: editor estilo Our64 por acción del core, con varias
   asignaciones por acción, `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás
   y persistencia explícita de acciones `none` en `control-map.conf` formato `v2`.

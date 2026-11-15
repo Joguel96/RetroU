@@ -6,6 +6,12 @@
 #include "retrou_assets.hpp"
 #include "rpl_core.hpp"
 #include "wpad_input.hpp"
+#ifdef RETROU_N64_ENGINE
+#include "n64/n64_frontend_core.hpp"
+using FrontendCore = N64FrontendCore;
+#else
+using FrontendCore = retrou::RplCore;
+#endif
 
 #include <SDL.h>
 #include <atomic>
@@ -86,7 +92,7 @@ static void bootLog(const char *stage, bool truncate = false)
     }
 }
 
-static bool saveFrameThumbnail(const RplCore &core, const std::string &path)
+static bool saveFrameThumbnail(const FrontendCore &core, const std::string &path)
 {
     if (!core.hasFrame()) return false;
     constexpr int width = 160, height = 120;
@@ -1525,7 +1531,7 @@ int main()
     text::prewarm("Cerrar core", 20);
     text::prewarm(RETROU_CORE_LABEL, 12);
 
-    RplCore core;
+    FrontendCore core;
     std::string error;
     bootLog("before_static_core");
     if (!core.loadStaticCore(nullptr, nullptr, error)) {
@@ -1639,6 +1645,11 @@ int main()
     refreshControllers();
 
     bool inGame = false;
+#ifdef RETROU_N64_ENGINE
+    bool n64Running = false;
+    bool n64LaunchPending = false;
+    bool n64NeedsGx2Restore = false;
+#endif
     auto persistControls = [&]() {
         if (inGame && activeRom >= 0) {
             bootLog(saveControlOptions(library.sd_root, player1Device, player2Device,
@@ -1681,6 +1692,54 @@ int main()
     bool waitingRelease = false;
     bool touchHeld = false;
     Texture frameTex = -1;
+#ifdef RETROU_N64_ENGINE
+    auto releaseGx2ForN64 = [&]() {
+        bootLog("n64_gx2_release_begin");
+        clearCoverCache();
+        bootLog("n64_gx2_release_covers");
+        for (auto &entry : backdropCache)
+            if (entry.second >= 0) destroyTexture(entry.second);
+        backdropCache.clear();
+        bootLog("n64_gx2_release_backdrops");
+        for (Texture &texture : slotThumbs) {
+            if (texture >= 0) destroyTexture(texture);
+            texture = -1;
+        }
+        if (frameTex >= 0) destroyTexture(frameTex);
+        frameTex = -1;
+        if (padTexture >= 0) destroyTexture(padTexture);
+        padTexture = -1;
+        if (thumbTex >= 0) destroyTexture(thumbTex);
+        thumbTex = -2;
+        bootLog("n64_gx2_release_textures");
+        if (g_uiDevice) {
+            SDL_ClearQueuedAudio(g_uiDevice);
+            SDL_PauseAudioDevice(g_uiDevice, 1);
+        }
+        bootLog("n64_gx2_release_audio");
+        text::unloadFont();
+        bootLog("n64_gx2_release_font");
+        shutdown();
+        bootLog("n64_gx2_released");
+    };
+    auto restoreGx2AfterN64 = [&]() -> bool {
+        if (!init()) return false;
+        if (!text::loadFont(_binary_ui_ttf_start,
+                            static_cast<size_t>(_binary_ui_ttf_end - _binary_ui_ttf_start))) {
+            shutdown();
+            return false;
+        }
+        setOutputMode(videoOutput);
+        thumbTex = image::loadFromMemory(
+            _binary_icon_png_start,
+            static_cast<size_t>(_binary_icon_png_end - _binary_icon_png_start));
+        if (thumbTex < 0) thumbTex = makeCover(54, 72, 120, 10, 14, 24);
+        if (g_uiDevice) SDL_PauseAudioDevice(g_uiDevice, 0);
+        n64NeedsGx2Restore = false;
+        bootLog("n64_gx2_restored");
+        return true;
+    };
+#endif
 
     const Color white{255, 255, 255, 255};
     const Color muted{148, 163, 184, 255};
@@ -1698,13 +1757,51 @@ int main()
         // runs in this loop) and nothing is drawn until we get the screen
         // back (same pattern as RetroArch's Wii U port).
         const ProcUIStatus pui = ProcUIProcessMessages(TRUE);
-        if (pui == PROCUI_STATUS_EXITING) break;
-        if (pui == PROCUI_STATUS_RELEASE_FOREGROUND) ProcUIDrawDoneRelease();
+        if (pui == PROCUI_STATUS_EXITING) {
+#ifdef RETROU_N64_ENGINE
+            if (n64Running) { core.requestStop(); core.join(); n64Running = false; }
+#endif
+            break;
+        }
+        if (pui == PROCUI_STATUS_RELEASE_FOREGROUND) {
+#ifdef RETROU_N64_ENGINE
+            if (n64Running) {
+                core.requestStop();
+                core.join();
+                n64Running = false;
+                n64NeedsGx2Restore = true;
+                inGame = false;
+                core.unloadGame();
+                activeRom = -1;
+                bootLog("n64_stopped_for_foreground_release");
+            }
+#endif
+            ProcUIDrawDoneRelease();
+        }
         if (!ProcUIInForeground()) {
             waitingRelease = true; // do not replay the buttons held at the switch
             OSSleepTicks(OSMillisecondsToTicks(16));
             continue;
         }
+#ifdef RETROU_N64_ENGINE
+        if (n64Running) {
+            if (!core.finished()) {
+                OSSleepTicks(OSMillisecondsToTicks(16));
+                continue;
+            }
+            const int result = core.join();
+            n64Running = false;
+            n64NeedsGx2Restore = true;
+            inGame = false;
+            core.unloadGame();
+            activeRom = -1;
+            bootLog(("n64_session_finished result=" + std::to_string(result)).c_str());
+        }
+        if (n64NeedsGx2Restore && !restoreGx2AfterN64()) {
+            bootLog("n64_gx2_restore_failed");
+            break;
+        }
+#endif
 
         const Color bg = kThemes[themeIndex].bgBottom;
         const Color bgTop = kThemes[themeIndex].bgTop;
@@ -2409,6 +2506,9 @@ int main()
                             refreshControllers();
                             inGame = true;
                             slotMode = 0;
+#ifdef RETROU_N64_ENGINE
+                            n64LaunchPending = true;
+#endif
                         }
                     } else if (navTrigger & VPAD_BUTTON_X) {
                         RomEntry &rom = library.roms[visible[focused]];
@@ -2441,6 +2541,24 @@ int main()
             }
         }
 
+#ifdef RETROU_N64_ENGINE
+        if (n64LaunchPending) {
+            n64LaunchPending = false;
+            releaseGx2ForN64();
+            mkdir((library.sd_root + "/retrou/n64").c_str(), 0777);
+            if (core.startGame(library.sd_root + "/retrou/n64")) {
+                n64Running = true;
+                bootLog(("n64_session_started rom=" + library.roms[activeRom].path).c_str());
+                continue;
+            }
+            bootLog("n64_session_start_failed");
+            n64NeedsGx2Restore = true;
+            inGame = false;
+            core.unloadGame();
+            activeRom = -1;
+            if (!restoreGx2AfterN64()) break;
+        }
+#endif
         bool wpadReleased = true;
         for (const WpadSnapshot &s : wpadStates) wpadReleased &= !s.connected || s.buttons == 0;
         if (waitingRelease && !coreMenu &&

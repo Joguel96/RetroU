@@ -1,6 +1,6 @@
 #pragma once
 
-#include "input.h" // evaluador genérico del motor N64; sin lector de Our64
+#include "player/source/input.h" // evaluador genérico del motor N64; sin lector de Our64
 
 #include <array>
 #include <cstdint>

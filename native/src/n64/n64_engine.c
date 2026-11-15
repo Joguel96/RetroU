@@ -172,9 +172,12 @@ int n64_engine_play(const char *rom_path, const char *root, const N64EngineHost 
     int cpu_up = 0, memory_up = 0, saves_up = 0, writer_up = 0, states_up = 0;
     int rom_opened = 0, video_up = 0;
     unsigned gfx_core = OSGetCodegenCore() == 1 ? 2 : 1;
+    report_line("N64: iniciando hilo grafico core=%u", gfx_core);
     if (video_thread_start(gfx_core)) goto done;
     graphics_up = 1;
+    report_line("N64: hilo grafico listo");
     if (our64_jit_init() || setup_sda()) goto done;
+    report_line("N64: JIT y SDA listos");
     __asm__ volatile("mr 13,%0" : : "r"(our64_sda_base));
     if (audio_start()) report_line("N64: audio no disponible");
     else audio_up = 1;
@@ -184,20 +187,25 @@ int n64_engine_play(const char *rom_path, const char *root, const N64EngineHost 
     file.size = (unsigned)st.st_size;
     format_mempacks();
     tlb_mem2_init();
+    report_line("N64: memoria de cartucho lista");
     rom_opened = 1;
     if (rom_read(&file)) { result = -5; goto done; }
+    report_line("N64: ROM leida");
     if (init_memory()) { result = -6; goto done; }
     memory_up = 1;
     player_plugins_init();
     count_per_op = 2;
     cpu_init();
     cpu_up = 1;
+    report_line("N64: CPU lista");
     if (!n64_states_init(root)) states_up = 1;
     else report_line("N64: estados no disponibles en esta sesion");
     if (!writer_start()) writer_up = 1;
     if (writer_up && !saves_start(root)) saves_up = 1;
+    report_line("N64: iniciando video");
     if (video_start()) { result = -7; goto done; }
     video_up = 1;
+    report_line("N64: video listo");
     s_vi_period = OSSecondsToTicks(1) / (is_pal() ? 50 : 60);
     s_next_vi = OSGetSystemTime();
     dynacore = 1;

@@ -506,9 +506,8 @@ static int controlShortcutStart() { return controlPortCount() + 2; }
 #endif
 static int controlItemCount() { return controlPortCount() + 5; }
 
-// CTRL-3: resaltado sobre la imagen del mando ( coordenadas en píxeles de
-// las imágenes de assets/controles/<consola>.png, 1536x1024). r == 0 =
-// la consola no tiene ese botón.
+// CTRL-3: resaltado sobre la imagen del mando (coordenadas en píxeles de
+// assets/controles/<consola>.png). r == 0 = botón no visible en la imagen.
 struct PadSpot {
     float x, y, r;
 };
@@ -516,26 +515,26 @@ struct PadSpot {
 static const PadSpot *padSpots()
 {
 #ifdef RETROU_N64_ENGINE
-    // N64 PNG: 616x469. These coordinates are in the image's own pixels.
+    // N64 PNG: 610x469. Z y los hombros están ocultos en esta vista frontal.
     static const PadSpot n64Spots[18] = {
-        {452, 181, 17}, // A (azul)
-        {430, 142, 17}, // B (verde)
-        {285, 177, 22}, // Z (gatillo bajo el mando)
-        {329, 124, 17}, // Start
-        {175, 65, 20},  // D-Pad arriba
-        {175, 111, 20}, // D-Pad abajo
-        {139, 88, 20},  // D-Pad izquierda
-        {208, 88, 20},  // D-Pad derecha
-        {99, 19, 24},   // L (hombro, parcialmente oculto)
-        {548, 31, 24},  // R (hombro, parcialmente oculto)
-        {537, 119, 16}, // C arriba
-        {511, 165, 16}, // C abajo
-        {490, 131, 16}, // C izquierda
-        {559, 153, 16}, // C derecha
-        {280, 158, 16}, // Stick arriba
-        {280, 194, 16}, // Stick abajo
-        {262, 176, 16}, // Stick izquierda
-        {298, 176, 16}, // Stick derecha
+        {452, 181, 15}, // A (azul)
+        {430, 142, 15}, // B (verde)
+        {0, 0, 0},      // Z (gatillo trasero)
+        {329, 124, 15}, // Start
+        {175, 65, 14},  // D-Pad arriba
+        {175, 104, 14}, // D-Pad abajo
+        {147, 88, 14},  // D-Pad izquierda
+        {201, 88, 14},  // D-Pad derecha
+        {0, 0, 0},      // L (gatillo superior izquierdo)
+        {0, 0, 0},      // R (gatillo superior derecho)
+        {537, 119, 14}, // C arriba
+        {511, 165, 14}, // C abajo
+        {490, 131, 14}, // C izquierda
+        {559, 153, 14}, // C derecha
+        {280, 158, 13}, // Stick arriba
+        {280, 194, 13}, // Stick abajo
+        {262, 176, 13}, // Stick izquierda
+        {298, 176, 13}, // Stick derecha
     };
     return n64Spots;
 #endif
@@ -1627,6 +1626,11 @@ int main()
     for (int i = 0; i < kStoredActions; ++i) text::prewarm(retroName(i), 24);
     text::prewarm("Dispositivo: GamePad    (L/R cambia)", 16);
     text::prewarm("Dispositivo: Mando Pro / Classic    (L/R cambia)", 16);
+#ifdef RETROU_N64_ENGINE
+    text::prewarm("Z: gatillo detrás del stick", 16);
+    text::prewarm("L: gatillo superior izquierdo", 16);
+    text::prewarm("R: gatillo superior derecho", 16);
+#endif
     text::prewarm("Columnas", 22);
     text::prewarm("Carátulas", 22);
     text::prewarm("Música", 22);
@@ -2961,7 +2965,7 @@ int main()
                 const float padX = 930.0f, padY = 180.0f, padW = 320.0f;
                 const float padH =
 #ifdef RETROU_N64_ENGINE
-                    padW * (469.0f / 616.0f);
+                    padW * (469.0f / 610.0f);
 #else
                     padW / 1.5f; // imágenes 1536x1024
 #endif
@@ -2970,7 +2974,7 @@ int main()
                 if (sp.r > 0.0f) {
                     const float s =
 #ifdef RETROU_N64_ENGINE
-                        padW / 616.0f;
+                        padW / 610.0f;
 #else
                         padW / 1536.0f;
 #endif
@@ -2982,6 +2986,16 @@ int main()
                     drawRoundRect(cx - r, cy - r, r * 2.0f, r * 2.0f, r,
                                   Color{64, 230, 96, 170});
                 }
+#ifdef RETROU_N64_ENGINE
+                // No señalar piezas visibles que no corresponden a estos gatillos.
+                const int action = acts[mapRow];
+                const char *hiddenButton = action == 2 ? "Z: gatillo detrás del stick"
+                                         : action == 8 ? "L: gatillo superior izquierdo"
+                                         : action == 9 ? "R: gatillo superior derecho"
+                                                       : nullptr;
+                if (hiddenButton)
+                    text::drawText(hiddenButton, padX, padY + padH + 18.0f, 16, muted);
+#endif
             }
             if (profileMode) {
                 drawRect(0.0f, 0.0f, 1280.0f, 720.0f, Color{10, 12, 16, 210});

@@ -20,6 +20,7 @@ public:
     // Configure ports before start; the input bridge polls hot-plug on each VI.
     bool assign(int port, int device);
     bool setChannel(int slot, int channel);
+    bool setMap(int type, const input_map &map);
     bool start(const std::string &romPath, const std::string &root);
     void requestStop();
     bool requestSave(int slot);

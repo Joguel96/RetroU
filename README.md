@@ -25,15 +25,16 @@ Not64, GLideN64 y audio AX. La UI, los datos y los guardados son de RetroU.
   Lee ROMs de `sd:/retrou/roms/n64` y escribe datos en `sd:/retrou/n64/`;
   si la carpeta nueva no tiene ROMs, puede leer las de
   `sd:/wiiu/our64/roms` sin modificarlas. Los guardados anteriores se leen
-  cuando falta el equivalente nuevo. La base previa funcionó en Wii U,
-  pero esta ronda del port (N64-2) aún requiere verificación en hardware.
+  cuando falta el equivalente nuevo. Esta WUHB provisional funcionó en Wii U;
+  la WUHB Dev del port necesita completar sus pruebas de controles y salida.
   `C:/proyectos/Our64/tools/build-retrou-n64.sh` compila y copia la WUHB,
   conserva el binario previo y guarda un log en `player/build-release/logs/`.
   El log de ejecución N64 es `sd:/retrou/n64/retrou_n64.log`.
   El port definitivo en desarrollo enlaza Not64 + GLideN64 al frontend RetroU;
   `bash native/build-retrou-n64-dev.sh` lo copia por separado a
-  `dist/wiiu/apps/RetroN64U-Dev/RetroN64U-Dev.wuhb`. Todavía no completa el
-  inicio de video de una ROM y no sustituye la WUHB anterior.
+  `dist/wiiu/apps/RetroN64U-Dev/RetroN64U-Dev.wuhb`. El 2026-11-18 inició
+  una ROM jugable en Wii U. Todavía faltan el menú durante la partida y la
+  salida estable con HOME; no sustituye la WUHB anterior.
 - **Mapeo de controles GX2**: editor estilo Our64 por acción del core, con varias
   asignaciones por acción, `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás
   y persistencia explícita de acciones `none` en `control-map.conf` formato `v2`.

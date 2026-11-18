@@ -121,6 +121,10 @@ sd:/retrou/config/gba/
   audio.conf
   view.conf
 
+sd:/retrou/config/n64/
+  control-map.conf
+  n64-ports.conf
+
 sd:/retrou/saves/<consola>/save/          SRAM de juegos
 sd:/retrou/snap/<consola>/                slots de guardado de la app
 ```
@@ -328,8 +332,11 @@ solo mantiene el estado general.
 - El port definitivo tiene un target de desarrollo `retrou_n64_gx2` que
   enlaza el motor extraído dentro del frontend RetroU. El build separado
   `native/build-retrou-n64-dev.sh` deja su WUHB en
-  `dist/wiiu/apps/RetroN64U-Dev/`; no reemplaza la provisional. La biblioteca
-  abrió en Cemu, pero falta resolver la inicialización de video al jugar.
+  `dist/wiiu/apps/RetroN64U-Dev/`; no reemplaza la provisional. El usuario
+  inició una ROM jugable en Wii U el 2026-11-18. Faltan el menú durante el
+  juego y verificar la salida HOME, que se congeló después de restaurar GX2.
+  La compilación siguiente incluye cuatro tarjetas, mapa N64 de 18 acciones
+  y trazas del primer cuadro tras regresar al primer plano.
 - **Probado en hardware por el usuario**: HOME durante partida, audio del
   core y NES/SNES/GBA con ROMs reales. El 2026-11-12 confirmó además las
   pruebas restantes de navegación, controles, guardados y Assets. El

@@ -21,7 +21,7 @@ namespace retrou {
 // Las direcciones de los sticks L/R son fuentes pseudo (kStickSrc*), así que
 // cada stick puede actuar como D-Pad en las direcciones que haya mapeadas.
 struct CoreActionMap {
-    static constexpr int kMaxActions = 12;
+    static constexpr int kMaxActions = 18; // N64 adds C buttons and four stick directions.
     std::array<uint32_t, kMaxActions> sources{};
 };
 

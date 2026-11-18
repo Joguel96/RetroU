@@ -33,6 +33,13 @@ bool N64Session::setChannel(int slot, int channel)
     return true;
 }
 
+bool N64Session::setMap(int type, const input_map &map)
+{
+    if (started_ || type < 0 || type >= INPUT_TYPES) return false;
+    input_.setMap(type, map);
+    return true;
+}
+
 bool N64Session::start(const std::string &romPath, const std::string &root)
 {
     if (started_ || romPath.empty() || root.empty()) return false;

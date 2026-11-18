@@ -344,6 +344,11 @@ constexpr int kProBtnCount = static_cast<int>(sizeof(kProButtons) / sizeof(kProB
 // Fuentes físicas por acción (máscara del dispositivo; 0 = sin mapear).
 // Es el mismo tipo que aplica el core (retrou::CoreActionMap).
 using ActionSources = retrou::CoreActionMap;
+#ifdef RETROU_N64_ENGINE
+constexpr int kStoredActions = 18;
+#else
+constexpr int kStoredActions = 12;
+#endif
 
 // Etiqueta legible de una fuente (para el editor y el conf v2 no se usa,
 // el conf guarda máscaras hexadecimales).
@@ -374,6 +379,28 @@ static ActionSources defaultActionMap(const PhysBtn *btns, int n)
 {
     ActionSources m;
     auto bind = [&m](uint32_t mask, int action) { m.sources[action] |= mask; };
+#ifdef RETROU_N64_ENGINE
+    bind(btns[0].mask, 0);  // A
+    bind(btns[1].mask, 1);  // B
+    bind(btns[6].mask, 2);  // ZL/ZR -> Z
+    bind(btns[7].mask, 2);
+    bind(btns[8].mask, 3);  // Plus -> Start
+    for (int direction = 0; direction < 4; ++direction)
+        bind(btns[10 + direction].mask, 4 + direction);
+    bind(btns[4].mask, 8);  // L
+    bind(btns[5].mask, 9);  // R
+    bind(btns[2].mask, 10); // X -> C arriba
+    bind(btns[3].mask, 12); // Y -> C izquierda
+    bind(kStickRSrcUp, 10);
+    bind(kStickRSrcDown, 11);
+    bind(kStickRSrcLeft, 12);
+    bind(kStickRSrcRight, 13);
+    bind(kStickSrcUp, 14);
+    bind(kStickSrcDown, 15);
+    bind(kStickSrcLeft, 16);
+    bind(kStickSrcRight, 17);
+    return m;
+#endif
     bind(btns[0].mask, 8);  // A -> A
     bind(btns[1].mask, 0);  // B -> B
     if (n > 3) {
@@ -404,7 +431,7 @@ static void assignToActionMap(const PhysBtn *btns, int n,
                               bool stickDpad, ActionSources &out)
 {
     out = defaultActionMap(btns, n);
-    for (int a = 0; a < 12; ++a) out.sources[a] = 0;
+    for (int a = 0; a < kStoredActions; ++a) out.sources[a] = 0;
     for (int i = 0; i < n; ++i) {
         const int id = assign[i];
         if (id >= 0 && id < 12) out.sources[id] |= btns[i].mask;
@@ -463,6 +490,22 @@ static bool hasSecondCorePort()
     return std::string(RETROU_CORE_SYSTEM) != "gba";
 }
 
+static int controlPortCount()
+{
+#ifdef RETROU_N64_ENGINE
+    return 4;
+#else
+    return hasSecondCorePort() ? 2 : 1;
+#endif
+}
+
+static int controlOrderItem() { return controlPortCount(); }
+static int controlMapItem() { return controlPortCount() + 1; }
+#ifdef RETROU_N64_ENGINE
+static int controlShortcutStart() { return controlPortCount() + 2; }
+#endif
+static int controlItemCount() { return controlPortCount() + 5; }
+
 // CTRL-3: resaltado sobre la imagen del mando ( coordenadas en píxeles de
 // las imágenes de assets/controles/<consola>.png, 1536x1024). r == 0 =
 // la consola no tiene ese botón.
@@ -472,6 +515,30 @@ struct PadSpot {
 
 static const PadSpot *padSpots()
 {
+#ifdef RETROU_N64_ENGINE
+    // N64 PNG: 616x469. These coordinates are in the image's own pixels.
+    static const PadSpot n64Spots[18] = {
+        {452, 181, 17}, // A (azul)
+        {430, 142, 17}, // B (verde)
+        {285, 177, 22}, // Z (gatillo bajo el mando)
+        {329, 124, 17}, // Start
+        {175, 65, 20},  // D-Pad arriba
+        {175, 111, 20}, // D-Pad abajo
+        {139, 88, 20},  // D-Pad izquierda
+        {208, 88, 20},  // D-Pad derecha
+        {99, 19, 24},   // L (hombro, parcialmente oculto)
+        {548, 31, 24},  // R (hombro, parcialmente oculto)
+        {537, 119, 16}, // C arriba
+        {511, 165, 16}, // C abajo
+        {490, 131, 16}, // C izquierda
+        {559, 153, 16}, // C derecha
+        {280, 158, 16}, // Stick arriba
+        {280, 194, 16}, // Stick abajo
+        {262, 176, 16}, // Stick izquierda
+        {298, 176, 16}, // Stick derecha
+    };
+    return n64Spots;
+#endif
     if (std::string(RETROU_CORE_SYSTEM) == "nes") {
         static const PadSpot spots[12] = {
             {1080.0f, 768.0f, 70.0f}, // B
@@ -557,9 +624,14 @@ static bool loadActionProfile(const std::string &path, ActionSources &map)
 {
     std::ifstream in(path);
     std::string magic;
-    if (!(in >> magic) || magic != "profile-v1") return false;
+    if (!(in >> magic) || magic !=
+#ifdef RETROU_N64_ENGINE
+        "profile-n64-v1") return false;
+#else
+        "profile-v1") return false;
+#endif
     ActionSources candidate{};
-    for (int i = 0; i < 12; ++i) {
+    for (int i = 0; i < kStoredActions; ++i) {
         unsigned value = 0;
         if (!(in >> std::hex >> value)) return false;
         candidate.sources[i] = value;
@@ -572,8 +644,14 @@ static bool saveActionProfile(const std::string &path, const ActionSources &map)
 {
     std::ofstream out(path, std::ios::trunc);
     if (!out) return false;
-    out << "profile-v1\n" << std::hex;
-    for (uint32_t value : map.sources) out << value << "\n";
+    out <<
+#ifdef RETROU_N64_ENGINE
+        "profile-n64-v1\n";
+#else
+        "profile-v1\n";
+#endif
+    out << std::hex;
+    for (int i = 0; i < kStoredActions; ++i) out << map.sources[i] << "\n";
     out.flush();
     return static_cast<bool>(out);
 }
@@ -606,7 +684,7 @@ static bool loadControlOptions(const std::string &sdRoot, int &player1, int &pla
             } else if (cur != nullptr) {
                 // <accion> = <mascaras...>
                 int action = -1;
-                for (int a = 0; a < 12; ++a) {
+                for (int a = 0; a < kStoredActions; ++a) {
                     if (tok == retroName(a)) {
                         action = a;
                         break;
@@ -696,7 +774,7 @@ static bool saveControlOptions(const std::string &sdRoot, int player1, int playe
     out << "p2 " << player2 << "\n";
     auto writeSection = [&out](const char *name, const ActionSources &m) {
         out << "[" << name << "]\n";
-        for (int a = 0; a < 12; ++a) {
+        for (int a = 0; a < kStoredActions; ++a) {
             out << retroName(a) << " =";
             if (m.sources[a] == 0) {
                 out << " none\n";
@@ -721,6 +799,10 @@ static bool saveControlOptions(const std::string &sdRoot, int player1, int playe
 static std::vector<int> consoleActions()
 {
     const std::string s = RETROU_CORE_SYSTEM;
+#ifdef RETROU_N64_ENGINE
+    if (s == "n64") return {0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+                            10, 11, 12, 13, 14, 15, 16, 17};
+#endif
     if (s == "nes") return {0, 8, 2, 3, 4, 5, 6, 7};
     if (s == "snes") return {0, 1, 8, 9, 10, 11, 2, 3, 4, 5, 6, 7};
     return {0, 8, 10, 11, 2, 3, 4, 5, 6, 7};
@@ -792,6 +874,13 @@ static uint32_t wpadNavBits(const WpadSnapshot &s, uint32_t &lastBits)
 
 static const char *retroName(int id)
 {
+#ifdef RETROU_N64_ENGINE
+    static const char *const names[18] = {
+        "A", "B", "Z", "Start", "D-Arriba", "D-Abajo", "D-Izquierda", "D-Derecha",
+        "L", "R", "C-Arriba", "C-Abajo", "C-Izquierda", "C-Derecha",
+        "Stick Arriba", "Stick Abajo", "Stick Izquierda", "Stick Derecha"};
+    return id >= 0 && id < 18 ? names[id] : "?";
+#endif
     switch (id) {
         case 0: return "B";
         case 1: return "Y";
@@ -1200,6 +1289,34 @@ int main()
     MenuShortcuts menuShortcuts = loadMenuShortcuts(library.sd_root);
     int globalPlayer1 = player1Device;
     int globalPlayer2 = player2Device;
+#ifdef RETROU_N64_ENGINE
+    // N64 has four independent ports. The older p1/p2 fields remain readable
+    // for migration, while this small file keeps all four assignments.
+    std::array<int, 4> n64Devices{{
+        player1Device == 0 ? 0 : player1Device,
+        player2Device == 0 ? -1 : player2Device == 1 ? 0 : player2Device - 1,
+        -1, -1}};
+    const std::string n64PortsPath = controlConfigDir(library.sd_root) + "/n64-ports.conf";
+    {
+        std::ifstream ports(n64PortsPath);
+        std::string version;
+        if (ports >> version && version == "v1") {
+            std::array<int, 4> saved{};
+            if (ports >> saved[0] >> saved[1] >> saved[2] >> saved[3]) {
+                std::array<bool, 5> used{};
+                for (int &device : saved) {
+                    if (device < -1 || device > 4 ||
+                        (device >= 0 && used[device])) device = -1;
+                    if (device >= 0) used[device] = true;
+                }
+                n64Devices = saved;
+            }
+        }
+    }
+    std::array<int, 4> globalN64Devices = n64Devices;
+    int selectedControlPort = 0;
+    std::array<int, 4> orderOriginalN64Devices = n64Devices;
+#endif
     ActionSources globalVpadMap = vpadMap;
     ActionSources globalProMap = proMap;
     mkdir((controlConfigDir(library.sd_root) + "/profiles").c_str(), 0777);
@@ -1507,7 +1624,7 @@ int main()
     text::prewarm("La captura admite GamePad o Pro/Classic según el dispositivo", 14);
     text::prewarm("Mando Pro / Classic", 16);
     text::prewarm("A  CAMBIAR    Y  AÑADIR    X  DESASIGNAR    -  REINICIAR    L/R  DISPOSITIVO    B  VOLVER", 14);
-    for (int i = 0; i < 12; ++i) text::prewarm(retroName(i), 24);
+    for (int i = 0; i < kStoredActions; ++i) text::prewarm(retroName(i), 24);
     text::prewarm("Dispositivo: GamePad    (L/R cambia)", 16);
     text::prewarm("Dispositivo: Mando Pro / Classic    (L/R cambia)", 16);
     text::prewarm("Columnas", 22);
@@ -1639,6 +1756,9 @@ int main()
         if (player1Device == 0) vpadPort = 0;
         else if (hasSecondCorePort() && player2Device == 1) vpadPort = 1;
         core.setVpadPort(vpadPort);
+#ifdef RETROU_N64_ENGINE
+        core.setPortDevices(n64Devices, slotChannels);
+#endif
         applyControlMaps();
     };
     wpad_input_poll();
@@ -1649,8 +1769,22 @@ int main()
     bool n64Running = false;
     bool n64LaunchPending = false;
     bool n64NeedsGx2Restore = false;
+    bool n64FirstFrameAfterRestore = false;
 #endif
     auto persistControls = [&]() {
+#ifdef RETROU_N64_ENGINE
+        if (!inGame) {
+            std::ofstream ports(n64PortsPath, std::ios::trunc);
+            if (ports) {
+                ports << "v1";
+                for (int device : n64Devices) ports << ' ' << device;
+                ports << '\n';
+                ports.flush();
+            }
+            globalN64Devices = n64Devices;
+            bootLog(ports ? "n64_ports_saved" : "n64_ports_save_failed");
+        }
+#endif
         if (inGame && activeRom >= 0) {
             bootLog(saveControlOptions(library.sd_root, player1Device, player2Device,
                                        vpadMap, proMap,
@@ -1667,6 +1801,9 @@ int main()
         }
     };
     auto restoreGlobalControls = [&]() {
+#ifdef RETROU_N64_ENGINE
+        n64Devices = globalN64Devices;
+#endif
         player1Device = globalPlayer1;
         player2Device = globalPlayer2;
         vpadMap = globalVpadMap;
@@ -1723,7 +1860,9 @@ int main()
         bootLog("n64_gx2_released");
     };
     auto restoreGx2AfterN64 = [&]() -> bool {
+        bootLog("n64_gx2_restore_begin");
         if (!init()) return false;
+        bootLog("n64_gx2_restore_renderer_ready");
         if (!text::loadFont(_binary_ui_ttf_start,
                             static_cast<size_t>(_binary_ui_ttf_end - _binary_ui_ttf_start))) {
             shutdown();
@@ -1736,6 +1875,7 @@ int main()
         if (thumbTex < 0) thumbTex = makeCover(54, 72, 120, 10, 14, 24);
         if (g_uiDevice) SDL_PauseAudioDevice(g_uiDevice, 0);
         n64NeedsGx2Restore = false;
+        n64FirstFrameAfterRestore = true;
         bootLog("n64_gx2_restored");
         return true;
     };
@@ -1777,6 +1917,10 @@ int main()
             }
 #endif
             ProcUIDrawDoneRelease();
+            waitingRelease = true;
+            // Wait for the next foreground acquisition before initializing GX2
+            // again; the system can still own the scan buffers at this point.
+            continue;
         }
         if (!ProcUIInForeground()) {
             waitingRelease = true; // do not replay the buttons held at the switch
@@ -1861,9 +2005,19 @@ int main()
         core.pushVpadSample(vpad, vpadError); // single read per frame; the core reuses it
         // CTRL-4: los mandos externos navegan la UI (botones + stick como D-Pad).
         uint32_t wpadTrigger = 0;
+#ifdef RETROU_N64_ENGINE
+        int pressedADevice = vpadError == VPAD_READ_SUCCESS &&
+            (vpad.trigger & VPAD_BUTTON_A) ? 0 : -1;
+#endif
         const auto &wpadStates = wpad_input_states();
         for (int ch = 0; ch < 4; ++ch) {
-            wpadTrigger |= wpadNavBits(wpadStates[ch], wpadNavLastBits[ch]);
+            const uint32_t pressed = wpadNavBits(wpadStates[ch], wpadNavLastBits[ch]);
+            wpadTrigger |= pressed;
+#ifdef RETROU_N64_ENGINE
+            if (pressed & VPAD_BUTTON_A)
+                for (int slot = 0; slot < 4; ++slot)
+                    if (slotChannels[slot] == ch) pressedADevice = slot + 1;
+#endif
         }
         int openCoreMenuSource = -1;
         const bool gamePadCombo = vpadError == VPAD_READ_SUCCESS &&
@@ -1912,14 +2066,19 @@ int main()
                     const int key = row * 6 + col;
                     if (key < 39) { searchCursor = key; navTrigger |= VPAD_BUTTON_A; }
                 } else if (settingsOpen && settingsSection == 2 && tx >= 70 && tx < 1210) {
-                    const int portCount = hasSecondCorePort() ? 2 : 1;
+                    const int portCount = controlPortCount();
                     if (ty >= 150 && ty < 430) {
-                        if (portCount == 2 || (tx >= 355 && tx < 905)) {
-                            settingsItem = portCount == 1 ? 0 : (tx < 640 ? 0 : 1);
+                        if (portCount == 4 || portCount == 2 || (tx >= 355 && tx < 905)) {
+                            settingsItem = portCount == 1 ? 0 :
+                                portCount == 4 ? std::min(3, static_cast<int>((tx - 70) / 295)) :
+                                (tx < 640 ? 0 : 1);
+#ifdef RETROU_N64_ENGINE
+                            selectedControlPort = settingsItem;
+#endif
                             navTrigger |= VPAD_BUTTON_A;
                         }
                     } else if (ty >= 458 && ty < 524) {
-                        settingsItem = (tx < 640 ? portCount + 1 : portCount);
+                        settingsItem = (tx < 640 ? controlMapItem() : controlOrderItem());
                         navTrigger |= VPAD_BUTTON_A;
                     } else if (ty >= 539 && ty < 661) {
                         settingsItem = portCount + 2 +
@@ -1938,7 +2097,7 @@ int main()
                     }
                 } else if (settingsOpen && settingsSection >= 0 &&
                            tx >= 350 && tx < 1240 && ty >= 210 && ty < 625) {
-                        const int counts[] = {5, 5, hasSecondCorePort() ? 7 : 6, 5, 2};
+                        const int counts[] = {5, 5, controlItemCount(), 5, 2};
                         settingsItem = std::min(counts[settingsSection] - 1,
                                                 static_cast<int>((ty - 210) /
                                                     (settingsSection == 2 ? 60 : 70)));
@@ -2108,7 +2267,7 @@ int main()
                             // botones viejos de esta fila).
                             const uint32_t old = m.sources[row];
                             int displaced = -1;
-                            for (int z = 0; z < 12; ++z) {
+                            for (int z = 0; z < kStoredActions; ++z) {
                                 if (z != row && (m.sources[z] & one)) {
                                     m.sources[z] &= ~one;
                                     if (displaced < 0) displaced = z;
@@ -2180,14 +2339,30 @@ int main()
                     anyA |= (s.buttons & a) != 0;
                 }
                 if (navTrigger & VPAD_BUTTON_B) {
+#ifdef RETROU_N64_ENGINE
+                    if (orderPort > 0) {
+                        refreshControllers();
+                        persistControls();
+                        bootLog("n64_controller_order_finished_early");
+                        orderMode = false;
+                    } else {
+                        n64Devices = orderOriginalN64Devices;
+                        refreshControllers();
+                        orderMode = false;
+                    }
+#else
                     player1Device = orderOriginal1;
                     player2Device = orderOriginal2;
                     refreshControllers();
                     orderMode = false;
+#endif
                 } else if (!orderArmed) {
                     if (!anyA) orderArmed = true;
                 } else if (anyA) {
                     int selected = -1;
+#ifdef RETROU_N64_ENGINE
+                    selected = pressedADevice;
+#else
                     if (vpad.trigger & VPAD_BUTTON_A) selected = orderPort == 0 ? 0 : 1;
                     if (selected < 0) {
                         for (int i = 0; i < 4; ++i) {
@@ -2202,12 +2377,19 @@ int main()
                             }
                         }
                     }
+#endif
                     if (selected >= 0) {
+#ifdef RETROU_N64_ENGINE
+                        for (int &device : n64Devices)
+                            if (device == selected) device = -1;
+                        n64Devices[orderPort] = selected;
+#else
                         if (orderPort == 0) player1Device = selected;
                         else player2Device = selected;
+#endif
                         if (!orderSingle) ++orderPort;
                         orderArmed = false;
-                        if (orderSingle || orderPort >= (hasSecondCorePort() ? 2 : 1)) {
+                        if (orderSingle || orderPort >= controlPortCount()) {
                             refreshControllers();
                             persistControls();
                             bootLog("controller_order_saved");
@@ -2229,10 +2411,81 @@ int main()
                         settingsItem = 0;
                     }
                 } else {
+#ifdef RETROU_N64_ENGINE
+                    if (settingsSection == 2) {
+                        const int orderItem = controlOrderItem();
+                        const int mapItem = controlMapItem();
+                        if (navTrigger & VPAD_BUTTON_B) {
+                            settingsSection = -1;
+                        } else if (navTrigger & VPAD_BUTTON_LEFT) {
+                            if (settingsItem < 4) settingsItem = (settingsItem + 3) % 4;
+                            else if (settingsItem == orderItem) settingsItem = mapItem;
+                            else if (settingsItem >= controlShortcutStart())
+                                settingsItem = settingsItem == controlShortcutStart()
+                                    ? controlItemCount() - 1 : settingsItem - 1;
+                            selectedControlPort = settingsItem < 4 ? settingsItem : selectedControlPort;
+                        } else if (navTrigger & VPAD_BUTTON_RIGHT) {
+                            if (settingsItem < 4) settingsItem = (settingsItem + 1) % 4;
+                            else if (settingsItem == mapItem) settingsItem = orderItem;
+                            else if (settingsItem >= controlShortcutStart())
+                                settingsItem = settingsItem + 1 == controlItemCount()
+                                    ? controlShortcutStart() : settingsItem + 1;
+                            selectedControlPort = settingsItem < 4 ? settingsItem : selectedControlPort;
+                        } else if (navTrigger & VPAD_BUTTON_DOWN) {
+                            if (settingsItem < 4) settingsItem = settingsItem < 2 ? mapItem : orderItem;
+                            else if (settingsItem < controlShortcutStart())
+                                settingsItem = controlShortcutStart();
+                            else settingsItem = settingsItem + 1 == controlItemCount()
+                                ? controlShortcutStart() : settingsItem + 1;
+                        } else if (navTrigger & VPAD_BUTTON_UP) {
+                            if (settingsItem >= controlShortcutStart())
+                                settingsItem = selectedControlPort < 2 ? mapItem : orderItem;
+                            else if (settingsItem >= 4) settingsItem = selectedControlPort;
+                        } else if (navTrigger & VPAD_BUTTON_A) {
+                            if (settingsItem < 4) {
+                                if (pressedADevice >= 0) {
+                                    int target = selectedControlPort;
+                                    for (int port = 0; port < 4; ++port)
+                                        if (n64Devices[port] == pressedADevice) target = port;
+                                    if (n64Devices[target] != pressedADevice) {
+                                        for (int port = 0; port < 4; ++port)
+                                            if (n64Devices[port] < 0) { target = port; break; }
+                                        n64Devices[target] = pressedADevice;
+                                        persistControls();
+                                        refreshControllers();
+                                        bootLog(("n64_controller_assigned port=" + std::to_string(target + 1) +
+                                                 " device=" + std::to_string(pressedADevice)).c_str());
+                                    }
+                                    selectedControlPort = settingsItem = target;
+                                }
+                            } else if (settingsItem == orderItem) {
+                                orderMode = true;
+                                orderSingle = false;
+                                orderPort = 0;
+                                orderArmed = false;
+                                orderOriginalN64Devices = n64Devices;
+                            } else if (settingsItem == mapItem) {
+                                if (n64Devices[selectedControlPort] >= 0) {
+                                    mapMode = true;
+                                    profileMode = false;
+                                    profileStatus.clear();
+                                    mapRow = mapTop = mapCapture = 0;
+                                    mapDevice = n64Devices[selectedControlPort] == 0 ? 0 : 1;
+                                }
+                            } else {
+                                const int family = settingsItem - controlShortcutStart();
+                                menuShortcuts.choice[family] = (menuShortcuts.choice[family] + 1) % 3;
+                                bootLog(saveMenuShortcuts(library.sd_root, menuShortcuts)
+                                            ? "menu_shortcut_saved" : "menu_shortcut_save_failed");
+                            }
+                        }
+                    } else
+#endif
+                    {
                     int itemCount = 1;
                     if (settingsSection == 0) itemCount = 5;
                     else if (settingsSection == 1) itemCount = 5;
-                    else if (settingsSection == 2) itemCount = hasSecondCorePort() ? 7 : 6;
+                    else if (settingsSection == 2) itemCount = controlItemCount();
                     else if (settingsSection == 3) itemCount = 5;
                     else if (settingsSection == 4) itemCount = 3;
 
@@ -2386,6 +2639,7 @@ int main()
                                 " choice=" + std::to_string(menuShortcuts.choice[family]);
                             bootLog(event.c_str());
                         }
+                    }
                     }
                 }
             } else if (searchActive) {
@@ -2589,6 +2843,9 @@ int main()
             bootLog(event.c_str());
             lastLoggedGbaRom = drawRom;
         }
+#ifdef RETROU_N64_ENGINE
+        if (n64FirstFrameAfterRestore) bootLog("n64_first_frame_begin");
+#endif
         beginFrame(bg);
         drawGradient(0.0f, 0.0f, 1280.0f, 720.0f, bgTop, bg);
 
@@ -2702,11 +2959,21 @@ int main()
             const Texture pad = getPadTexture();
             if (pad >= 0) {
                 const float padX = 930.0f, padY = 180.0f, padW = 320.0f;
-                const float padH = padW / 1.5f; // imágenes 1536x1024
+                const float padH =
+#ifdef RETROU_N64_ENGINE
+                    padW * (469.0f / 616.0f);
+#else
+                    padW / 1.5f; // imágenes 1536x1024
+#endif
                 drawTexture(pad, padX, padY, padW, padH);
                 const PadSpot &sp = padSpots()[acts[mapRow]];
                 if (sp.r > 0.0f) {
-                    const float s = padW / 1536.0f;
+                    const float s =
+#ifdef RETROU_N64_ENGINE
+                        padW / 616.0f;
+#else
+                        padW / 1536.0f;
+#endif
                     const float cx = padX + sp.x * s;
                     const float cy = padY + sp.y * s;
                     const float r = sp.r * s;
@@ -2759,17 +3026,23 @@ int main()
             text::drawText("Orden de mandos", 28.0f, 18.0f, 34, white);
             text::drawText(("Pulsa A en el mando para Mando " + std::to_string(orderPort + 1)).c_str(),
                            28.0f, 70.0f, 22, accent);
-            const int count = hasSecondCorePort() ? 2 : 1;
+            const int count = controlPortCount();
             for (int i = 0; i < count; ++i) {
-                const float x = 80.0f + i * 580.0f;
-                drawRoundRect(x, 170.0f, 540.0f, 330.0f, 18.0f,
+                const float x = count == 4 ? 40.0f + i * 310.0f : 80.0f + i * 580.0f;
+                const float width = count == 4 ? 280.0f : 540.0f;
+                drawRoundRect(x, 170.0f, width, 330.0f, 18.0f,
                               i == orderPort ? panel : cardPanel);
                 text::drawText(("Mando " + std::to_string(i + 1)).c_str(),
                                x + 35.0f, 205.0f, 28, white);
-                const int device = i == 0 ? player1Device : player2Device;
-                const auto &labels = i == 0 ? devOpts : p2Opts;
-                const std::string label = i != orderPort && device < static_cast<int>(labels.size())
-                    ? labels[device] : "Pulsa A para conectar";
+                int device = i == 0 ? player1Device : player2Device;
+                const std::vector<std::string> *labels = i == 0 ? &devOpts : &p2Opts;
+#ifdef RETROU_N64_ENGINE
+                device = n64Devices[i];
+                labels = &devOpts;
+#endif
+                const std::string label = i != orderPort && device >= 0 &&
+                    device < static_cast<int>(labels->size())
+                    ? (*labels)[device] : "Pulsa A para conectar";
                 text::drawText(label.c_str(), x + 35.0f, 335.0f, 22,
                                i == orderPort ? accent : muted);
             }
@@ -2778,7 +3051,7 @@ int main()
             if (settingsSection == 2) {
                 // CTRL-10: los puertos son el foco de Controles; la asignación
                 // sigue usando el mismo flujo y formato persistente.
-                const int portCount = hasSecondCorePort() ? 2 : 1;
+                const int portCount = controlPortCount();
                 const int orderItem = portCount;
                 const int mapItem = orderItem + 1;
                 drawRect(0.0f, 0.0f, 1280.0f, 720.0f, bg);
@@ -2786,31 +3059,47 @@ int main()
                 text::drawText("Elige un puerto y pulsa A en el mando que quieras asignar",
                                50.0f, 78.0f, 17, muted);
                 for (int port = 0; port < portCount; ++port) {
-                    const float x = portCount == 1 ? 355.0f : 70.0f + port * 590.0f;
-                    const float w = 550.0f;
-                    const bool selected = settingsItem == port;
-                    const int device = port == 0 ? player1Device : player2Device;
-                    const auto &labels = port == 0 ? devOpts : p2Opts;
-                    const bool connected = port == 0
+                    const float x = portCount == 1 ? 355.0f :
+                        portCount == 4 ? 70.0f + port * 295.0f : 70.0f + port * 590.0f;
+                    const float w = portCount == 4 ? 255.0f : 550.0f;
+                    const bool selected =
+#ifdef RETROU_N64_ENGINE
+                        selectedControlPort == port;
+#else
+                        settingsItem == port;
+#endif
+                    int device = port == 0 ? player1Device : player2Device;
+                    const std::vector<std::string> *labels = port == 0 ? &devOpts : &p2Opts;
+                    bool connected = port == 0
                         ? (device == 0 ? vpadError == VPAD_READ_SUCCESS
                                        : device - 1 < 4 && slotChannels[device - 1] >= 0)
                         : (device == 1 ? vpadError == VPAD_READ_SUCCESS
                                        : device >= 2 && device - 2 < 4 && slotChannels[device - 2] >= 0);
+#ifdef RETROU_N64_ENGINE
+                    device = n64Devices[port];
+                    labels = &devOpts;
+                    connected = device == 0 ? vpadError == VPAD_READ_SUCCESS :
+                        device > 0 && slotChannels[device - 1] >= 0;
+#endif
+                    if (selected && portCount == 4)
+                        drawRoundRect(x - 3.0f, 147.0f, w + 6.0f, 286.0f, 20.0f, white);
                     drawRoundRect(x, 150.0f, w, 280.0f, 18.0f, selected ? panel : cardPanel);
-                    if (selected) drawRoundRect(x, 424.0f, w, 5.0f, 2.0f, accent);
+                    if (settingsItem == port) drawRoundRect(x, 424.0f, w, 5.0f, 2.0f, accent);
                     const std::string heading = "Mando " + std::to_string(port + 1);
-                    text::drawText(heading.c_str(), x + 30.0f, 176.0f, 27, selected ? white : muted);
+                    text::drawText(heading.c_str(), x + 25.0f, 176.0f, 27, selected ? white : muted);
                     if (connected) {
                         // Icono sencillo del mando: carcasa, pantalla y botones.
-                        drawRoundRect(x + 210.0f, 225.0f, 130.0f, 68.0f, 17.0f, white);
-                        drawRoundRect(x + 238.0f, 238.0f, 74.0f, 42.0f, 5.0f, muted);
+                        const float iconX = x + (w - 130.0f) * 0.5f;
+                        drawRoundRect(iconX, 225.0f, 130.0f, 68.0f, 17.0f, white);
+                        drawRoundRect(iconX + 28.0f, 238.0f, 74.0f, 42.0f, 5.0f, muted);
                     }
-                    const std::string deviceLabel = connected && device < static_cast<int>(labels.size())
-                        ? labels[device] : "Pulsa A para conectar";
+                    const std::string deviceLabel = connected && device >= 0 &&
+                        device < static_cast<int>(labels->size())
+                        ? (*labels)[device] : "Pulsa A para conectar";
                     const std::string fitted = text::fitText(deviceLabel.c_str(), 21, w - 50.0f);
                     text::drawText(fitted.c_str(), x + 25.0f, 333.0f, 21,
                                    connected ? white : muted);
-                    if (selected)
+                    if (settingsItem == port)
                         text::drawText("A  ASIGNAR", x + 25.0f, 391.0f, 15, accent);
                 }
                 const int actionItems[2] = {mapItem, orderItem};
@@ -3133,6 +3422,12 @@ int main()
         }
 
         endFrame();
+#ifdef RETROU_N64_ENGINE
+        if (n64FirstFrameAfterRestore) {
+            bootLog("n64_first_frame_done");
+            n64FirstFrameAfterRestore = false;
+        }
+#endif
         if (std::string(RETROU_CORE_SYSTEM) == "gba" && viewMode == 0 &&
             !inGame && drawRom >= 0 && drawRom != lastRenderedGbaRom) {
             const std::string event = "gba_cards_rendered index=" +

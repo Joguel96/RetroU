@@ -128,10 +128,11 @@ en el propio script. Si CafeGLSL ya está instalado localmente, se puede indicar
 `CAFEGLSL_SOURCE`; de otro modo el script usa el descargador verificado de
 Our64. El motor de `.cores/n64/` se enlaza al target interno
 `retrou_n64_gx2`; su WUHB de desarrollo se copia a una carpeta propia en
-`dist` para pruebas y no sustituye `RetroN64U.wuhb`. Aún se bloquea en el
-inicio de video de GLideN64 al abrir una ROM. El log N64 de desarrollo registra
-ahora los pasos internos de `RomOpen` para localizar el bloqueo sin controlar
-Cemu. `cores/check-n64-bridge.sh`
+`dist` para pruebas y no sustituye `RetroN64U.wuhb`. El usuario confirmó que
+una ROM inició y se pudo jugar en Wii U el 2026-11-18. El juego terminó con
+resultado 0 al pulsar HOME, pero la interfaz se congeló después de restaurar
+GX2; la WUHB Dev espera una nueva adquisición del primer plano y registra
+el primer cuadro para repetir esa prueba. `cores/check-n64-bridge.sh`
 verifica el enlace del motor con los adaptadores de video, cuatro mandos y
 cuatro estados de RetroU, sin ejecutar una ROM. Véase
 `docs/n64-port-contract.md`.
@@ -151,8 +152,13 @@ cuatro estados de RetroU, sin ejecutar una ROM. Véase
   «Cambiar orden» recorre todos los puertos.
   La asignación se registra como `controller_connect_prompt` y
   `controller_order_saved`; aún requiere verificación en Wii U. Desde el editor,
-  Plus abre tres perfiles por dispositivo:
-  A carga el seleccionado, Y guarda el mapa actual.
+  Plus abre tres perfiles por dispositivo: A carga el seleccionado, Y guarda el
+  mapa actual.
+- N64 Dev muestra cuatro tarjetas, asigna un mando nuevo al pulsar A sin abrir
+  otra pantalla y mantiene el borde blanco del jugador al navegar sus acciones.
+  Sus 18 acciones se guardan en `control-map.conf` y los cuatro puertos en
+  `n64-ports.conf`; los mapas de GamePad y Pro/Classic se aplican al motor al
+  iniciar una ROM. Esta compilación falta probarla en Wii U.
 - La asignación externa conserva un slot lógico cuando el Pro/Classic se
   desconecta; al reconectar en otro canal se intenta restaurar ese slot sin
   cambiar el mapa. El log registra `controller_disconnected`,

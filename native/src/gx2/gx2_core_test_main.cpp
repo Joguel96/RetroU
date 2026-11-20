@@ -1315,6 +1315,7 @@ int main()
     std::array<int, 4> globalN64Devices = n64Devices;
     int selectedControlPort = 0;
     std::array<int, 4> orderOriginalN64Devices = n64Devices;
+    int n64OrderTotal = 0;
 #endif
     ActionSources globalVpadMap = vpadMap;
     ActionSources globalProMap = proMap;
@@ -2383,22 +2384,36 @@ int main()
                     }
 #endif
                     if (selected >= 0) {
+                        bool accepted = true;
 #ifdef RETROU_N64_ENGINE
-                        for (int &device : n64Devices)
-                            if (device == selected) device = -1;
-                        n64Devices[orderPort] = selected;
+                        const bool alreadyChosen = std::find(n64Devices.begin(),
+                            n64Devices.begin() + orderPort, selected) != n64Devices.begin() + orderPort;
+                        if (alreadyChosen) {
+                            accepted = false;
+                            bootLog(("n64_controller_order_duplicate device=" +
+                                     std::to_string(selected)).c_str());
+                        } else {
+                            n64Devices[orderPort] = selected;
+                        }
 #else
                         if (orderPort == 0) player1Device = selected;
                         else player2Device = selected;
 #endif
-                        if (!orderSingle) ++orderPort;
-                        orderArmed = false;
-                        if (orderSingle || orderPort >= controlPortCount()) {
-                            refreshControllers();
-                            persistControls();
-                            bootLog("controller_order_saved");
-                            orderMode = false;
+                        if (accepted) {
+                            if (!orderSingle) ++orderPort;
+#ifdef RETROU_N64_ENGINE
+                            const int orderTarget = n64OrderTotal;
+#else
+                            const int orderTarget = controlPortCount();
+#endif
+                            if (orderSingle || orderPort >= orderTarget) {
+                                refreshControllers();
+                                persistControls();
+                                bootLog("controller_order_saved");
+                                orderMode = false;
+                            }
                         }
+                        orderArmed = false;
                     }
                 }
             } else if (settingsOpen) {
@@ -2463,11 +2478,20 @@ int main()
                                     selectedControlPort = settingsItem = target;
                                 }
                             } else if (settingsItem == orderItem) {
-                                orderMode = true;
                                 orderSingle = false;
                                 orderPort = 0;
                                 orderArmed = false;
                                 orderOriginalN64Devices = n64Devices;
+                                n64OrderTotal = vpadError == VPAD_READ_SUCCESS ? 1 : 0;
+                                for (int channel : slotChannels)
+                                    if (channel >= 0) ++n64OrderTotal;
+                                n64OrderTotal = std::min(n64OrderTotal, controlPortCount());
+                                orderMode = n64OrderTotal > 0;
+                                if (orderMode) {
+                                    n64Devices.fill(-1);
+                                    bootLog(("n64_controller_order_started total=" +
+                                             std::to_string(n64OrderTotal)).c_str());
+                                }
                             } else if (settingsItem == mapItem) {
                                 if (n64Devices[selectedControlPort] >= 0) {
                                     mapMode = true;

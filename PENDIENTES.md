@@ -63,7 +63,7 @@ se probó y el ruido persistió; AUD-2 reemplaza ese intento.
 | CTRL-7 | Configurar por tipo de mando la combinación global que abre el menú durante el core, con opciones compatibles para GamePad, Pro/Classic y Wii Remote/Nunchuk; conservar Minus+Plus como emergencia y persistir el ajuste | ✅ 2026-11-12 |
 | CTRL-8 | Al desconectar y reconectar Wii U Pro Controller o Classic Controller durante la app, conservar o restaurar su asignación a Mando 1/Mando 2 y su mapeo; comprobar también la navegación de UI tras reconectar | ✅ 2026-11-13 |
 | CTRL-9 | GBA: al elegir Wii U Pro Controller como Mando 1, una ROM con mapa propio debe conservar ese mando durante el juego; el archivo por ROM solo modifica botones, no el orden global | ✅ 2026-11-13 |
-| CTRL-10 | Presentar la asignación de mandos como tarjetas por puerto con «Pulsa A para conectar», selección visible y acciones de mapeo y orden, según `ejemplos/organizacion de controles para retrou.png`. RetroU conserva uno o dos puertos según consola; N64 Dev ya compila con cuatro y borde blanco del jugador seleccionado, pendiente probar en Wii U. | 🔧 2026-11-18 |
+| CTRL-10 | Presentar la asignación de mandos como tarjetas por puerto con «Pulsa A para conectar», selección visible y acciones de mapeo y orden, según `ejemplos/organizacion de controles para retrou.png`. El usuario confirmó las tarjetas y la asignación N64 en Wii U el 2026-11-20; detectó que «Cambiar orden» permitía repetir un mando y esperaba cuatro puertos aunque solo hubiera dos mandos conectados. Corrección compilada pendiente de probar en Wii U. | 🔧 2026-11-20 |
 
 ## 4. UI / Apariencia
 
@@ -126,23 +126,23 @@ Guía de la ronda en Wii U: `docs/hardware-validation.md`.
 | ID | Pendiente | Estado |
 |---|---|---|
 | N64-1 | Probar `RetroN64U.wuhb` en hardware (generada desde Our64, rebrandeada); el usuario confirmó que es funcional | ✅ 2026-11-12 |
-| N64-2 | Integrar N64 en el frontend real de RetroU. El usuario confirmó el 2026-11-18 en Wii U que `RetroN64U-Dev` inició Banjo-Kazooie y permitió jugar; el log del motor registra 1 877 VI y salida con resultado 0 al pulsar HOME. La WUHB Dev recompilada tiene SHA-256 `f3264c52664f9113e02b6d30e96b7b75d7ecee383b0fed3855f4fdcd0575d231`; la WUHB provisional en `dist/wiiu/apps/RetroN64U/` sigue separada. El port aún requiere menú durante el juego, salida HOME estable y validación de controles/guardados. | 🔧 2026-11-18 |
-| N64-3 | Igualar visualmente la pantalla de configuración N64 con la de RetroU NES/SNES/GBA. El usuario observó que la UI actual difiere y pidió afinarla después de TASK-017–021. | ⬜ |
+| N64-2 | Integrar N64 en el frontend real de RetroU. El usuario confirmó el 2026-11-18 en Wii U que `RetroN64U-Dev` inició Banjo-Kazooie y permitió jugar; el log del motor registra 1 877 VI. El 2026-11-20 confirmó que el menú de partida aún no aparece y HOME congela la app. La WUHB Dev con el arreglo de orden tiene SHA-256 `03135f99e67a86bd81cf96e0f8199355e598562b0374dc4bd1992d22c8fc3f5c` y log `native/build/logs/n64-dev-20261120-115248.log`; la WUHB provisional en `dist/wiiu/apps/RetroN64U/` sigue separada. Faltan menú durante el juego, salida HOME estable y validación de guardados. | 🔧 2026-11-20 |
+| N64-3 | Comparar en Wii U física la pantalla de configuración de N64 Dev con la de RetroU NES/SNES/GBA: secciones, opciones y navegación. El usuario dejó esta prueba pendiente el 2026-11-20; cualquier diferencia observada requerirá corrección. | ⬜ 2026-11-20 |
 | N64-4 | En el buscador N64, B borra un carácter y solo sale si la consulta está vacía; X acepta y cierra | 🔧 2026-11-13 (Codex, Our64) |
 | N64-5 | Usar `retrou_assets` en el frontend N64 de RetroU: índice, portadas y fondos desde `thumbnails.libretro.com/Nintendo - Nintendo 64/`, con descarga automática y progreso como las otras consolas. | 🔧 2026-11-14 |
-| N64-6 | Integrar en Controles RetroU el flujo de «Pulsa A para conectar» por puerto. N64 Dev asigna directamente el mando nuevo al siguiente puerto libre con A; falta prueba en Wii U. NES/SNES/GBA conservan su flujo anterior. | 🔧 2026-11-18 |
-| N64-7 | Reemplazar el frontend de Our64 por RetroU y enlazar solo Not64 + GLideN64. La ejecución de ROM ya se verificó en Wii U el 2026-11-18. El target Dev ahora presenta cuatro tarjetas de mando y aplica mapas de 18 acciones al motor; falta validar esta compilación en hardware y conectar el menú/guardados durante la partida. | 🔧 2026-11-18 |
+| N64-6 | Integrar en Controles RetroU el flujo de «Pulsa A para conectar» por puerto. N64 Dev asigna directamente el mando nuevo al siguiente puerto libre con A; el usuario confirmó este flujo en Wii U. NES/SNES/GBA conservan su flujo anterior. El fallo separado de «Cambiar orden» sigue en CTRL-10/N64-9. | ✅ 2026-11-20 |
+| N64-7 | Reemplazar el frontend de Our64 por RetroU y enlazar solo Not64 + GLideN64. La ejecución de ROM y las cuatro tarjetas de mando se verificaron en Wii U. El 2026-11-20 el usuario confirmó que el menú de partida no aparece y HOME congela la app; faltan menú, salida estable y guardados. | 🔧 2026-11-20 |
 | N64-8 | Igualar las portadas laterales del carrusel N64 al carrusel SNES: área horizontal de 270×260 y ajuste completo de la imagen. Compilado en la WUHB de desarrollo; falta comprobarlo visualmente. | 🔧 2026-11-14 |
-| N64-9 | Controles N64: cuatro tarjetas, A asigna en la pantalla principal, izquierda/derecha mueve el foco, jugador seleccionado permanece con borde blanco al usar acciones. Marcadores de botones visibles ajustados a la imagen de 610×469; Z, L y R indican su posición con texto porque quedan ocultos en esta vista. Compilado para Dev; falta prueba visual y funcional en Wii U. | 🔧 2026-11-18 |
-| N64-10 | Abrir el menú de RetroU desde el juego N64 con la combinación configurada, manteniendo la sesión y sus guardados. La ruta actual no lee el atajo mientras corre el hilo N64; requiere integrar la pausa y el dibujo del menú con GLideN64. | ⬜ 2026-11-18 |
-| N64-11 | Evitar el bloqueo al pulsar HOME durante N64. El motor terminó normalmente (1 877 VI, resultado 0), pero la app se congeló después de `n64_gx2_restored`. Dev espera una nueva adquisición del primer plano y registra el primer cuadro; falta repetir la prueba en Wii U. | 🔧 2026-11-18 |
+| N64-9 | Controles N64: cuatro tarjetas, A asigna en la pantalla principal, izquierda/derecha mueve el foco y el jugador seleccionado permanece con borde blanco. El usuario confirmó estos puntos y los marcadores en Wii U el 2026-11-20. «Cambiar orden» permitía repetir un mando y esperaba puertos vacíos; corrección pendiente de probar en Wii U. | 🔧 2026-11-20 |
+| N64-10 | Abrir el menú de RetroU desde el juego N64 con la combinación configurada, manteniendo la sesión y sus guardados. El usuario confirmó el 2026-11-20 que el menú no aparece; la ruta actual no lee el atajo mientras corre el hilo N64. Requiere integrar la pausa y el dibujo del menú con GLideN64. | ⬜ 2026-11-20 |
+| N64-11 | Evitar el bloqueo al pulsar HOME durante N64. El motor terminó normalmente en una prueba previa, pero la app se congeló después de `n64_gx2_restored`. El usuario confirmó el 2026-11-20 que HOME sigue congelando la app en Wii U tras la espera de adquisición del primer plano; faltan logs del intento para aislar el punto exacto. | 🔧 2026-11-20 |
 
 ## 10. Audio del core
 
 | ID | Pendiente | Estado |
 |---|---|---|
 | AUD-1 | Conversión lineal de 65 536 Hz a la salida de 32 000 Hz para el core GBA | ❌ 2026-11-13: probada en Wii U; el ruido persistió |
-| AUD-2 | Corregir el ruido de GBA siguiendo la ruta de RetroArch: salida Wii U a 48 000 Hz y remuestreo con filtro sinc antes de encolar; comprobar el resultado en hardware | 🔧 En curso (Codex, rama main); falta Wii U |
+| AUD-2 | Corregir el ruido de GBA siguiendo la ruta de RetroArch: salida Wii U a 48 000 Hz y remuestreo con filtro sinc antes de encolar; el usuario confirmó que el audio funciona en Wii U. | ✅ 2026-11-20 |
 | AUD-3 | Configurar frecuencia de salida y tamaño del búfer desde Sonido, guardados en `audio.conf` independiente para NES/SNES/GBA; aplicar al próximo inicio y verificar en Wii U | ✅ 2026-11-13 |
 
 ## 11. Nombre de las apps

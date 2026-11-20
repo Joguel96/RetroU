@@ -333,17 +333,18 @@ solo mantiene el estado general.
   enlaza el motor extraído dentro del frontend RetroU. El build separado
   `native/build-retrou-n64-dev.sh` deja su WUHB en
   `dist/wiiu/apps/RetroN64U-Dev/`; no reemplaza la provisional. El usuario
-  inició una ROM jugable en Wii U el 2026-11-18. Faltan el menú durante el
-  juego y verificar la salida HOME, que se congeló después de restaurar GX2.
-  La compilación siguiente incluye cuatro tarjetas, mapa N64 de 18 acciones
-  y trazas del primer cuadro tras regresar al primer plano.
+  inició una ROM jugable en Wii U el 2026-11-18. El 2026-11-20 confirmó las
+  cuatro tarjetas y el mapeo, pero el menú durante el juego no aparece y HOME
+  sigue congelando la app. «Cambiar orden» requería corregir las pulsaciones
+  repetidas y el cierre al terminar los mandos conectados; falta probar esa
+  corrección en Wii U.
 - **Probado en hardware por el usuario**: HOME durante partida, audio del
   core y NES/SNES/GBA con ROMs reales. El 2026-11-12 confirmó además las
   pruebas restantes de navegación, controles, guardados y Assets. El
   2026-11-13 confirmó UI-2, UI-10, CTRL-8, AS-6, CTRL-9, AUD-3 y APP-1.
-  Reportó ruido en el
-  audio de GBA. La conversión lineal AUD-1 no lo resolvió; AUD-2 solicita
-  48 000 Hz y usa remuestreo sinc, pendiente de verificar en hardware.
+  Reportó ruido en el audio de GBA. La conversión lineal AUD-1 no lo resolvió;
+  AUD-2 solicita 48 000 Hz y usa remuestreo sinc, confirmado en Wii U el
+  2026-11-20.
 - **Input del core implementado**: A/B/X/Y/L/R, Start/Select y D-pad/stick.
 - **Input UI**: GamePad (VPAD) + Pro Controller (WPAD) con detección en
   caliente; menú HOME del sistema vía ProcUI.
@@ -365,7 +366,7 @@ solo mantiene el estado general.
   `ejemplos/Disposicion de menu.png`, confirmada en Wii U (UI-2).
 - Audio GBA: mGBA informa 65 536 Hz. AUD-1 (lineal hacia 32 000 Hz) falló en
   Wii U. AUD-2 solicita 48 000 Hz y filtra con sinc antes de la salida SDL;
-  falta prueba en Wii U.
+  el usuario confirmó que el audio funciona en Wii U el 2026-11-20.
 - Sonido permite configurar frecuencia y búfer de salida por app NES/SNES/GBA
   en `audio.conf`; AUD-3 está confirmado en Wii U. La WUHB de N64 usa
   audio AX en Our64 y no lee este archivo.

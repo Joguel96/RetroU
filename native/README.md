@@ -131,8 +131,8 @@ Our64. El motor de `.cores/n64/` se enlaza al target interno
 `dist` para pruebas y no sustituye `RetroN64U.wuhb`. El usuario confirmó que
 una ROM inició y se pudo jugar en Wii U el 2026-11-18. El juego terminó con
 resultado 0 al pulsar HOME, pero la interfaz se congeló después de restaurar
-GX2; la WUHB Dev espera una nueva adquisición del primer plano y registra
-el primer cuadro para repetir esa prueba. `cores/check-n64-bridge.sh`
+GX2. La espera de una nueva adquisición del primer plano no resolvió el
+bloqueo en la prueba de Wii U del 2026-11-20. `cores/check-n64-bridge.sh`
 verifica el enlace del motor con los adaptadores de video, cuatro mandos y
 cuatro estados de RetroU, sin ejecutar una ROM. Véase
 `docs/n64-port-contract.md`.
@@ -158,7 +158,9 @@ cuatro estados de RetroU, sin ejecutar una ROM. Véase
   otra pantalla y mantiene el borde blanco del jugador al navegar sus acciones.
   Sus 18 acciones se guardan en `control-map.conf` y los cuatro puertos en
   `n64-ports.conf`; los mapas de GamePad y Pro/Classic se aplican al motor al
-  iniciar una ROM. Esta compilación falta probarla en Wii U.
+  iniciar una ROM. El usuario confirmó las tarjetas y el mapeo en Wii U el
+  2026-11-20. «Cambiar orden» ahora cuenta los mandos conectados e ignora un
+  segundo A del mismo mando; falta probar esa corrección en Wii U.
 - La asignación externa conserva un slot lógico cuando el Pro/Classic se
   desconecta; al reconectar en otro canal se intenta restaurar ese slot sin
   cambiar el mapa. El log registra `controller_disconnected`,
@@ -169,7 +171,8 @@ guardados, mapeo y descargas de NES/SNES/GBA anteriores a AS-6, CTRL-8 y UI-2.
 AS-6, CTRL-8, UI-2 y CTRL-9 se confirmaron en Wii U el 2026-11-13. La
 conversión lineal de audio de GBA (AUD-1) se probó y no eliminó el ruido.
 AUD-2 cambia la salida solicitada a 48 000 Hz y aplica un filtro sinc al
-audio de mGBA de 65 536 Hz; falta comprobar el resultado en hardware. El log
+audio de mGBA de 65 536 Hz; el usuario confirmó el resultado en Wii U el
+2026-11-20. El log
 `retrou_rpx.log` registra `audio_opened`, `Audio sinc resampler` y los
 reinicios de cola por atraso.
 

@@ -1,0 +1,96 @@
+{
+  "root": "E:\\retrou",
+  "created": "2026-11-20T21:10:32.622545",
+  "roms": [
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Tony Hawks Downhill Jam [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Tony Hawk's Downhill Jam (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "4A975F48",
+      "catalog_title": "Tony Hawk's Downhill Jam (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1163676212000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Harry Potter II - Camara Secreta [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Harry Potter and the Chamber of Secrets (USA, Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da).gba",
+      "crc": "342816DB",
+      "catalog_title": "Harry Potter and the Chamber of Secrets (USA, Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da)",
+      "size": 8388608,
+      "mtime_ns": 1036959812000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Columns Crown [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Columns Crown (Europe).gba",
+      "crc": "330A0975",
+      "catalog_title": "Columns Crown (Europe)",
+      "size": 8388608,
+      "mtime_ns": 1007558882000000000
+    },
+    {
+      "system": "nes",
+      "source": "E:\\retrou\\roms\\NES\\Super Donkey Kong (Asia) (En) (Pirate).nes",
+      "target": "E:\\retrou\\roms\\NES\\Super Donkey Kong (Taiwan) (En) (Pirate).nes",
+      "crc": "11790C6E",
+      "catalog_title": "Super Donkey Kong (Taiwan) (En) (Pirate)",
+      "size": 262160,
+      "mtime_ns": 851495520000000000
+    },
+    {
+      "system": "snes",
+      "source": "E:\\retrou\\roms\\SNES\\FIFA 97 - Gold Edition (Europe) (En,Fr,De,Es,It,Sv).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\FIFA 97 (Europe) (En,Fr,De,Es,It,Sv).sfc",
+      "crc": "470EABE5",
+      "catalog_title": "FIFA 97 (Europe) (En,Fr,De,Es,It,Sv)",
+      "size": 2097152,
+      "mtime_ns": 1093367892000000000
+    }
+  ],
+  "moves": [
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Tony Hawks Downhill Jam [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Tony Hawk's Downhill Jam (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Harry Potter II - Camara Secreta [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Harry Potter and the Chamber of Secrets (USA, Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Columns Crown [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Columns Crown (Europe).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Columns Crown [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Columns Crown (Europe).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Columns Crown [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Columns Crown (Europe).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\NES\\Super Donkey Kong (Asia) (En) (Pirate).nes",
+      "target": "E:\\retrou\\roms\\NES\\Super Donkey Kong (Taiwan) (En) (Pirate).nes"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\nes\\Super Donkey Kong (Asia) (En) (Pirate).png",
+      "target": "E:\\retrou\\backdrops\\nes\\Super Donkey Kong (Taiwan) (En) (Pirate).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\SNES\\FIFA 97 - Gold Edition (Europe) (En,Fr,De,Es,It,Sv).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\FIFA 97 (Europe) (En,Fr,De,Es,It,Sv).sfc"
+    }
+  ],
+  "favorites": [],
+  "skipped": [],
+  "status": "planned"
+}

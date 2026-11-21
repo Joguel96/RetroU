@@ -212,7 +212,7 @@ def execute(manifest_path, undo=False):
         favorites_to_write.append((path, data, current))
 
     log_path = root / ("rom-rename-rollback.log" if undo else "rom-rename.log")
-    mirror = root / "rom-rename-manifest-20261120.json"
+    mirror = root / (manifest_path.stem.replace("rom-rename-", "rom-rename-manifest-", 1) + ".json")
     if not undo:
         mirror.write_bytes(manifest_path.read_bytes())
     completed_moves = []

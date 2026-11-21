@@ -160,7 +160,7 @@ cuatro estados de RetroU, sin ejecutar una ROM. Véase
   `n64-ports.conf`; los mapas de GamePad y Pro/Classic se aplican al motor al
   iniciar una ROM. El usuario confirmó las tarjetas y el mapeo en Wii U el
   2026-11-20. «Cambiar orden» ahora cuenta los mandos conectados e ignora un
-  segundo A del mismo mando; falta probar esa corrección en Wii U.
+  segundo A del mismo mando; el usuario confirmó la corrección en Wii U.
 - La asignación externa conserva un slot lógico cuando el Pro/Classic se
   desconecta; al reconectar en otro canal se intenta restaurar ese slot sin
   cambiar el mapa. El log registra `controller_disconnected`,

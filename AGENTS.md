@@ -335,9 +335,9 @@ solo mantiene el estado general.
   `dist/wiiu/apps/RetroN64U-Dev/`; no reemplaza la provisional. El usuario
   inició una ROM jugable en Wii U el 2026-11-18. El 2026-11-20 confirmó las
   cuatro tarjetas y el mapeo, pero el menú durante el juego no aparece y HOME
-  sigue congelando la app. «Cambiar orden» requería corregir las pulsaciones
-  repetidas y el cierre al terminar los mandos conectados; falta probar esa
-  corrección en Wii U.
+  sigue congelando la app. El usuario confirmó en Wii U la corrección de
+  «Cambiar orden», incluidas las pulsaciones repetidas y el cierre al terminar
+  los mandos conectados (CTRL-10 y N64-9).
 - **Probado en hardware por el usuario**: HOME durante partida, audio del
   core y NES/SNES/GBA con ROMs reales. El 2026-11-12 confirmó además las
   pruebas restantes de navegación, controles, guardados y Assets. El

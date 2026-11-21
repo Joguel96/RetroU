@@ -16,24 +16,13 @@ Not64, GLideN64 y audio AX. La UI, los datos y los guardados son de RetroU.
 - **Branding**: `assets/icon.png`, `assets/tv-splash.png`, `assets/drc-splash.png`.
   Por consola: `assets/console/<consola>/` (generados con
   `tools/generate_console_assets.py`).
-- **N64 (Our64, versión anterior)**: WUHB independiente, compilada
-  anteriormente en el clon externo `C:/proyectos/Our64` con
-  Not64 + GLideN64 + AX, sin core Libretro. Incluye biblioteca RetroU
-  (cards, lista y carrusel). Ajustes y parte del flujo de controles, guardados
-  y Assets todavía siguen el modelo de Our64; su migración funcional y visual
-  a RetroU está pendiente (N64-3/N64-7).
-  Lee ROMs de `sd:/retrou/roms/n64` y escribe datos en `sd:/retrou/n64/`;
-  si la carpeta nueva no tiene ROMs, puede leer las de
-  `sd:/wiiu/our64/roms` sin modificarlas. Los guardados anteriores se leen
-  cuando falta el equivalente nuevo. Esta WUHB provisional funcionó en Wii U;
-  la WUHB Dev del port necesita completar sus pruebas de controles y salida.
-  Ya no se compila ni se genera en `dist/` esta versión con la UI de Our64.
-  El log de ejecución N64 es `sd:/retrou/n64/retrou_n64.log`.
-  El port definitivo en desarrollo enlaza Not64 + GLideN64 al frontend RetroU;
-  `bash native/build-retrou-n64-dev.sh` lo copia por separado a
-  `dist/wiiu/apps/RetroN64U-Dev/RetroN64U-Dev.wuhb`. El 2026-11-18 inició
-  una ROM jugable en Wii U y descargó assets. Todavía faltan el menú durante
-  la partida y la salida estable con HOME; no sustituye la WUHB anterior.
+- **N64**: el frontend RetroU enlaza Not64 + GLideN64 + AX extraído de
+  `C:/proyectos/Our64`. `bash native/build-retrou-n64.sh` genera
+  `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb`; la versión anterior con UI de
+  Our64 ya no se compila. El usuario probó una ROM, controles y descargas en
+  Wii U. El menú de partida recién integrado compila, pero falta probarlo en
+  hardware junto con HOME y guardados (N64-2/7/10/11). El log de ejecución
+  es `sd:/retrou/n64/retrou_n64.log`.
 - **Mapeo de controles GX2**: editor estilo Our64 por acción del core, con varias
   asignaciones por acción, `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás
   y persistencia explícita de acciones `none` en `control-map.conf` formato `v2`.

@@ -58,7 +58,7 @@ NES, SNES y GBA contienen:
 RetroU frontend + un core Libretro enlazado estáticamente
 ```
 
-N64 Dev se compila desde este proyecto con el motor Not64 + GLideN64 extraído
+N64 se compila desde este proyecto con el motor Not64 + GLideN64 extraído
 de Our64 y audio AX, sin Libretro. La versión anterior con UI de Our64 se
 conserva como referencia, pero ya no se compila.
 
@@ -69,7 +69,7 @@ Apps:
 | `retrou_nes_gx2` | fceumm | NES |
 | `retrou_snes_gx2` | snes9x | SNES |
 | `retrou_gba_gx2` | mgba | GBA |
-| `retrou_n64_gx2` (Dev) | Not64 + GLideN64 + AX | N64 |
+| `retrou_n64_gx2` | Not64 + GLideN64 + AX | N64 |
 
 Salidas:
 
@@ -86,11 +86,10 @@ Distribución:
 dist/wiiu/apps/RetroNESU/RetroNESU.wuhb
 dist/wiiu/apps/RetroSNESU/RetroSNESU.wuhb
 dist/wiiu/apps/RetroGBAU/RetroGBAU.wuhb
-dist/wiiu/apps/RetroN64U-Dev/RetroN64U-Dev.wuhb
+dist/wiiu/apps/RetroN64U/RetroN64U.wuhb
 ```
 
-`dist/wiiu/apps/RetroN64U/RetroN64U.wuhb` era la salida anterior con UI de
-Our64; ya no se genera en `dist/`.
+La salida anterior con UI de Our64 ya no se compila ni se distribuye.
 
 No se distribuyen RPX sueltos ni `RetroU.wuhb` launcher.
 
@@ -304,9 +303,9 @@ cd native
 cmake --build build -j"$(nproc)"
 ```
 
-En Windows se usa MSYS2 bash para CMake/make. N64 Dev usa
-`native/build-retrou-n64-dev.sh` y se copia a
-`dist/wiiu/apps/RetroN64U-Dev/`; no entra en el build CMake por defecto.
+En Windows se usa MSYS2 bash para CMake/make. N64 usa
+`native/build-retrou-n64.sh` y se copia a
+`dist/wiiu/apps/RetroN64U/`; no entra en el build CMake por defecto.
 
 No commitear:
 
@@ -324,26 +323,15 @@ antes de empezar una actividad hay que revisarlo, y cada pendiente terminado
 solo mantiene el estado general.
 
 - NES/SNES/GBA: WUHB estática generada y compilada.
-- N64: `RetroN64U.wuhb` sale de Our64 (Not64 + GLideN64 + AX, clon externo
-  `C:/proyectos/Our64`) con compatibilidad WUT 1.9.2. La base anterior
-  funcionó en hardware el 2026-11-12. TASK-001–020 del port están
-  implementadas o documentadas; la nueva WUHB arrancó en Cemu y escribió
-  `sd:/retrou/n64/retrou_n64.log`. TASK-021 y N64-2 permanecen abiertos
-  hasta completar la matriz en Wii U. La WUHB diagnóstica de `d3c56db`
-  incorpora trazas persistentes `ASSETS:` y la corrección del buscador.
-- El port definitivo tiene un target de desarrollo `retrou_n64_gx2` que
-  enlaza el motor extraído dentro del frontend RetroU. El build separado
-  `native/build-retrou-n64-dev.sh` deja su WUHB en
-  `dist/wiiu/apps/RetroN64U-Dev/`; no reemplaza la provisional. El usuario
-  inició una ROM jugable en Wii U el 2026-11-18. El 2026-11-20 confirmó las
-  cuatro tarjetas y el mapeo, pero el menú durante el juego no aparece y HOME
-  sigue congelando la app. El usuario confirmó en Wii U la corrección de
-  «Cambiar orden», incluidas las pulsaciones repetidas y el cierre al terminar
-  los mandos conectados (CTRL-10 y N64-9). También confirmó la configuración
-  y el buscador (N64-3/4). El índice y los PNG de N64 Dev vienen del repositorio
-  `libretro-thumbnails` en GitHub. El usuario confirmó las descargas de assets y el carrusel con carátulas
-  reales en Wii U (N64-5/8). Solo se compila N64 Dev; la versión con UI de
-  Our64 queda como referencia sin nuevos builds.
+- N64: `retrou_n64_gx2` enlaza el motor Not64 + GLideN64 extraído de
+  `C:/proyectos/Our64` dentro del frontend RetroU. El build separado
+  `native/build-retrou-n64.sh` deja la WUHB oficial en
+  `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb`; la versión anterior con UI de
+  Our64 queda solo como referencia. El usuario confirmó en Wii U una ROM
+  jugable, cuatro tarjetas de mando, configuración, buscador, descarga de
+  assets y carrusel con portadas. El 2026-11-21 se agregó la pausa y el menú
+  durante el juego; solo se verificó compilación. HOME y los guardados siguen
+  pendientes de prueba y corrección en Wii U (N64-2/7/10/11).
 - **Probado en hardware por el usuario**: HOME durante partida, audio del
   core y NES/SNES/GBA con ROMs reales. El 2026-11-12 confirmó además las
   pruebas restantes de navegación, controles, guardados y Assets. El
@@ -373,6 +361,12 @@ solo mantiene el estado general.
   asociados. Los manifiestos y el log de reversión están descritos en
   `docs/rom-renaming.md`. Falta verificar esos nombres y guardados en Wii U
   (ROM-1); las ROMs sin CRC conocido y los destinos duplicados no se tocaron.
+- El 2026-11-21 se retiraron 29 ROMs duplicadas (13 Europa con alternativa
+  USA y 16 copias de contenido idéntico). El respaldo verificable está en
+  `native/build/rom-dedupe-20261121/`; ver `docs/rom-deduplication.md` (ROM-2).
+  Donkey Kong 64 ya tenía nombre canónico, pero su portada era texto con
+  extensión PNG; se reemplazó en la SD. `retrou_assets` ahora valida la
+  cabecera PNG antes de saltar archivos existentes (AS-7). Falta prueba en Wii U.
 - Ajustes en dos paneles: nueva distribución según
   `ejemplos/Disposicion de menu.png`, confirmada en Wii U (UI-2).
 - Audio GBA: mGBA informa 65 536 Hz. AUD-1 (lineal hacia 32 000 Hz) falló en

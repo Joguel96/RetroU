@@ -225,6 +225,7 @@ int n64_engine_play(const char *rom_path, const char *root, const N64EngineHost 
     report_line("N64: detenido tras %u VI", g_bench.vis);
 done:
     s_running = 0;
+    if (graphics_up) n64_video_menu_hide();
     if (video_up) video_stop();
     if (states_up) n64_states_finish();
     if (saves_up) saves_stop();

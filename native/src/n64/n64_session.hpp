@@ -3,6 +3,7 @@
 #include "n64_input.hpp"
 
 #include <atomic>
+#include <array>
 #include <coreinit/thread.h>
 #include <cstdint>
 #include <string>
@@ -21,8 +22,13 @@ public:
     bool assign(int port, int device);
     bool setChannel(int slot, int channel);
     bool setMap(int type, const input_map &map);
+    void setMenuShortcuts(const std::array<int, 3> &choices) { menuShortcuts_ = choices; }
     bool start(const std::string &romPath, const std::string &root);
     void requestStop();
+    int takeMenuRequest() { return menuRequest_.exchange(0); } // 0: none; 1..5: device
+    uint32_t takeMenuButtons() { return menuButtons_.exchange(0); }
+    bool menuPaused() const { return menuPaused_.load(); }
+    void resumeMenu() { menuPaused_ = false; }
     bool requestSave(int slot);
     bool requestLoad(int slot);
     bool finished() const;
@@ -43,5 +49,9 @@ private:
     std::atomic<int> pendingLoad_{-1};
     std::atomic<int> stateResult_{0};
     std::atomic<bool> stopRequested_{false};
+    std::atomic<bool> menuPaused_{false};
+    std::atomic<int> menuRequest_{0};
+    std::atomic<uint32_t> menuButtons_{0};
+    std::array<int, 3> menuShortcuts_{{0, 0, 0}};
     bool started_ = false;
 };

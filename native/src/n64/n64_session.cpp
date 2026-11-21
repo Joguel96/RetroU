@@ -48,6 +48,9 @@ bool N64Session::start(const std::string &romPath, const std::string &root)
     pendingSave_ = pendingLoad_ = -1;
     stateResult_ = 0;
     stopRequested_ = false;
+    menuPaused_ = false;
+    menuRequest_ = 0;
+    menuButtons_ = 0;
     const uint32_t codegenCore = OSGetCodegenCore();
     if (!OSCreateThread(&thread_, threadMain, 0, this,
                         stack_ + sizeof(stack_), sizeof(stack_), 16,
@@ -63,6 +66,7 @@ void N64Session::requestStop()
 {
     if (!started_) return;
     stopRequested_ = true;
+    menuPaused_ = false;
     n64_engine_request_stop();
 }
 
@@ -113,6 +117,20 @@ int N64Session::onVi(void *user, unsigned, uint32_t ports[4])
 {
     auto *session = static_cast<N64Session *>(user);
     session->input_.poll(ports);
+    const int menuSource = session->input_.menuShortcutPressed(session->menuShortcuts_);
+    session->input_.menuPressed(); // keep held buttons from becoming menu presses
+    if (menuSource >= 0 && !session->menuPaused_) {
+        session->menuRequest_ = menuSource + 1;
+        session->menuPaused_ = true;
+        session->input_.stopRumble();
+    }
+    while (session->menuPaused_ && !session->stopRequested_) {
+        session->input_.poll(ports);
+        session->input_.menuShortcutPressed(session->menuShortcuts_);
+        session->menuButtons_.fetch_or(session->input_.menuPressed());
+        OSSleepTicks(OSMillisecondsToTicks(16));
+    }
+    if (session->stopRequested_) return 1;
     const int save = session->pendingSave_.exchange(-1);
     if (save >= 0) session->stateResult_ = n64_states_request_save(save);
     const int load = session->pendingLoad_.exchange(-1);

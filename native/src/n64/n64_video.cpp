@@ -1,11 +1,15 @@
 #include "n64_video.h"
 
+#include "gx2/gx2_renderer.hpp"
+#include "gx2/gx2_text.hpp"
+#include "video_ui.h"
 #include "report.h"
 
 #include <coreinit/cache.h>
 #include <coreinit/memdefaultheap.h>
 #include <gx2/context.h>
 #include <gx2/draw.h>
+#include <gx2/event.h>
 #include <gx2/mem.h>
 #include <gx2/state.h>
 #include <gx2/surface.h>
@@ -13,10 +17,105 @@
 #include <gx2/texture.h>
 #include <cstring>
 
+extern const unsigned char _binary_ui_ttf_start[];
+extern const unsigned char _binary_ui_ttf_end[];
+namespace gx2 { void restoreState(); }
+
 namespace {
 GX2ContextState *s_copy_context;
 GX2ColorBuffer s_shaped;
 bool s_picture_43 = true;
+bool s_menu_ready = false;
+bool s_menu_drawn = false;
+
+retrou::gx2::Color menuColor(const uint8_t rgba[4])
+{
+    return {rgba[0], rgba[1], rgba[2], rgba[3]};
+}
+
+void menuOnGraphicsCore(void *argument)
+{
+    using namespace retrou::gx2;
+    const auto &view = *static_cast<const N64MenuView *>(argument);
+    s_menu_drawn = false;
+    if (!s_menu_ready) {
+        video_set_hold(true);
+        if (!attach()) {
+            video_set_hold(false);
+            report_line("N64: no se pudo adjuntar el renderizador del menu");
+            return;
+        }
+        if (!text::loadFont(_binary_ui_ttf_start,
+                            static_cast<size_t>(_binary_ui_ttf_end - _binary_ui_ttf_start))) {
+            shutdown();
+            video_set_hold(false);
+            gx2::restoreState();
+            report_line("N64: no se pudo cargar la fuente del menu");
+            return;
+        }
+        const char *labels[] = {"MENU", "Continuar", "Guardar estado", "Cargar estado",
+                                "Controles", "Salir del juego", "A  Aceptar    B  Volver",
+                                "Slot 1", "Slot 2", "Slot 3", "Slot 4",
+                                "Los controles se configuran en Ajustes"};
+        for (const char *label : labels) text::prewarm(label, 20);
+        text::prewarm("MENU", 26);
+        text::prewarm("Guardar estado", 26);
+        text::prewarm("Cargar estado", 26);
+        text::prewarm("Controles", 26);
+        text::prewarm("A  Aceptar    B  Volver", 15);
+        s_menu_ready = true;
+    }
+    setOutputMode(view.output_mode);
+    const Color white{255, 255, 255, 255};
+    const Color muted{148, 163, 184, 255};
+    const Color panel{21, 27, 40, 245};
+    const Color accent = menuColor(view.accent);
+    beginFrame(menuColor(view.background));
+    drawGradient(0, 0, 1280, 720, menuColor(view.background_top),
+                 menuColor(view.background));
+    if (view.page == 0) {
+        drawRoundRect(390, 170, 500, 380, 18, panel);
+        text::drawText("MENU", 430, 200, 26, white);
+        const char *items[] = {"Continuar", "Guardar estado", "Cargar estado",
+                               "Controles", "Salir del juego"};
+        for (int i = 0; i < 5; ++i)
+            text::drawText(items[i], 430, 270 + i * 44, 20,
+                           i == view.selected ? accent : muted);
+        text::drawText("A  Aceptar    B  Volver", 430, 500, 15, muted);
+    } else {
+        drawRoundRect(290, 110, 700, 500, 18, panel);
+        const char *title = view.page == 1 ? "Guardar estado" :
+                            view.page == 2 ? "Cargar estado" : "Controles";
+        text::drawText(title, 330, 138, 26, white);
+        if (view.page == 3) {
+            text::drawText("Los controles se configuran en Ajustes", 330, 260, 20, muted);
+        } else {
+            const char *slots[] = {"Slot 1", "Slot 2", "Slot 3", "Slot 4"};
+            for (int i = 0; i < 4; ++i) {
+                const float y = 205 + i * 88;
+                if (i == view.slot)
+                    drawRoundRect(315, y - 10, 650, 78, 10, Color{245, 217, 127, 40});
+                text::drawText(slots[i], 455, y + 18, 20, i == view.slot ? accent : muted);
+            }
+        }
+        text::drawText("A  Aceptar    B  Volver", 330, 570, 15, muted);
+    }
+    endFrame();
+    s_menu_drawn = true;
+    gx2::restoreState();
+}
+
+void hideMenuOnGraphicsCore(void *)
+{
+    if (s_menu_ready) {
+        GX2DrawDone();
+        retrou::gx2::text::unloadFont();
+        retrou::gx2::shutdown();
+        s_menu_ready = false;
+    }
+    video_set_hold(false);
+    gx2::restoreState();
+}
 
 bool alloc_buffer(GX2ColorBuffer *buffer, uint32_t width, uint32_t height)
 {
@@ -72,6 +171,19 @@ GX2ColorBuffer *shape(GX2ColorBuffer *frame)
     GX2Flush();
     return &s_shaped;
 }
+}
+
+extern "C" int n64_video_menu_show(const N64MenuView *view)
+{
+    if (!view) return 0;
+    s_menu_drawn = false;
+    video_call(menuOnGraphicsCore, const_cast<N64MenuView *>(view));
+    return s_menu_drawn ? 1 : 0;
+}
+
+extern "C" void n64_video_menu_hide(void)
+{
+    if (s_menu_ready) video_call(hideMenuOnGraphicsCore, nullptr);
 }
 
 GX2ColorBuffer *ui_gfx_overlay(GX2ColorBuffer *frame) { return frame; }

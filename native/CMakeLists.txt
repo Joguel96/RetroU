@@ -299,8 +299,7 @@ add_gx2_retrou(retrou_nes_gx2 nes "NES" "RetroU NES" "${FCEUMM_CORE}")
 add_gx2_retrou(retrou_snes_gx2 snes "SNES" "RetroU SNES" "${SNES9X_CORE}")
 add_gx2_retrou(retrou_gba_gx2 gba "GBA" "RetroU GBA" "${MGBA_CORE}")
 
-# Development build of the definitive N64 port. Stage it under its own name
-# while the game menu and HOME transition are still being completed.
+# RetroU N64 frontend linked with the extracted Not64/GLideN64 engine.
 set(N64_ENGINE_CORE "${CMAKE_CURRENT_SOURCE_DIR}/../.cores/n64/not64_gliden64_wiiu.a"
     CACHE FILEPATH "extracted Not64 and GLideN64 engine")
 set(N64_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/../.cores/our64")
@@ -361,21 +360,21 @@ target_link_libraries(retrou_n64_gx2 PRIVATE
 wut_create_rpx(retrou_n64_gx2)
 wut_create_wuhb(retrou_n64_gx2
     CONTENT    "${CMAKE_CURRENT_SOURCE_DIR}/content"
-    NAME       "RetroU N64 (desarrollo)"
-    SHORTNAME  "RetroU N64 Dev"
+    NAME       "RetroU N64"
+    SHORTNAME  "RetroU N64"
     AUTHOR     "joguel96"
     ICON       "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/n64/icon.png"
     TVSPLASH   "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/n64/tv-splash.png"
     DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/n64/drc-splash.png"
 )
-add_custom_target(stage_n64_dev
+add_custom_target(stage_n64
     COMMAND "${CMAKE_COMMAND}" -E make_directory
-            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroN64U-Dev"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroN64U"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
             "${CMAKE_CURRENT_BINARY_DIR}/retrou_n64_gx2.wuhb"
-            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroN64U-Dev/RetroN64U-Dev.wuhb"
+            "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroN64U/RetroN64U.wuhb"
     DEPENDS retrou_n64_gx2_wuhb
-    COMMENT "Staging the separate RetroU N64 development bundle"
+    COMMENT "Staging the RetroU N64 bundle"
 )
 
 add_custom_target(stage_wuhb ALL

@@ -28,6 +28,8 @@ using Texture = int;
 
 // Initialises GX2 and the single TV color buffer. Returns false on failure.
 bool init();
+// Use the WHBGfx instance already owned by the N64 graphics thread.
+bool attach();
 
 // Frees GPU resources.
 void shutdown();

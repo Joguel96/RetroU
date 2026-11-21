@@ -206,20 +206,20 @@ native/build/retrou_snes_gx2.wuhb
 native/build/retrou_gba_gx2.wuhb
 ```
 
-### Compilar el port N64 de desarrollo
+### Compilar RetroU N64
 
 Desde MSYS2/devkitPro:
 
 ```sh
-bash native/build-retrou-n64-dev.sh
+bash native/build-retrou-n64.sh
 ```
 
 El script reconstruye el motor fijado, compila el frontend RetroU y copia
 `native/build/retrou_n64_gx2.wuhb` a
-`dist/wiiu/apps/RetroN64U-Dev/RetroN64U-Dev.wuhb`. Guarda logs en
+`dist/wiiu/apps/RetroN64U/RetroN64U.wuhb`. Guarda logs en
 `native/build/logs/` y registra el SHA-256 del binario copiado. La app lleva
-el nombre `RetroU N64 Dev` y un Title ID distinto; todavía no está lista
-para reemplazar la app N64 de uso normal. Al probarla, conservar
+el nombre `RetroU N64`. La pausa y el menú durante la ROM requieren prueba
+en Wii U, igual que HOME y los guardados. Al probarla, conservar
 `sd:/retrou/retrou_rpx.log` y `sd:/retrou/n64/retrou_n64.log`.
 
 ### WUHB provisional de N64 (registro histórico)
@@ -236,7 +236,7 @@ El log final de build es
 `C:/proyectos/Our64/player/build-release/logs/build-20261113-212647.log`.
 
 Estos hashes y rutas documentan la versión anterior; el flujo actual solo
-compila y distribuye `RetroN64U-Dev.wuhb` desde RetroU.
+compila y distribuye `RetroN64U.wuhb` desde RetroU.
 
 ## SD
 

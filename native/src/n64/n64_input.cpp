@@ -85,6 +85,42 @@ int mapType(int type)
     default: return INPUT_WIIMOTE;
     }
 }
+
+uint32_t shortcutMask(int family, int choice)
+{
+    if (family == 0) {
+        if (choice == 1) return VPAD_BUTTON_L | VPAD_BUTTON_R | VPAD_BUTTON_PLUS;
+        if (choice == 2) return VPAD_BUTTON_ZL | VPAD_BUTTON_ZR | VPAD_BUTTON_PLUS;
+        return VPAD_BUTTON_MINUS | VPAD_BUTTON_PLUS;
+    }
+    if (family == 1) {
+        if (choice == 1) return WPAD_PRO_BUTTON_L | WPAD_PRO_BUTTON_R | WPAD_PRO_BUTTON_PLUS;
+        if (choice == 2) return WPAD_PRO_BUTTON_ZL | WPAD_PRO_BUTTON_ZR | WPAD_PRO_BUTTON_PLUS;
+        return WPAD_PRO_BUTTON_MINUS | WPAD_PRO_BUTTON_PLUS;
+    }
+    if (choice == 1) return WPAD_BUTTON_1 | WPAD_BUTTON_2;
+    if (choice == 2) return WPAD_BUTTON_A | WPAD_BUTTON_B | WPAD_BUTTON_MINUS;
+    return WPAD_BUTTON_MINUS | WPAD_BUTTON_PLUS;
+}
+
+uint32_t navigationBits(uint32_t buttons, bool pro, bool sideways, float stickY)
+{
+    uint32_t bits = 0;
+    if (pro) {
+        if (buttons & WPAD_PRO_BUTTON_A) bits |= 1;
+        if (buttons & WPAD_PRO_BUTTON_B) bits |= 2;
+        if (buttons & WPAD_PRO_BUTTON_UP) bits |= 4;
+        if (buttons & WPAD_PRO_BUTTON_DOWN) bits |= 8;
+    } else {
+        if (buttons & WPAD_BUTTON_A) bits |= 1;
+        if (buttons & WPAD_BUTTON_B) bits |= 2;
+        if (buttons & (sideways ? WPAD_BUTTON_RIGHT : WPAD_BUTTON_UP)) bits |= 4;
+        if (buttons & (sideways ? WPAD_BUTTON_LEFT : WPAD_BUTTON_DOWN)) bits |= 8;
+    }
+    if (stickY > 0.55f) bits |= 4;
+    if (stickY < -0.55f) bits |= 8;
+    return bits;
+}
 }
 
 N64InputBridge::N64InputBridge()
@@ -228,4 +264,51 @@ void N64InputBridge::rumble(int port, bool enabled)
 void N64InputBridge::stopRumble()
 {
     for (int port = 0; port < 4; ++port) rumble(port, false);
+}
+
+int N64InputBridge::menuShortcutPressed(const std::array<int, 3> &choices)
+{
+    int source = -1;
+    const uint32_t gamepad = gamepad_present_ ? last_pad_.hold : 0;
+    bool held = gamepad_present_ &&
+        (((gamepad & shortcutMask(0, choices[0])) == shortcutMask(0, choices[0])) ||
+         ((gamepad & shortcutMask(0, 0)) == shortcutMask(0, 0)));
+    if (held && !last_shortcut_[0]) source = 0;
+    last_shortcut_[0] = held;
+    const auto &external = wpad_input_states();
+    for (int ch = 0; ch < 4; ++ch) {
+        const auto &pad = external[ch];
+        const int family = pad.type == WPAD_TYPE_PRO || pad.type == WPAD_TYPE_CLASSIC ? 1 : 2;
+        held = pad.connected &&
+            (((pad.buttons & shortcutMask(family, choices[family])) ==
+              shortcutMask(family, choices[family])) ||
+             ((pad.buttons & shortcutMask(family, 0)) == shortcutMask(family, 0)));
+        if (held && !last_shortcut_[ch + 1]) source = ch + 1;
+        last_shortcut_[ch + 1] = held;
+    }
+    return source;
+}
+
+uint32_t N64InputBridge::menuPressed()
+{
+    uint32_t pressed = 0;
+    uint32_t bits = 0;
+    if (gamepad_present_) {
+        if (last_pad_.hold & VPAD_BUTTON_A) bits |= 1;
+        if (last_pad_.hold & VPAD_BUTTON_B) bits |= 2;
+        if (last_pad_.hold & VPAD_BUTTON_UP || last_pad_.leftStick.y > 0.55f) bits |= 4;
+        if (last_pad_.hold & VPAD_BUTTON_DOWN || last_pad_.leftStick.y < -0.55f) bits |= 8;
+    }
+    pressed |= bits & ~last_menu_bits_[0];
+    last_menu_bits_[0] = bits;
+    const auto &external = wpad_input_states();
+    for (int ch = 0; ch < 4; ++ch) {
+        const auto &pad = external[ch];
+        const bool pro = pad.type == WPAD_TYPE_PRO || pad.type == WPAD_TYPE_CLASSIC;
+        bits = pad.connected ? navigationBits(pad.buttons, pro,
+            pad.type == WPAD_TYPE_WIIMOTE, pad.left_y / 32767.0f) : 0;
+        pressed |= bits & ~last_menu_bits_[ch + 1];
+        last_menu_bits_[ch + 1] = bits;
+    }
+    return pressed;
 }

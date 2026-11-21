@@ -8,6 +8,7 @@
 #include "wpad_input.hpp"
 #ifdef RETROU_N64_ENGINE
 #include "n64/n64_frontend_core.hpp"
+#include "n64/n64_video.h"
 using FrontendCore = N64FrontendCore;
 #else
 using FrontendCore = retrou::RplCore;
@@ -1775,6 +1776,7 @@ int main()
     bool n64LaunchPending = false;
     bool n64NeedsGx2Restore = false;
     bool n64FirstFrameAfterRestore = false;
+    bool n64MenuVisible = false;
 #endif
     auto persistControls = [&]() {
 #ifdef RETROU_N64_ENGINE
@@ -1921,7 +1923,15 @@ int main()
                 bootLog("n64_stopped_for_foreground_release");
             }
 #endif
+            bootLog("foreground_release_draw_done_begin");
             ProcUIDrawDoneRelease();
+            bootLog("foreground_release_draw_done_end");
+#ifdef RETROU_N64_ENGINE
+            if (n64NeedsGx2Restore) {
+                bootLog("n64_home_exit_after_release");
+                break;
+            }
+#endif
             waitingRelease = true;
             // Wait for the next foreground acquisition before initializing GX2
             // again; the system can still own the scan buffers at this point.
@@ -1935,11 +1945,93 @@ int main()
 #ifdef RETROU_N64_ENGINE
         if (n64Running) {
             if (!core.finished()) {
+                const int menuSource = core.takeMenuRequest();
+                bool menuChanged = false;
+                bool closeMenu = false;
+                bool stopGame = false;
+                if (menuSource > 0 && core.menuPaused() && !n64MenuVisible) {
+                    n64MenuVisible = true;
+                    coreMenu = true;
+                    coreMenuIndex = 0;
+                    slotMode = 0;
+                    slotIndex = 0;
+                    menuChanged = true;
+                    bootLog(("n64_menu_shortcut source=" + std::to_string(menuSource)).c_str());
+                }
+                if (n64MenuVisible) {
+                    const uint32_t buttons = core.takeMenuButtons();
+                    if (buttons & 2) {
+                        if (slotMode) { slotMode = 0; menuChanged = true; }
+                        else closeMenu = true;
+                    } else if (buttons & 4) {
+                        if (slotMode == 1 || slotMode == 2) slotIndex = (slotIndex + 3) % 4;
+                        else if (slotMode == 0) coreMenuIndex = (coreMenuIndex + 4) % 5;
+                        menuChanged = true;
+                    } else if (buttons & 8) {
+                        if (slotMode == 1 || slotMode == 2) slotIndex = (slotIndex + 1) % 4;
+                        else if (slotMode == 0) coreMenuIndex = (coreMenuIndex + 1) % 5;
+                        menuChanged = true;
+                    } else if (buttons & 1) {
+                        if (slotMode == 1 || slotMode == 2) {
+                            const bool queued = slotMode == 1 ? core.requestSave(slotIndex) :
+                                                              core.requestLoad(slotIndex);
+                            bootLog(queued ? "n64_menu_state_queued" : "n64_menu_state_failed");
+                            if (queued) closeMenu = true;
+                        } else if (slotMode == 3) {
+                            slotMode = 0;
+                            menuChanged = true;
+                        } else if (coreMenuIndex == 0) {
+                            closeMenu = true;
+                        } else if (coreMenuIndex == 1 || coreMenuIndex == 2 ||
+                                   coreMenuIndex == 3) {
+                            slotMode = coreMenuIndex;
+                            slotIndex = 0;
+                            menuChanged = true;
+                        } else {
+                            closeMenu = true;
+                            stopGame = true;
+                        }
+                    }
+                    if (closeMenu) {
+                        n64_video_menu_hide();
+                        n64MenuVisible = false;
+                        coreMenu = false;
+                        slotMode = 0;
+                        if (stopGame) {
+                            core.requestStop();
+                            bootLog("n64_menu_exit_requested");
+                        } else bootLog("n64_menu_resumed");
+                        core.resumeMenu();
+                    } else if (menuChanged) {
+                        N64MenuView view{};
+                        view.selected = coreMenuIndex;
+                        view.page = slotMode;
+                        view.slot = slotIndex;
+                        view.output_mode = videoOutput;
+                        const Color colors[3] = {kThemes[themeIndex].bgTop,
+                                                 kThemes[themeIndex].bgBottom,
+                                                 kThemes[themeIndex].accent};
+                        uint8_t *dest[3] = {view.background_top, view.background, view.accent};
+                        for (int i = 0; i < 3; ++i) {
+                            dest[i][0] = colors[i].r; dest[i][1] = colors[i].g;
+                            dest[i][2] = colors[i].b; dest[i][3] = colors[i].a;
+                        }
+                        if (!n64_video_menu_show(&view)) {
+                            bootLog("n64_menu_draw_failed");
+                            n64_video_menu_hide();
+                            n64MenuVisible = false;
+                            coreMenu = false;
+                            core.resumeMenu();
+                        } else bootLog("n64_menu_drawn");
+                    }
+                }
                 OSSleepTicks(OSMillisecondsToTicks(16));
                 continue;
             }
             const int result = core.join();
             n64Running = false;
+            n64MenuVisible = false;
+            coreMenu = false;
             n64NeedsGx2Restore = true;
             inGame = false;
             core.unloadGame();
@@ -2828,6 +2920,8 @@ int main()
             n64LaunchPending = false;
             releaseGx2ForN64();
             mkdir((library.sd_root + "/retrou/n64").c_str(), 0777);
+            core.setMenuShortcuts({menuShortcuts.choice[0], menuShortcuts.choice[1],
+                                   menuShortcuts.choice[2]});
             if (core.startGame(library.sd_root + "/retrou/n64")) {
                 n64Running = true;
                 bootLog(("n64_session_started rom=" + library.roms[activeRom].path).c_str());

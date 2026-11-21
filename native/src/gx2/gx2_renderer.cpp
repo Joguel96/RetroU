@@ -6,6 +6,7 @@
 #include <gx2/clear.h>
 #include <gx2/draw.h>
 #include <gx2/display.h>
+#include <gx2/event.h>
 #include <gx2/mem.h>
 #include <gx2/registers.h>
 #include <gx2/sampler.h>
@@ -62,6 +63,7 @@ GX2Sampler g_sampler{};
 GX2Sampler g_samplerNearest{};
 bool g_nearest = false;
 bool g_ready = false;
+bool g_ownsWhb = false;
 bool g_inFrame = false;
 
 void *ensureMemory(void *&mem, size_t &capacity, size_t bytes)
@@ -274,20 +276,21 @@ void flushFrame()
 
 } // namespace
 
-bool init()
+static bool initWithWhb(bool ownWhb)
 {
     if (g_ready) {
         return true;
     }
-    if (!WHBGfxInit()) {
+    if (ownWhb && !WHBGfxInit()) {
         return false;
     }
     if (!WHBGfxLoadGFDShaderGroup(&g_solidGroup, 0, solid_gsh)) {
-        WHBGfxShutdown();
+        if (ownWhb) WHBGfxShutdown();
         return false;
     }
     if (!WHBGfxLoadGFDShaderGroup(&g_textureGroup, 0, texture_gsh)) {
-        WHBGfxShutdown();
+        WHBGfxFreeShaderGroup(&g_solidGroup);
+        if (ownWhb) WHBGfxShutdown();
         return false;
     }
     WHBGfxInitShaderAttribute(&g_solidGroup, "aPos", 0, 0,
@@ -306,16 +309,21 @@ bool init()
                    GX2_TEX_XY_FILTER_MODE_LINEAR);
     GX2InitSampler(&g_samplerNearest, GX2_TEX_CLAMP_MODE_CLAMP,
                    GX2_TEX_XY_FILTER_MODE_POINT);
+    g_ownsWhb = ownWhb;
     g_ready = true;
     setOutputMode(g_outputMode);
     return true;
 }
+
+bool init() { return initWithWhb(true); }
+bool attach() { return initWithWhb(false); }
 
 void shutdown()
 {
     if (!g_ready) {
         return;
     }
+    if (!g_ownsWhb) GX2DrawDone();
     for (TextureRecord *record : g_textures) {
         if (record && record->texture.surface.image) {
             MEMFreeToDefaultHeap(record->texture.surface.image);
@@ -325,7 +333,8 @@ void shutdown()
     g_textures.clear();
     WHBGfxFreeShaderGroup(&g_solidGroup);
     WHBGfxFreeShaderGroup(&g_textureGroup);
-    WHBGfxShutdown();
+    if (g_ownsWhb) WHBGfxShutdown();
+    g_ownsWhb = false;
     g_ready = false;
 }
 

@@ -81,12 +81,26 @@ std::string localAssetPath(const std::string &sdRoot, const std::string &system,
            libretroName(title) + ".png";
 }
 
+bool validPngFile(const std::string &path)
+{
+    struct stat info{};
+    if (stat(path.c_str(), &info) != 0 || info.st_size < 33) return false;
+    std::ifstream input(path, std::ios::binary);
+    unsigned char header[33]{};
+    input.read(reinterpret_cast<char *>(header), sizeof(header));
+    static const unsigned char signature[8] = {137, 80, 78, 71, 13, 10, 26, 10};
+    return input.gcount() == sizeof(header) &&
+           std::memcmp(header, signature, sizeof(signature)) == 0 &&
+           header[8] == 0 && header[9] == 0 && header[10] == 0 &&
+           header[11] == 13 && std::memcmp(header + 12, "IHDR", 4) == 0 &&
+           (header[16] | header[17] | header[18] | header[19]) != 0 &&
+           (header[20] | header[21] | header[22] | header[23]) != 0;
+}
+
 bool assetExists(const std::string &sdRoot, const std::string &system,
                  const std::string &title, const char *kind)
 {
-    struct stat info{};
-    return stat(localAssetPath(sdRoot, system, title, kind).c_str(), &info) == 0 &&
-           info.st_size > 0;
+    return validPngFile(localAssetPath(sdRoot, system, title, kind));
 }
 
 std::string stripLegacyTags(std::string title)
@@ -399,8 +413,13 @@ static bool downloadWithCatalog(const std::string &sdRoot, const std::string &sy
                              " / " + title);
             return false;
         }
-        if (downloadToFile(base + match->href, temporary, &error, cancel) &&
-            replaceDownloadedFile(temporary, dst)) {
+        const bool fetched = downloadToFile(base + match->href, temporary, &error, cancel);
+        const bool valid = fetched && validPngFile(temporary);
+        if (fetched && !valid) {
+            std::remove(temporary.c_str());
+            error = "PNG invalido";
+        }
+        if (valid && replaceDownloadedFile(temporary, dst)) {
             assetLog(sdRoot, "descargado " + std::string(kind) + " " + system +
                              " / " + title + " => " + match->name);
             return true;
@@ -414,7 +433,12 @@ static bool downloadWithCatalog(const std::string &sdRoot, const std::string &sy
         if (cancel && cancel->load()) return false;
         const std::string url = base + urlEncode(safe + suffix) + ".png";
         if (downloadToFile(url, temporary, &error, cancel)) {
-            if (replaceDownloadedFile(temporary, dst)) return true;
+            if (validPngFile(temporary)) {
+                if (replaceDownloadedFile(temporary, dst)) return true;
+            } else {
+                std::remove(temporary.c_str());
+                error = "PNG invalido";
+            }
         }
     }
     assetLog(sdRoot, "fallo " + std::string(kind) + " " + system + " / " +

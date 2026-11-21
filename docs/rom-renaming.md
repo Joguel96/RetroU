@@ -29,3 +29,9 @@ no devuelve los nombres en la SD.
 
 Pendiente: abrir las cuatro bibliotecas en Wii U y comprobar portadas,
 Favoritos y guardados de juegos renombrados (ROM-1).
+
+`Donkey Kong 64 (USA).z64` ya tenía el nombre canónico. La portada ausente se
+debía a que `E:/retrou/thumbnails/n64/Donkey Kong 64 (USA).png` contenía texto,
+no una imagen. Se reemplazó por la portada de Libretro el 2026-11-21; la nueva
+validación PNG de RetroU permite volver a descargar otros archivos inválidos
+con el modo «Solo faltantes» (AS-7). Ver también `rom-deduplication.md`.

@@ -337,9 +337,10 @@ solo mantiene el estado general.
   «Cambiar orden», incluidas las pulsaciones repetidas y el cierre al terminar
   los mandos conectados (CTRL-10 y N64-9). También confirmó la configuración
   y el buscador (N64-3/4). La descarga de carátulas sigue pendiente (N64-5):
-  los índices llegaron a la SD, pero los títulos con región no coincidían;
-  el build de desarrollo del 2026-11-20 corrige esa comparación y requiere
-  prueba en Wii U. El carrusel N64 parece correcto, pero N64-8 espera ver
+  se corrigió la comparación de títulos, pero el servidor de imágenes devolvió
+  HTTP 404 en Cemu; el índice y los PNG de N64 Dev vienen ahora del repositorio
+  oficial `libretro-thumbnails` en GitHub y requieren prueba en Wii U.
+  El carrusel N64 parece correcto, pero N64-8 espera ver
   carátulas reales.
 - **Probado en hardware por el usuario**: HOME durante partida, audio del
   core y NES/SNES/GBA con ROMs reales. El 2026-11-12 confirmó además las

@@ -148,6 +148,46 @@ std::string decodeHref(const std::string &href)
     return out;
 }
 
+bool readJsonString(const std::string &json, size_t &pos, std::string &out)
+{
+    if (pos >= json.size() || json[pos++] != '"') return false;
+    out.clear();
+    while (pos < json.size()) {
+        const char c = json[pos++];
+        if (c == '"') return true;
+        if (c != '\\') { out.push_back(c); continue; }
+        if (pos >= json.size()) return false;
+        const char escaped = json[pos++];
+        if (escaped == 'u') {
+            if (pos + 4 > json.size()) return false;
+            unsigned codepoint = 0;
+            for (int i = 0; i < 4; ++i) {
+                const char hex = json[pos++];
+                codepoint <<= 4;
+                if (hex >= '0' && hex <= '9') codepoint |= hex - '0';
+                else if (hex >= 'a' && hex <= 'f') codepoint |= hex - 'a' + 10;
+                else if (hex >= 'A' && hex <= 'F') codepoint |= hex - 'A' + 10;
+                else return false;
+            }
+            if (codepoint < 0x80) out.push_back(static_cast<char>(codepoint));
+            else if (codepoint < 0x800) {
+                out.push_back(static_cast<char>(0xC0 | (codepoint >> 6)));
+                out.push_back(static_cast<char>(0x80 | (codepoint & 0x3F)));
+            } else {
+                out.push_back(static_cast<char>(0xE0 | (codepoint >> 12)));
+                out.push_back(static_cast<char>(0x80 | ((codepoint >> 6) & 0x3F)));
+                out.push_back(static_cast<char>(0x80 | (codepoint & 0x3F)));
+            }
+        } else {
+            if (escaped == 'n') out.push_back('\n');
+            else if (escaped == 'r') out.push_back('\r');
+            else if (escaped == 't') out.push_back('\t');
+            else out.push_back(escaped);
+        }
+    }
+    return false;
+}
+
 struct CatalogEntry {
     std::string href;
     std::string name;
@@ -156,26 +196,56 @@ struct CatalogEntry {
 
 std::vector<CatalogEntry> loadCatalog(const std::string &sdRoot,
                                       const std::string &system, const char *type,
-                                      const std::atomic<bool> *cancel)
+                                      const std::atomic<bool> *cancel, bool refresh)
 {
     const std::string dir = sdRoot + "/retrou/metadata";
     ensureDir(dir);
-    const std::string path = dir + "/" + system + "-" + type + "-index.html";
+    const bool github = system == "n64";
+    const std::string path = github ? dir + "/n64-libretro-tree.json" :
+        dir + "/" + system + "-" + type + "-index.html";
     const std::string temporary = path + ".tmp";
-    const std::string url = "https://thumbnails.libretro.com/" +
+    const std::string url = github ?
+        "https://api.github.com/repos/libretro-thumbnails/Nintendo_-_Nintendo_64/git/trees/master?recursive=1" :
+        "https://thumbnails.libretro.com/" +
         urlEncode(libretroSystemFolder(system)) + "/" + type + "/";
     std::string error;
-    if (downloadToFile(url, temporary, &error, cancel)) {
-        if (!replaceDownloadedFile(temporary, path))
-            assetLog(sdRoot, "fallo guardar indice " + std::string(type));
-    } else {
-        assetLog(sdRoot, "fallo indice " + std::string(type) + " " + error);
+    if (refresh) {
+        if (downloadToFile(url, temporary, &error, cancel)) {
+            if (!replaceDownloadedFile(temporary, path))
+                assetLog(sdRoot, "fallo guardar indice " + std::string(type));
+        } else {
+            assetLog(sdRoot, "fallo indice " + std::string(type) + " " + error);
+        }
     }
     std::ifstream in(path, std::ios::binary);
     if (!in) return {};
     const std::string html((std::istreambuf_iterator<char>(in)),
                            std::istreambuf_iterator<char>());
     std::vector<CatalogEntry> entries;
+    if (github) {
+        if (html.find("\"truncated\":true") != std::string::npos) {
+            assetLog(sdRoot, "indice GitHub incompleto");
+            return {};
+        }
+        size_t pos = 0;
+        while ((pos = html.find("\"path\":", pos)) != std::string::npos) {
+            pos += 7;
+            while (pos < html.size() && std::isspace(static_cast<unsigned char>(html[pos]))) ++pos;
+            std::string entryPath;
+            if (!readJsonString(html, pos, entryPath)) break;
+            const std::string prefix = std::string(type) + "/";
+            if (entryPath.compare(0, prefix.size(), prefix) != 0 ||
+                entryPath.size() < prefix.size() + 5 ||
+                entryPath.compare(entryPath.size() - 4, 4, ".png") != 0 ||
+                entryPath.find('/', prefix.size()) != std::string::npos) continue;
+            const std::string name = entryPath.substr(prefix.size(),
+                                                       entryPath.size() - prefix.size() - 4);
+            entries.push_back({urlEncode(name) + ".png", name, matchKey(name, true)});
+        }
+        assetLog(sdRoot, "indice " + std::string(type) + " entradas=" +
+                         std::to_string(entries.size()));
+        return entries;
+    }
     size_t pos = 0;
     while ((pos = html.find("href=\"", pos)) != std::string::npos) {
         pos += 6;
@@ -262,6 +332,7 @@ bool downloadToFile(const std::string &url, const std::string &path,
     bool ok = false;
     if (curl) {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, "RetroU/1.0");
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
         curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
         curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);
@@ -316,8 +387,10 @@ static bool downloadWithCatalog(const std::string &sdRoot, const std::string &sy
     const std::string temporary = dst + ".tmp";
 
     const char *type = std::string(kind) == "thumbnails" ? "Named_Boxarts" : "Named_Snaps";
-    const std::string base = "https://thumbnails.libretro.com/" + urlEncode(folder) +
-                             "/" + type + "/";
+    const std::string base = system == "n64" ?
+        "https://raw.githubusercontent.com/libretro-thumbnails/Nintendo_-_Nintendo_64/master/" +
+            std::string(type) + "/" :
+        "https://thumbnails.libretro.com/" + urlEncode(folder) + "/" + type + "/";
     std::string error;
     if (catalog && !catalog->empty()) {
         const CatalogEntry *match = findCatalogMatch(*catalog, title);
@@ -407,9 +480,10 @@ void downloadAll(const std::string &sdRoot, const std::string &system,
                      " pendientes=" + std::to_string(pendingAssetCount(
                          sdRoot, system, titles, covers, backdrops, force)));
     const std::vector<CatalogEntry> coverCatalog = covers ?
-        loadCatalog(sdRoot, system, "Named_Boxarts", cancel) : std::vector<CatalogEntry>{};
+        loadCatalog(sdRoot, system, "Named_Boxarts", cancel, true) : std::vector<CatalogEntry>{};
     const std::vector<CatalogEntry> backdropCatalog = backdrops ?
-        loadCatalog(sdRoot, system, "Named_Snaps", cancel) : std::vector<CatalogEntry>{};
+        loadCatalog(sdRoot, system, "Named_Snaps", cancel, !covers || system != "n64") :
+        std::vector<CatalogEntry>{};
     int failures = 0;
     for (const std::string &title : titles) {
         if (cancel && cancel->load()) break;

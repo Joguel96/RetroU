@@ -285,6 +285,9 @@ sd:/retrou/snap/<consola>/
   `GX2 asset` de inicio, coincidencia, errores HTTP/red y fin en el mismo log.
   La comparación omite las etiquetas de región del título y prefiere la
   edición regional correspondiente cuando existe.
+  N64 obtiene el índice de la API del repositorio oficial
+  `libretro-thumbnails/Nintendo_-_Nintendo_64` y las imágenes de GitHub raw;
+  conserva el índice en `sd:/retrou/metadata/n64-libretro-tree.json`.
   Usan el método directo si no hay índice y conservan el archivo anterior
   cuando falla un reemplazo forzado.
 - `main_exit_clean` distingue el cierre normal de una interrupción; en GBA,

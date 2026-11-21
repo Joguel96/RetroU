@@ -58,8 +58,9 @@ NES, SNES y GBA contienen:
 RetroU frontend + un core Libretro enlazado estáticamente
 ```
 
-N64 se compila aparte en `C:/proyectos/Our64`: interfaz RetroU + Not64 +
-GLideN64 + audio AX, sin Libretro.
+N64 Dev se compila desde este proyecto con el motor Not64 + GLideN64 extraído
+de Our64 y audio AX, sin Libretro. La versión anterior con UI de Our64 se
+conserva como referencia, pero ya no se compila.
 
 Apps:
 
@@ -68,7 +69,7 @@ Apps:
 | `retrou_nes_gx2` | fceumm | NES |
 | `retrou_snes_gx2` | snes9x | SNES |
 | `retrou_gba_gx2` | mgba | GBA |
-| `player/release/our64.wuhb` (Our64) | Not64 + GLideN64 + AX | N64 |
+| `retrou_n64_gx2` (Dev) | Not64 + GLideN64 + AX | N64 |
 
 Salidas:
 
@@ -76,7 +77,7 @@ Salidas:
 native/build/retrou_nes_gx2.wuhb
 native/build/retrou_snes_gx2.wuhb
 native/build/retrou_gba_gx2.wuhb
-C:/proyectos/Our64/player/release/our64.wuhb
+native/build/retrou_n64_gx2.wuhb
 ```
 
 Distribución:
@@ -85,8 +86,11 @@ Distribución:
 dist/wiiu/apps/RetroNESU/RetroNESU.wuhb
 dist/wiiu/apps/RetroSNESU/RetroSNESU.wuhb
 dist/wiiu/apps/RetroGBAU/RetroGBAU.wuhb
-dist/wiiu/apps/RetroN64U/RetroN64U.wuhb
+dist/wiiu/apps/RetroN64U-Dev/RetroN64U-Dev.wuhb
 ```
+
+`dist/wiiu/apps/RetroN64U/RetroN64U.wuhb` era la salida anterior con UI de
+Our64; ya no se genera en `dist/`.
 
 No se distribuyen RPX sueltos ni `RetroU.wuhb` launcher.
 
@@ -300,9 +304,9 @@ cd native
 cmake --build build -j"$(nproc)"
 ```
 
-En Windows se usa MSYS2 bash para CMake/make. N64 usa
-`C:/proyectos/Our64/tools/build-retrou-n64.sh` y se copia a
-`dist/wiiu/apps/RetroN64U/`; no entra en los targets CMake.
+En Windows se usa MSYS2 bash para CMake/make. N64 Dev usa
+`native/build-retrou-n64-dev.sh` y se copia a
+`dist/wiiu/apps/RetroN64U-Dev/`; no entra en el build CMake por defecto.
 
 No commitear:
 
@@ -336,12 +340,10 @@ solo mantiene el estado general.
   sigue congelando la app. El usuario confirmó en Wii U la corrección de
   «Cambiar orden», incluidas las pulsaciones repetidas y el cierre al terminar
   los mandos conectados (CTRL-10 y N64-9). También confirmó la configuración
-  y el buscador (N64-3/4). La descarga de carátulas sigue pendiente (N64-5):
-  se corrigió la comparación de títulos, pero el servidor de imágenes devolvió
-  HTTP 404 en Cemu; el índice y los PNG de N64 Dev vienen ahora del repositorio
-  oficial `libretro-thumbnails` en GitHub y requieren prueba en Wii U.
-  El carrusel N64 parece correcto, pero N64-8 espera ver
-  carátulas reales.
+  y el buscador (N64-3/4). El índice y los PNG de N64 Dev vienen del repositorio
+  `libretro-thumbnails` en GitHub. El usuario confirmó las descargas de assets y el carrusel con carátulas
+  reales en Wii U (N64-5/8). Solo se compila N64 Dev; la versión con UI de
+  Our64 queda como referencia sin nuevos builds.
 - **Probado en hardware por el usuario**: HOME durante partida, audio del
   core y NES/SNES/GBA con ROMs reales. El 2026-11-12 confirmó además las
   pruebas restantes de navegación, controles, guardados y Assets. El

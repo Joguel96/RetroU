@@ -299,8 +299,8 @@ add_gx2_retrou(retrou_nes_gx2 nes "NES" "RetroU NES" "${FCEUMM_CORE}")
 add_gx2_retrou(retrou_snes_gx2 snes "SNES" "RetroU SNES" "${SNES9X_CORE}")
 add_gx2_retrou(retrou_gba_gx2 gba "GBA" "RetroU GBA" "${MGBA_CORE}")
 
-# Development build of the definitive N64 port. Keep its staged bundle separate
-# from the provisional Our64-based RetroN64U app until the port is verified.
+# Development build of the definitive N64 port. Stage it under its own name
+# while the game menu and HOME transition are still being completed.
 set(N64_ENGINE_CORE "${CMAKE_CURRENT_SOURCE_DIR}/../.cores/n64/not64_gliden64_wiiu.a"
     CACHE FILEPATH "extracted Not64 and GLideN64 engine")
 set(N64_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/../.cores/our64")
@@ -384,15 +384,15 @@ add_custom_target(stage_wuhb ALL
             "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroSNESU"
             "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroGBAU"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-            "${CMAKE_CURRENT_BINARY_DIR}/retrou_nes.wuhb"
+            "${CMAKE_CURRENT_BINARY_DIR}/retrou_nes_gx2.wuhb"
             "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroNESU/RetroNESU.wuhb"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-            "${CMAKE_CURRENT_BINARY_DIR}/retrou_snes.wuhb"
+            "${CMAKE_CURRENT_BINARY_DIR}/retrou_snes_gx2.wuhb"
             "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroSNESU/RetroSNESU.wuhb"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-            "${CMAKE_CURRENT_BINARY_DIR}/retrou_gba.wuhb"
+            "${CMAKE_CURRENT_BINARY_DIR}/retrou_gba_gx2.wuhb"
             "${CMAKE_CURRENT_SOURCE_DIR}/../dist/wiiu/apps/RetroGBAU/RetroGBAU.wuhb"
-    DEPENDS retrou_nes_wuhb retrou_snes_wuhb retrou_gba_wuhb
+    DEPENDS retrou_nes_gx2_wuhb retrou_snes_gx2_wuhb retrou_gba_gx2_wuhb
     COMMENT "Staging per-console WUHB files"
     VERBATIM
 )

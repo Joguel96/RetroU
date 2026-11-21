@@ -333,7 +333,7 @@ void setOutputMode(int mode)
 {
     g_outputMode = mode >= 0 && mode <= 2 ? mode : 0;
     if (g_ready) {
-        GX2SetTVEnable(g_outputMode != 2);
+        GX2SetTVEnable(TRUE);
         GX2SetDRCEnable(g_outputMode != 1);
     }
 }
@@ -366,10 +366,17 @@ void endFrame()
         return;
     }
     flushFrame();
+    if (g_outputMode == 2) {
+        // Present the UI to DRC before clearing the TV buffer for its scanout.
+        GX2CopyColorBufferToScanBuffer(WHBGfxGetTVColourBuffer(), GX2_SCAN_TARGET_DRC);
+        WHBGfxClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    }
     WHBGfxFinishRenderTV();
-    if (g_outputMode != 1)
+    if (g_outputMode == 0)
         GX2CopyColorBufferToScanBuffer(WHBGfxGetTVColourBuffer(), GX2_SCAN_TARGET_DRC);
     WHBGfxFinishRender();
+    // WHBGfx may reset the display enables while presenting the frame.
+    setOutputMode(g_outputMode);
     g_inFrame = false;
 }
 

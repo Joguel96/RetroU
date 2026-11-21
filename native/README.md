@@ -222,33 +222,21 @@ el nombre `RetroU N64 Dev` y un Title ID distinto; todavía no está lista
 para reemplazar la app N64 de uso normal. Al probarla, conservar
 `sd:/retrou/retrou_rpx.log` y `sd:/retrou/n64/retrou_n64.log`.
 
-### Compilar y recuperar la WUHB provisional de N64
+### WUHB provisional de N64 (registro histórico)
 
-Desde MSYS2/devkitPro, con el clon Our64 fijado en `29de243`:
-
-```sh
-cd /c/proyectos/Our64
-bash tools/build-retrou-n64.sh /c/proyectos/RetroU
-```
-
-El script ejecuta `make -C player RELEASE=1`, deja la salida en
+La versión con UI de Our64 ya no se compila. El build anterior dejó la salida en
 `player/release/our64.wuhb`, el log con commit y sumas SHA-256 en
-`player/build-release/logs/build-<fecha>.log`, y copia de forma verificada
+`player/build-release/logs/build-<fecha>.log`, y la copia verificada
 a `C:/proyectos/RetroU/dist/wiiu/apps/RetroN64U/RetroN64U.wuhb`.
-Antes de sustituirla, copia la WUHB existente a `RetroN64U.previous.wuhb`.
+Antes de sustituirla, se copió la WUHB existente a `RetroN64U.previous.wuhb`.
 El binario de esta ronda tiene SHA-256
 `9d5a7dabeb0b079f3e14192bf84437cfef5450ca4889e37bba43c37ea9b3190b`;
 el anterior, `5f822245644f1634f05ff982561383b8d0bc15068328219d45118ee072b42177`.
 El log final de build es
 `C:/proyectos/Our64/player/build-release/logs/build-20261113-212647.log`.
 
-Si la nueva WUHB falla, cierra Cemu o RetroU N64, conserva el log
-`sd:/retrou/n64/retrou_n64.log` y restaura
-`dist/wiiu/apps/RetroN64U/RetroN64U.previous.wuhb` como
-`RetroN64U.wuhb`; comprueba su SHA-256 antes de copiarla a la SD.
-Para revertir código, usa `git revert` sobre el commit específico en
-`C:/proyectos/Our64`, recompila y conserva el nuevo log. No borres datos
-de `sd:/retrou/n64/` para volver a un binario anterior.
+Estos hashes y rutas documentan la versión anterior; el flujo actual solo
+compila y distribuye `RetroN64U-Dev.wuhb` desde RetroU.
 
 ## SD
 

@@ -16,8 +16,8 @@ Not64, GLideN64 y audio AX. La UI, los datos y los guardados son de RetroU.
 - **Branding**: `assets/icon.png`, `assets/tv-splash.png`, `assets/drc-splash.png`.
   Por consola: `assets/console/<consola>/` (generados con
   `tools/generate_console_assets.py`).
-- **N64 (Our64)**: `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb` — WUHB
-  independiente, compilada en el clon externo `C:/proyectos/Our64` con
+- **N64 (Our64, versión anterior)**: WUHB independiente, compilada
+  anteriormente en el clon externo `C:/proyectos/Our64` con
   Not64 + GLideN64 + AX, sin core Libretro. Incluye biblioteca RetroU
   (cards, lista y carrusel). Ajustes y parte del flujo de controles, guardados
   y Assets todavía siguen el modelo de Our64; su migración funcional y visual
@@ -27,14 +27,13 @@ Not64, GLideN64 y audio AX. La UI, los datos y los guardados son de RetroU.
   `sd:/wiiu/our64/roms` sin modificarlas. Los guardados anteriores se leen
   cuando falta el equivalente nuevo. Esta WUHB provisional funcionó en Wii U;
   la WUHB Dev del port necesita completar sus pruebas de controles y salida.
-  `C:/proyectos/Our64/tools/build-retrou-n64.sh` compila y copia la WUHB,
-  conserva el binario previo y guarda un log en `player/build-release/logs/`.
+  Ya no se compila ni se genera en `dist/` esta versión con la UI de Our64.
   El log de ejecución N64 es `sd:/retrou/n64/retrou_n64.log`.
   El port definitivo en desarrollo enlaza Not64 + GLideN64 al frontend RetroU;
   `bash native/build-retrou-n64-dev.sh` lo copia por separado a
   `dist/wiiu/apps/RetroN64U-Dev/RetroN64U-Dev.wuhb`. El 2026-11-18 inició
-  una ROM jugable en Wii U. Todavía faltan el menú durante la partida y la
-  salida estable con HOME; no sustituye la WUHB anterior.
+  una ROM jugable en Wii U y descargó assets. Todavía faltan el menú durante
+  la partida y la salida estable con HOME; no sustituye la WUHB anterior.
 - **Mapeo de controles GX2**: editor estilo Our64 por acción del core, con varias
   asignaciones por acción, `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás
   y persistencia explícita de acciones `none` en `control-map.conf` formato `v2`.

@@ -111,6 +111,7 @@ se probó y el ruido persistió; AUD-2 reemplaza ese intento.
 | AS-4 | Barra y contador de progreso de descarga en Assets | ✅ 2026-11-12 |
 | AS-5 | Actualizar las portadas visibles en Cards, Lista y Carrusel al terminar una descarga, sin reiniciar la app | ✅ 2026-11-12 |
 | AS-6 | Al salir de RetroU hacia el menú de Wii U mientras hay descargas activas, terminar o cancelar el trabajo y cerrar sin bloquear la consola; conservar un log del cierre | ✅ 2026-11-13 |
+| ROM-1 | Normalizar en la SD los nombres de ROMs identificadas por CRC en los catálogos Libretro, migrar guardados/portadas/favoritos/mapas asociados y conservar manifiesto de reversión. Dejar sin cambios las copias con destino duplicado y las ROMs sin CRC conocido; comprobar catálogo y guardados en Wii U. | 🔧 2026-11-20 |
 
 ## 8. Documentación / cierre
 

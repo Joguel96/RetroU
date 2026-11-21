@@ -1,0 +1,4776 @@
+{
+  "root": "E:\\retrou",
+  "created": "2026-11-20T21:05:53.595764",
+  "roms": [
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Rainbow Six - Rogue Spear [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Tom Clancy's Rainbow Six - Rogue Spear (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "6863CE1A",
+      "catalog_title": "Tom Clancy's Rainbow Six: Rogue Spear (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1332191736000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Sonic Battle [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Sonic Battle (Europe) (En,Ja,Fr,De,Es,It).gba",
+      "crc": "D0F65125",
+      "catalog_title": "Sonic Battle (Europe) (En,Ja,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1234060820000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Narnia - El leon la bruja y el armario [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Chronicles of Narnia, The - The Lion, the Witch and the Wardrobe (USA, Europe) (En,Fr,De,Es,It,Nl,Sv,Da).gba",
+      "crc": "7E198522",
+      "catalog_title": "Chronicles of Narnia, The: The Lion, the Witch and the Wardrobe (USA, Europe) (En,Fr,De,Es,It,Nl,Sv,Da)",
+      "size": 16777216,
+      "mtime_ns": 1188013210000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Harry Potter V - La Orden del Fenix [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Harry Potter and the Order of the Phoenix (USA, Europe) (En,Fr,De,Es,It,Nl,Da).gba",
+      "crc": "302B8B3D",
+      "catalog_title": "Harry Potter and the Order of the Phoenix (USA, Europe) (En,Fr,De,Es,It,Nl,Da)",
+      "size": 16777216,
+      "mtime_ns": 1184191732000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Final Fantasy VI Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Final Fantasy VI Advance (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "D15DEBA5",
+      "catalog_title": "Final Fantasy VI Advance (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1182991810000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Spiderman 3 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Spider-Man 3 (Spain).gba",
+      "crc": "E6251FD3",
+      "catalog_title": "Spider-Man 3 (Spain)",
+      "size": 8388608,
+      "mtime_ns": 1178660360000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Final Fantasy V Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Final Fantasy V Advance (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "7197117E",
+      "catalog_title": "Final Fantasy V Advance (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1176405826000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Ghost Rider [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Ghost Rider (USA, Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "CF190F2E",
+      "catalog_title": "Ghost Rider (USA, Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 8388608,
+      "mtime_ns": 1171479554000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Shrek - Smash N' Crash Racing [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Shrek - Smash n' Crash Racing (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "A45857C4",
+      "catalog_title": "Shrek: Smash n' Crash Racing (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1170970282000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Shinchan contra los muñecos de Shock Gan [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Shin chan contra los Munecos de Shock Gahn (Spain).gba",
+      "crc": "FD47A2FE",
+      "catalog_title": "Shin chan contra los Munecos de Shock Gahn (Spain)",
+      "size": 16777216,
+      "mtime_ns": 1169066270000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Buscando a Nemo + Buscando a Nemo -  The Contuining Adventures [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\2 Games in 1 - Finding Nemo + Finding Nemo - The Continuing Adventures (Europe) (Es,It+En,Es,It,Sv,Da).gba",
+      "crc": "73444273",
+      "catalog_title": "2 Games in 1: Finding Nemo + Finding Nemo: The Continuing Adventures (Europe) (Es,It+En,Es,It,Sv,Da)",
+      "size": 16777216,
+      "mtime_ns": 1168639284000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Rayman Raving Rabbids [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Rayman - Raving Rabbids (Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "9914DA23",
+      "catalog_title": "Rayman: Raving Rabbids (Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 16777216,
+      "mtime_ns": 1165402160000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Spider-Man Battle for New York [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Spider-Man - Battle for New York (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "AD2C404C",
+      "catalog_title": "Spider-Man: Battle for New York (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1164807988000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Eragon [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Eragon (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "BB05A63F",
+      "catalog_title": "Eragon (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1164192134000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Pokemon Mundo misterioso [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon Mystery Dungeon - Red Rescue Team (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "C1D18FE4",
+      "catalog_title": "Pokemon Mystery Dungeon: Red Rescue Team (Europe) (En,Fr,De,Es,It)",
+      "size": 33554432,
+      "mtime_ns": 1163072256000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Rebelstar Tactical Command [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Rebelstar - Tactical Command (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "E448C5D4",
+      "catalog_title": "Rebelstar: Tactical Command (Europe) (En,Fr,De,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 1162441116000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Need for Speed Carbon - Own The City [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Need for Speed - Carbon - Own the City (USA, Europe) (En,Fr,De,Es,It).gba",
+      "crc": "F4C0D140",
+      "catalog_title": "Need for Speed: Carbon: Own the City (USA, Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1162291292000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Monster House [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Monster House (Europe) (En,Fr,De,Es).gba",
+      "crc": "21C84334",
+      "catalog_title": "Monster House (Europe) (En,Fr,De,Es)",
+      "size": 8388608,
+      "mtime_ns": 1155728446000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Piratas del Caribe - El cofre del hombre muerto [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Pirates of the Caribbean - Dead Man's Chest (USA, Europe) (En,Fr,De,Es,It).gba",
+      "crc": "D1A67BE8",
+      "catalog_title": "Pirates of the Caribbean: Dead Man's Chest (USA, Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1151408530000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\X-Men - The Official Game [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\X-Men - The Official Game (Europe) (En,Fr,Es,It).gba",
+      "crc": "34BE6923",
+      "catalog_title": "X-Men: The Official Game (Europe) (En,Fr,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1149005420000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Fifa Word Cup Germany 2006 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\2006 FIFA World Cup - Germany 2006 (USA, Europe) (En,Fr,De,Es,It).gba",
+      "crc": "50AB4544",
+      "catalog_title": "2006 FIFA World Cup: Germany 2006 (USA, Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1146078506000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Shinchan Aventuras en Cineland [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Shin chan - Aventuras en Cineland (Spain).gba",
+      "crc": "769A7666",
+      "catalog_title": "Shin chan: Aventuras en Cineland (Spain)",
+      "size": 16777216,
+      "mtime_ns": 1144116420000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Tales of Phantasia [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Tales of Phantasia (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "FA172A4A",
+      "catalog_title": "Tales of Phantasia (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1143657176000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Yu-Gi-Oh! - Ultimate Masters Edition [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Yu-Gi-Oh! Ultimate Masters Edition - World Championship Tournament 2006 (Europe) (En,Ja,Fr,De,Es,It).gba",
+      "crc": "CEDE4060",
+      "catalog_title": "Yu-Gi-Oh! Ultimate Masters Edition: World Championship Tournament 2006 (Europe) (En,Ja,Fr,De,Es,It)",
+      "size": 33554432,
+      "mtime_ns": 1143026780000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Alien Hominid [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Alien Hominid (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "DFF47236",
+      "catalog_title": "Alien Hominid (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1139671466000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Mario Tennis Power Tour [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Mario Tennis - Power Tour (USA, Australia) (En,Fr,De,Es,It).gba",
+      "crc": "DA192D29",
+      "catalog_title": "Mario Tennis: Power Tour (USA, Australia) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1133948220000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Dynasty Warriors Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Dynasty Warriors Advance (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "74CDB37A",
+      "catalog_title": "Dynasty Warriors Advance (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1133378146000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Need for Speed - Most Wanted [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Need for Speed - Most Wanted (USA, Europe) (En,Fr,De,It).gba",
+      "crc": "EA15A16E",
+      "catalog_title": "Need for Speed: Most Wanted (USA, Europe) (En,Fr,De,It)",
+      "size": 8388608,
+      "mtime_ns": 1132824060000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Gunstar Future Heroes [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Gunstar Future Heroes (Europe) (En,Ja,Fr,De,Es,It).gba",
+      "crc": "8C541D13",
+      "catalog_title": "Gunstar Future Heroes (Europe) (En,Ja,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1131537186000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Fire Emblem - The Sacred Stones [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Fire Emblem - The Sacred Stones (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "B3005195",
+      "catalog_title": "Fire Emblem: The Sacred Stones (Europe) (En,Fr,De,Es,It)",
+      "size": 33554432,
+      "mtime_ns": 1131015424000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Donkey Kong Country 3  [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Donkey Kong Country 3 (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "708A6168",
+      "catalog_title": "Donkey Kong Country 3 (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1131014984000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Los Sims 2 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Sims 2, The (USA, Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "8B1BC7DF",
+      "catalog_title": "Sims 2, The (USA, Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 33554432,
+      "mtime_ns": 1130445702000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Pokemon Esmeralda [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Esmeralda (Spain).gba",
+      "crc": "8C4D3108",
+      "catalog_title": "Pokemon: Edicion Esmeralda (Spain)",
+      "size": 16777216,
+      "mtime_ns": 1129861980000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\FIFA 06 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\FIFA Soccer 06 (USA, Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "BE4C3CB1",
+      "catalog_title": "FIFA Soccer 06 (USA, Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 8388608,
+      "mtime_ns": 1128105824000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Yu-Gi-Oh! Destiny Board Traveler [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Yu-Gi-Oh! Destiny Board Traveler (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "AE1A8E9D",
+      "catalog_title": "Yu-Gi-Oh! Destiny Board Traveler (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1126899724000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Rayman 10th Anniversary - Rayman Advance + Rayman 3 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Rayman - 10th Anniversary (Europe) (En,Fr,De,Es,It,Nl,Sv,No,Da,Fi).gba",
+      "crc": "437E95B9",
+      "catalog_title": "Rayman: 10th Anniversary (Europe) (En,Fr,De,Es,It,Nl,Sv,No,Da,Fi)",
+      "size": 16777216,
+      "mtime_ns": 1126289406000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Animaniacs - Lights, Camera, Action! [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Animaniacs - Lights, Camera, Action! (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "840D11C1",
+      "catalog_title": "Animaniacs: Lights, Camera, Action! (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1124120870000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Charlie And The Chocolate Factory [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Charlie and the Chocolate Factory (Europe) (En,Fr,Es,Nl).gba",
+      "crc": "2B3FCC74",
+      "catalog_title": "Charlie and the Chocolate Factory (Europe) (En,Fr,Es,Nl)",
+      "size": 8388608,
+      "mtime_ns": 1122388472000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Dragon Ball Z - Advance adventure  [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Dragon Ball - Advanced Adventure (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "6C135820",
+      "catalog_title": "Dragon Ball: Advanced Adventure (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1119005392000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Mario Party Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Mario Party Advance (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "C8C889E2",
+      "catalog_title": "Mario Party Advance (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1118400524000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Star Wars Episode III - Revenge of the Sith [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Star Wars - Episode III - Revenge of the Sith (Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "FD49236B",
+      "catalog_title": "Star Wars: Episode III - Revenge of the Sith (Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 8388608,
+      "mtime_ns": 1115390738000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Kingdom Hearts - Chain of Memories [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Kingdom Hearts - Chain of Memories (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "772D97FB",
+      "catalog_title": "Kingdom Hearts: Chain of Memories (Europe) (En,Fr,De,Es,It)",
+      "size": 33554432,
+      "mtime_ns": 1115148506000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Puyo Pop Fever [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Puyo Pop Fever (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "6E5880ED",
+      "catalog_title": "Puyo Pop Fever (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1111669408000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Duel Masters - Kaijudo showdown [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Duel Masters - Kaijudo Showdown (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "52E0AA95",
+      "catalog_title": "Duel Masters: Kaijudo Showdown (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1111414490000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Rayman - Hoodlums Revenge [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Rayman - Hoodlums' Revenge (Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "C221C419",
+      "catalog_title": "Rayman: Hoodlums' Revenge (Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 8388608,
+      "mtime_ns": 1111056180000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Robots [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Robots (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "2ACBDB64",
+      "catalog_title": "Robots (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1110455150000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Banjo Kazooie - Grunty's Revenge [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Banjo-Kazooie - La Venganza de Grunty (Spain).gba",
+      "crc": "32544634",
+      "catalog_title": "Banjo-Kazooie: La Venganza de Grunty (Spain)",
+      "size": 8388608,
+      "mtime_ns": 1109041872000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Banjo Pilot [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Banjo-Pilot (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "B98DE3A4",
+      "catalog_title": "Banjo-Pilot (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1108729942000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Astroboy - Omega Factor [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Astro Boy - Omega Factor (Europe) (En,Ja,Fr,De,Es,It).gba",
+      "crc": "1E2E8937",
+      "catalog_title": "Astro Boy: Omega Factor (Europe) (En,Ja,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1108649378000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Donkey Kong - King of Swing [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\DK - King of Swing (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "F93B73D9",
+      "catalog_title": "DK: King of Swing (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1107357714000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Racing Gears Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Racing Gears Advance (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "49A88E52",
+      "catalog_title": "Racing Gears Advance (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1105991614000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Metal Slug Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Metal Slug Advance (Europe).gba",
+      "crc": "3806F4AE",
+      "catalog_title": "Metal Slug Advance (Europe)",
+      "size": 8388608,
+      "mtime_ns": 1103231398000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Final Fantasy I y II [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Final Fantasy I & II - Dawn of Souls (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "7C9854C6",
+      "catalog_title": "Final Fantasy I & II: Dawn of Souls (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1101948214000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Creatures [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Creatures (Europe) (En,Es,It).gba",
+      "crc": "4F18F57E",
+      "catalog_title": "Creatures (Europe) (En,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 1100738048000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Need for Speed Underground 2 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Need for Speed - Underground 2 (USA, Europe) (En,Fr,De,It).gba",
+      "crc": "9A0C5090",
+      "catalog_title": "Need for Speed: Underground 2 (USA, Europe) (En,Fr,De,It)",
+      "size": 8388608,
+      "mtime_ns": 1100712460000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Yu Yu Hakusho - Ghostfiles - Tournament Tactics [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Yu Yu Hakusho - Ghostfiles - Tournament Tactics (USA, Europe).gba",
+      "crc": "AEF6B7CC",
+      "catalog_title": "Yu Yu Hakusho: Ghostfiles: Tournament Tactics (USA, Europe)",
+      "size": 8388608,
+      "mtime_ns": 1100656800000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Los Sims en la ciudad [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Urbz, The - Sims in the City (USA, Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "8B3330BB",
+      "catalog_title": "Urbz, The: Sims in the City (USA, Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 33554432,
+      "mtime_ns": 1100030308000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\The Lord of the Rings - The Third Age [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Lord of the Rings, The - The Third Age (USA, Europe) (En,Fr,De,Es,It).gba",
+      "crc": "2DEF3656",
+      "catalog_title": "Lord of the Rings, The: The Third Age (USA, Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1099482708000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Grand Theft Auto Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Grand Theft Auto (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "4189E07F",
+      "catalog_title": "Grand Theft Auto (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1099145244000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\FIFA 2005 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\FIFA Soccer 2005 (USA, Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "DA90F396",
+      "catalog_title": "FIFA Soccer 2005 (USA, Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 8388608,
+      "mtime_ns": 1097236212000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Mario Golf - Advance Tour [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Mario Golf - Advance Tour (Spain).gba",
+      "crc": "C35DD9F8",
+      "catalog_title": "Mario Golf: Advance Tour (Spain)",
+      "size": 16777216,
+      "mtime_ns": 1096504530000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Pokémon Verde hoja [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Verde Hoja (Spain).gba",
+      "crc": "2CA11D59",
+      "catalog_title": "Pokemon: Edicion Verde Hoja (Spain)",
+      "size": 16777216,
+      "mtime_ns": 1096502468000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Pokémon Rojo fuego [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Rojo Fuego (Spain).gba",
+      "crc": "9F08064E",
+      "catalog_title": "Pokemon: Edicion Rojo Fuego (Spain)",
+      "size": 16777216,
+      "mtime_ns": 1096502304000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Star Wars Trilogy - Apprentice of the Force [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Star Wars Trilogy - Apprentice of the Force (Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "C9F0C492",
+      "catalog_title": "Star Wars Trilogy: Apprentice of the Force (Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 8388608,
+      "mtime_ns": 1095763760000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Dragon Ball Z - Supersonic Warriors [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Dragon Ball Z - Supersonic Warriors (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "B4D9572C",
+      "catalog_title": "Dragon Ball Z: Supersonic Warriors (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1092955432000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Catwoman [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Catwoman (USA, Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "1ADB373D",
+      "catalog_title": "Catwoman (USA, Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 8388608,
+      "mtime_ns": 1090427046000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Kirby & The Amazing Mirror [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Kirby & The Amazing Mirror (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "4F07C618",
+      "catalog_title": "Kirby & The Amazing Mirror (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1088687390000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Super Monkey Ball Jr [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Super Monkey Ball Jr. (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "D75DA09D",
+      "catalog_title": "Super Monkey Ball Jr. (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1088014364000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Donkey Kong Country 2  [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Donkey Kong Country 2 (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "AEF11223",
+      "catalog_title": "Donkey Kong Country 2 (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1087580034000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Harry Potter III - El Pricioner de Azkabam [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Harry Potter and the Prisoner of Azkaban (USA, Europe) (En,Fr,De,Es,It,Nl,Da).gba",
+      "crc": "C0BCCAAD",
+      "catalog_title": "Harry Potter and the Prisoner of Azkaban (USA, Europe) (En,Fr,De,Es,It,Nl,Da)",
+      "size": 16777216,
+      "mtime_ns": 1085570892000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\CT Special Forces 3 - Bio Terror [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\CT Special Forces 3 - Bioterror (Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "7DC40EDA",
+      "catalog_title": "CT Special Forces 3: Bioterror (Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 8388608,
+      "mtime_ns": 1083323274000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Shining Force [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Shining Force - Resurrection of the Dark Dragon (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "07B06994",
+      "catalog_title": "Shining Force: Resurrection of the Dark Dragon (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1083199682000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Digimon Racing [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Digimon Racing (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "4F1B0157",
+      "catalog_title": "Digimon Racing (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1082805936000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Metroid - Zero Mission [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Metroid - Zero Mission (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "F1D92E63",
+      "catalog_title": "Metroid: Zero Mission (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1081336160000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Sword of Mana [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Sword of Mana (Europe) (Es,It).gba",
+      "crc": "11A0AF49",
+      "catalog_title": "Sword of Mana (Europe) (Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1079717216000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\CT Special Forces 2 - Back To Hell [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\CT Special Forces - Back to Hell (Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "863CBF31",
+      "catalog_title": "CT Special Forces: Back to Hell (Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 8388608,
+      "mtime_ns": 1077958078000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Advance Wars [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Advance Wars (Europe) (En,Fr,De,Es).gba",
+      "crc": "66FB29E9",
+      "catalog_title": "Advance Wars (Europe) (En,Fr,De,Es)",
+      "size": 8388608,
+      "mtime_ns": 1075513348000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Yi-Gi-Oh! - Las cartas sagradas [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Yu-Gi-Oh! The Sacred Cards (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "D19DB37C",
+      "catalog_title": "Yu-Gi-Oh! The Sacred Cards (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1075472936000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\The Lord of the Rings - The Return Of The King [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Lord of the Rings, The - The Return of the King (USA, Europe) (En,Fr,De,Es,It).gba",
+      "crc": "7590EBFA",
+      "catalog_title": "Lord of the Rings, The: The Return of the King (USA, Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1073764966000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Los Sims - Bustin' Out [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Sims, The - Bustin' Out (USA, Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "ABAF519C",
+      "catalog_title": "Sims, The: Bustin' Out (USA, Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 16777216,
+      "mtime_ns": 1070589474000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Beyblade V-Force - Ultimate Blader Jam [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Beyblade V-Force - Ultimate Blader Jam (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "02CF5E5C",
+      "catalog_title": "Beyblade V-Force: Ultimate Blader Jam (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1068722746000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Mario & Luigi Superstar Saga [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Mario & Luigi - Superstar Saga (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "170CC574",
+      "catalog_title": "Mario & Luigi: Superstar Saga (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1068136042000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Pokemon Pinball RZ [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon Pinball - Ruby & Sapphire (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "A53AC14B",
+      "catalog_title": "Pokemon Pinball: Ruby & Sapphire (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1068134476000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Top Gear Rally [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Top Gear Rally (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "86AD4007",
+      "catalog_title": "Top Gear Rally (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1067172698000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Final Fantasy Tactics [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Final Fantasy Tactics Advance (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "BA5DE047",
+      "catalog_title": "Final Fantasy Tactics Advance (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1065562004000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\The Lord of the Rings - The Hobbit [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Hobbit, The - The Prelude to the Lord of the Rings (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "EACDFE0F",
+      "catalog_title": "Hobbit, The: The Prelude to the Lord of the Rings (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1065195352000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Digimon - Battle Spirit 2 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Digimon - Battle Spirit 2 (USA) (En,Fr,De,Es,It).gba",
+      "crc": "C4C246EF",
+      "catalog_title": "Digimon: Battle Spirit 2 (USA) (En,Fr,De,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 1064524306000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Golden Sun 2 - La edad perdida [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Golden Sun - La Edad Perdida (Spain).gba",
+      "crc": "EE38BA94",
+      "catalog_title": "Golden Sun: La Edad Perdida (Spain)",
+      "size": 16777216,
+      "mtime_ns": 1063904322000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Worms Blast [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Worms Blast (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "5223F5AA",
+      "catalog_title": "Worms Blast (Europe) (En,Fr,De,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 1062248954000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Digimon - Battle Spirit [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Digimon - Battle Spirit (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "EA5FC3DA",
+      "catalog_title": "Digimon: Battle Spirit (Europe) (En,Fr,De,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 1061481042000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Justice League - Injustice For All [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Justice League - Injustice for All (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "D71C4382",
+      "catalog_title": "Justice League: Injustice for All (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1056124176000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Crazy Taxi - Catch a Ride [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Crazy Taxi - Catch a Ride (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "4AEBD704",
+      "catalog_title": "Crazy Taxi: Catch a Ride (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1055277146000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\The Incredible Hulk [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Incredible Hulk, The (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "7E00422C",
+      "catalog_title": "Incredible Hulk, The (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1054872088000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Medabots AX - Metabee Version [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Medabots AX - Metabee Ver. (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "5F1E5A48",
+      "catalog_title": "Medabots AX: Metabee Ver. (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1054846710000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Donkey Kong Country 1  [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Donkey Kong Country (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "41D277FE",
+      "catalog_title": "Donkey Kong Country (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1053393744000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Daredevil [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Daredevil (Europe) (En,Fr,Es,It).gba",
+      "crc": "41A9B849",
+      "catalog_title": "Daredevil (Europe) (En,Fr,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 1050071982000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Quieres Ser Millonario [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Quiere Ser Millonario (Spain).gba",
+      "crc": "43514D44",
+      "catalog_title": "Quiere Ser Millonario (Spain)",
+      "size": 4194304,
+      "mtime_ns": 1048716762000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Bruce Lee - Return Of The Legend [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Bruce Lee - Return of the Legend (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "B5FF39DC",
+      "catalog_title": "Bruce Lee: Return of the Legend (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1048344458000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Inspector Gadget Racing [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Inspector Gadget Racing (Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "B0D1C070",
+      "catalog_title": "Inspector Gadget Racing (Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 4194304,
+      "mtime_ns": 1041632852000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Sonic Advance 2 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Sonic Advance 2 (Japan) (En,Ja,Fr,De,Es,It).gba",
+      "crc": "513804FF",
+      "catalog_title": "Sonic Advance 2 (Japan) (En,Ja,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 1040141464000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Star Wars - The new droid army [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Star Wars - The New Droid Army (Europe) (En,Fr,De,Es).gba",
+      "crc": "677854AF",
+      "catalog_title": "Star Wars: The New Droid Army (Europe) (En,Fr,De,Es)",
+      "size": 8388608,
+      "mtime_ns": 1038665054000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Metroid Fusion [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Metroid Fusion (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "974E46AB",
+      "catalog_title": "Metroid Fusion (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1037815992000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\The Lord Of The Rings - The Two Towers [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Lord of the Rings, The - The Two Towers (USA, Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "A1E3BF33",
+      "catalog_title": "Lord of the Rings, The: The Two Towers (USA, Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 16777216,
+      "mtime_ns": 1036536822000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\The Lord of the Rings - The Fellowship of the Ring [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Lord of the Rings, The - The Fellowship of the Ring (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "2380B93A",
+      "catalog_title": "Lord of the Rings, The: The Fellowship of the Ring (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1036526644000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Reign Of Fire [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Reign of Fire (USA) (En,Fr,De,Es,It).gba",
+      "crc": "B48F8D57",
+      "catalog_title": "Reign of Fire (USA) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1036448904000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Gekido [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Gekido Advance - Kintaro's Revenge (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "2FB5B819",
+      "catalog_title": "Gekido Advance: Kintaro's Revenge (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1035563700000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Robotech - The Macross Saga [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Robotech - The Macross Saga (USA, Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "325A6596",
+      "catalog_title": "Robotech: The Macross Saga (USA, Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 8388608,
+      "mtime_ns": 1035048298000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Pinball Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Pinball Advance (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "39479369",
+      "catalog_title": "Pinball Advance (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1034279460000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Guilty Gear X [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Guilty Gear X - Advance Edition (Europe).gba",
+      "crc": "BA95861D",
+      "catalog_title": "Guilty Gear X: Advance Edition (Europe)",
+      "size": 8388608,
+      "mtime_ns": 1033578984000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Super Mario Advance 3 - Yoshi's Island [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Super Mario Advance 3 - Yoshi's Island (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "639E9D3B",
+      "catalog_title": "Super Mario Advance 3: Yoshi's Island (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1033234504000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Comix Zone [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Comix Zone (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "9F30002F",
+      "catalog_title": "Comix Zone (Europe) (En,Fr,De,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 1031777312000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Castlevania - Harmony Of Dissonance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Castlevania - Harmony of Dissonance (Europe).gba",
+      "crc": "521B3091",
+      "catalog_title": "Castlevania: Harmony of Dissonance (Europe)",
+      "size": 8388608,
+      "mtime_ns": 1031225462000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Medabots AX - Rokusho Version [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Medabots AX - Rokusho Ver. (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "F5801BD8",
+      "catalog_title": "Medabots AX: Rokusho Ver. (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1028525374000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Konami Collector's Series - Arcade Classics [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Konami Collector's Series - Arcade Classics (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "6A8BE56F",
+      "catalog_title": "Konami Collector's Series: Arcade Classics (Europe) (En,Fr,De,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 1028323084000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Star Wars Episode II - Attack of the Clones [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Star Wars - Episode II - Attack of the Clones (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "C492C46D",
+      "catalog_title": "Star Wars: Episode II - Attack of the Clones (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1024675828000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Total Soccer Manager [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Total Soccer Manager (Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "92F99295",
+      "catalog_title": "Total Soccer Manager (Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 4194304,
+      "mtime_ns": 1024246222000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\V-Rally 3 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\V-Rally 3 (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "02D20287",
+      "catalog_title": "V-Rally 3 (Europe) (En,Fr,De,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 1024159192000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Ice Age [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Ice Age (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "10179D72",
+      "catalog_title": "Ice Age (Europe) (En,Fr,De,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 1024011192000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Extreme Ghostbusters - Code Ecto-1 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Extreme Ghostbusters - Code Ecto-1 (Europe) (En,Fr,De,Es,It,Pt).gba",
+      "crc": "88CC876C",
+      "catalog_title": "Extreme Ghostbusters: Code Ecto-1 (Europe) (En,Fr,De,Es,It,Pt)",
+      "size": 4194304,
+      "mtime_ns": 1017419444000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Golden Sun 1 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Golden Sun (Spain).gba",
+      "crc": "C63008D6",
+      "catalog_title": "Golden Sun (Spain)",
+      "size": 8388608,
+      "mtime_ns": 1017256208000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Broken Sword [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Broken Sword - The Shadow of the Templars (USA) (En,Fr,De,Es,It).gba",
+      "crc": "3278CE51",
+      "catalog_title": "Broken Sword: The Shadow of the Templars (USA) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1017185474000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Shrek - Swamp Kart [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Shrek - Swamp Kart Speedway (USA, Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "91483D87",
+      "catalog_title": "Shrek: Swamp Kart Speedway (USA, Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 8388608,
+      "mtime_ns": 1016760604000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Chessmaster [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Chessmaster (Europe).gba",
+      "crc": "27E7FD09",
+      "catalog_title": "Chessmaster (Europe)",
+      "size": 4194304,
+      "mtime_ns": 1016748418000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Crash Bandicoot XS [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Crash Bandicoot XS (Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "CCFD654F",
+      "catalog_title": "Crash Bandicoot XS (Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 8388608,
+      "mtime_ns": 1014730408000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Army Men - Operation Green [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Army Men - Operation Green (USA) (En,Fr,De,Es,It).gba",
+      "crc": "6D174E28",
+      "catalog_title": "Army Men: Operation Green (USA) (En,Fr,De,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 1007414292000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Planet of the Apes [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Planet of the Apes (Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "6E378BF3",
+      "catalog_title": "Planet of the Apes (Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 4194304,
+      "mtime_ns": 1007048820000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Robot Wars - Advanced Destruction [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Robot Wars - Advanced Destruction (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "CF8231BE",
+      "catalog_title": "Robot Wars: Advanced Destruction (Europe) (En,Fr,De,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 1007048534000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Phalanx - The Enforce Fighter A-144 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Phalanx (Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "DFCFE06C",
+      "catalog_title": "Phalanx (Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 4194304,
+      "mtime_ns": 1006811998000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\David Beckham Soccer [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\David Beckham Soccer (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "E9A34F49",
+      "catalog_title": "David Beckham Soccer (Europe) (En,Fr,De,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 1006447664000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Froggers Adventures - Temple of the Frog [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Frogger's Adventures - Temple of the Frog (USA) (En,Fr,De,Es,It).gba",
+      "crc": "2EB9EEE6",
+      "catalog_title": "Frogger's Adventures: Temple of the Frog (USA) (En,Fr,De,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 1006364582000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Harry Potter I - Piedra Filosofal [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Harry Potter and the Sorcerer's Stone (USA, Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da).gba",
+      "crc": "F755065C",
+      "catalog_title": "Harry Potter and the Sorcerer's Stone (USA, Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da)",
+      "size": 8388608,
+      "mtime_ns": 1005175388000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Donald Duck Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Donald Duck Advance (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "4C086A5E",
+      "catalog_title": "Donald Duck Advance (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 1005147384000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Mario Kart - Super Circuit [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Mario Kart - Super Circuit (Europe).gba",
+      "crc": "20025842",
+      "catalog_title": "Mario Kart: Super Circuit (Europe)",
+      "size": 4194304,
+      "mtime_ns": 1004810638000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Kao The Kangaroo [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Kao the Kangaroo (USA) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "F6667B3E",
+      "catalog_title": "Kao the Kangaroo (USA) (En,Fr,De,Es,It,Nl)",
+      "size": 4194304,
+      "mtime_ns": 1004531874000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Super Bust-A-Move [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Super Bust-A-Move (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "6BFD2915",
+      "catalog_title": "Super Bust-A-Move (Europe) (En,Fr,De,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 1004481568000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Spyro - Season of Ice [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Spyro - Season of Ice (USA).gba",
+      "crc": "2F2389D2",
+      "catalog_title": "Spyro: Season of Ice (USA)",
+      "size": 8388608,
+      "mtime_ns": 1004458596000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Lucky Luke - Wanted! [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Lucky Luke - Wanted! (Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "F12F29A9",
+      "catalog_title": "Lucky Luke: Wanted! (Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 4194304,
+      "mtime_ns": 1004384306000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Dexter's Lab - Deesaster Strikes [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Dexter's Laboratory - Deesaster Strikes! (USA) (En,Fr,De,Es,It).gba",
+      "crc": "E948D412",
+      "catalog_title": "Dexter's Laboratory: Deesaster Strikes! (USA) (En,Fr,De,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 1001528832000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\European Super League [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\European Super League (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "748AD738",
+      "catalog_title": "European Super League (Europe) (En,Fr,De,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 1001426716000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Jurassic Park 3 - Park Builder [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Jurassic Park III - Park Builder (USA).gba",
+      "crc": "EDDDCF19",
+      "catalog_title": "Jurassic Park III: Park Builder (USA)",
+      "size": 4194304,
+      "mtime_ns": 1000830932000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Jurassic Park 3 - DNA Factor [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Jurassic Park III - The DNA Factor (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "FE89C986",
+      "catalog_title": "Jurassic Park III: The DNA Factor (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 998057620000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Army Men Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Army Men Advance (USA, Europe) (En,Fr,De,Es,It).gba",
+      "crc": "9A4A509F",
+      "catalog_title": "Army Men Advance (USA, Europe) (En,Fr,De,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 992012124000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Chu Chu Rocket [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\ChuChu Rocket! (USA) (En,Ja,Fr,De,Es).gba",
+      "crc": "057FB1B6",
+      "catalog_title": "ChuChu Rocket! (USA) (En,Ja,Fr,De,Es)",
+      "size": 4194304,
+      "mtime_ns": 991956564000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\RayMan Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Rayman Advance (Europe) (En,Fr,De,Es,It) (Beta).gba",
+      "crc": "4B1B4E02",
+      "catalog_title": "Rayman Advance (Europe) (En,Fr,De,Es,It) (Beta)",
+      "size": 8388608,
+      "mtime_ns": 991825776000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\2 Game Pack! - Uno & Skip-Bo (Europe) (En,Fr,De,Es,It).gba",
+      "target": "E:\\retrou\\roms\\GBA\\2 Game Pack! Uno & Skip-Bo (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "E2018633",
+      "catalog_title": "2 Game Pack! Uno & Skip-Bo (Europe) (En,Fr,De,Es,It)",
+      "size": 4194304,
+      "mtime_ns": 851495520000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Batman Begins [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Batman Begins (USA, Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "83C90106",
+      "catalog_title": "Batman Begins (USA, Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 16777216,
+      "mtime_ns": 851481120000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Crash Bandicoot 2 N-Tranced [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Crash Bandicoot 2 - N-Tranced (Europe) (En,Fr,De,Es,It,Nl).gba",
+      "crc": "0F1D06A0",
+      "catalog_title": "Crash Bandicoot 2: N-Tranced (Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 8388608,
+      "mtime_ns": 851481120000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Justice League Heroes - The Flash [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Justice League Heroes - The Flash (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "ACB22FFF",
+      "catalog_title": "Justice League Heroes: The Flash (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 851481120000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\King Kong - The 8th Wonder Of The World [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Kong - The 8th Wonder of the World (USA) (En,Fr,Es).gba",
+      "crc": "06079C42",
+      "catalog_title": "Kong: The 8th Wonder of the World (USA) (En,Fr,Es)",
+      "size": 8388608,
+      "mtime_ns": 851481120000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Shining Soul [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Shining Soul (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "74B5D069",
+      "catalog_title": "Shining Soul (Europe) (En,Fr,De,Es,It)",
+      "size": 8388608,
+      "mtime_ns": 851481120000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Shining Soul II [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Shining Soul II (Europe) (En,Fr,De,Es,It).gba",
+      "crc": "55E503C1",
+      "catalog_title": "Shining Soul II (Europe) (En,Fr,De,Es,It)",
+      "size": 16777216,
+      "mtime_ns": 851481120000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Shrek - Super Slam [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Shrek - Super Slam (USA).gba",
+      "crc": "E2EC9EED",
+      "catalog_title": "Shrek: Super Slam (USA)",
+      "size": 8388608,
+      "mtime_ns": 851481120000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Pokemon Azul [E][GB].gb",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Azul (Spain) (SGB Enhanced).gb",
+      "crc": "D95416F9",
+      "catalog_title": "Pokemon - Edicion Azul (Spain) (SGB Enhanced)",
+      "size": 1048576,
+      "mtime_ns": 941307140000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Pokemon Rojo [E][GB].gb",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Roja (Spain) (SGB Enhanced).gb",
+      "crc": "D8507D8A",
+      "catalog_title": "Pokemon - Edicion Roja (Spain) (SGB Enhanced)",
+      "size": 1048576,
+      "mtime_ns": 941306832000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Pokemon Cristal [E][GBC].gbc",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Cristal (Spain).gbc",
+      "crc": "FF0A6F8A",
+      "catalog_title": "Pokemon - Edicion Cristal (Spain)",
+      "size": 2097152,
+      "mtime_ns": 1005840236000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Zelda - Oracle of ages [E][GBC].gbc",
+      "target": "E:\\retrou\\roms\\GBA\\Legend of Zelda, The - Oracle of Ages (Europe) (En,Fr,De,Es,It).gbc",
+      "crc": "5933E3FA",
+      "catalog_title": "Legend of Zelda, The - Oracle of Ages (Europe) (En,Fr,De,Es,It)",
+      "size": 2097152,
+      "mtime_ns": 1001002478000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Pokemon Plata [E][GBC].gbc",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Plata (Spain) (SGB Enhanced) (GB Compatible).gbc",
+      "crc": "1D9FAAC5",
+      "catalog_title": "Pokemon - Edicion Plata (Spain) (SGB Enhanced) (GB Compatible)",
+      "size": 2097152,
+      "mtime_ns": 986572482000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Pokemon Oro [E][GBC].gbc",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Oro (Spain) (SGB Enhanced) (GB Compatible).gbc",
+      "crc": "3434A92B",
+      "catalog_title": "Pokemon - Edicion Oro (Spain) (SGB Enhanced) (GB Compatible)",
+      "size": 2097152,
+      "mtime_ns": 986572394000000000
+    },
+    {
+      "system": "gba",
+      "source": "E:\\retrou\\roms\\GBA\\Worms Armageddon [E][GBC].gbc",
+      "target": "E:\\retrou\\roms\\GBA\\Worms Armageddon (Europe) (En,Fr,De,Es,It,Nl).gbc",
+      "crc": "CB04F34D",
+      "catalog_title": "Worms Armageddon (Europe) (En,Fr,De,Es,It,Nl)",
+      "size": 1048576,
+      "mtime_ns": 942435964000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Beast Wars Transmetal (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Transformers - Beast Wars Transmetals (USA).z64",
+      "crc": "85138B5A",
+      "catalog_title": "Transformers: Beast Wars Transmetals (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327500468000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Disney's Tarzan (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Tarzan (USA).z64",
+      "crc": "C38CA641",
+      "catalog_title": "Tarzan (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327503012000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Elmo's Letter Adventure (USA).n64",
+      "target": "E:\\retrou\\roms\\N64\\Sesame Street - Elmo's Letter Adventure (USA).n64",
+      "crc": "92C3BA6F",
+      "catalog_title": "Sesame Street: Elmo's Letter Adventure (USA)",
+      "size": 8388608,
+      "mtime_ns": 851495520000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Excitebike 64 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Excitebike 64 (USA).z64",
+      "crc": "FC459192",
+      "catalog_title": "Excitebike 64 (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327510038000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Fighter's Destiny 2 (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\Fighter Destiny 2 (USA).v64",
+      "crc": "BB2563C6",
+      "catalog_title": "Fighter Destiny 2 (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327507464000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Frogger 2 (USA) (Rev A) (Proto).n64",
+      "target": "E:\\retrou\\roms\\N64\\Frogger 2 (USA) (Proto 2).n64",
+      "crc": "A8F81F39",
+      "catalog_title": "Frogger 2 (USA) (Proto 2)",
+      "size": 33554432,
+      "mtime_ns": 851495520000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\GT64 - Championship Edition (USA).n64",
+      "target": "E:\\retrou\\roms\\N64\\GT 64 - Championship Edition (USA).n64",
+      "crc": "BC627DA7",
+      "catalog_title": "GT 64: Championship Edition (USA)",
+      "size": 12582912,
+      "mtime_ns": 851495520000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Hot Wheels Turbo Racing (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Hot Wheels - Turbo Racing (USA).z64",
+      "crc": "A5C92148",
+      "catalog_title": "Hot Wheels: Turbo Racing (USA)",
+      "size": 12582912,
+      "mtime_ns": 1327507616000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\International Track and Field 2000 (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\International Track & Field 2000 (USA).v64",
+      "crc": "DA443F0B",
+      "catalog_title": "International Track & Field 2000 (USA)",
+      "size": 12582912,
+      "mtime_ns": 1327509664000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Kobe Bryant's NBA Courtside (USA).n64",
+      "target": "E:\\retrou\\roms\\N64\\Kobe Bryant in NBA Courtside (USA).n64",
+      "crc": "86360BFB",
+      "catalog_title": "Kobe Bryant in NBA Courtside (USA)",
+      "size": 12582912,
+      "mtime_ns": 851495520000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Legend of Zelda, The - Majora's Mask (Europe) (En,Fr,De,Es) (Rev A).n64",
+      "target": "E:\\retrou\\roms\\N64\\Legend of Zelda, The - Majora's Mask (Europe) (En,Fr,De,Es) (Rev 1).n64",
+      "crc": "E2E6823D",
+      "catalog_title": "Legend of Zelda, The: Majora's Mask (Europe) (En,Fr,De,Es) (Rev 1)",
+      "size": 33554432,
+      "mtime_ns": 851495520000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Mega Man 64 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Mega Man 64 (USA).z64",
+      "crc": "1BFC71F0",
+      "catalog_title": "Mega Man 64 (USA)",
+      "size": 33554432,
+      "mtime_ns": 1327509258000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Midway's Greatest Arcade Hits Volume 1 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Midway's Greatest Arcade Hits - Volume 1 (USA).z64",
+      "crc": "E5C1FEDC",
+      "catalog_title": "Midway's Greatest Arcade Hits: Volume 1 (USA)",
+      "size": 4194304,
+      "mtime_ns": 1327502798000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Mike Piazza's StrikeZone (USA).n64",
+      "target": "E:\\retrou\\roms\\N64\\Mike Piazza's Strike Zone (USA).n64",
+      "crc": "CC253CAB",
+      "catalog_title": "Mike Piazza's Strike Zone (USA)",
+      "size": 12582912,
+      "mtime_ns": 851495520000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Mini Racers (USA) (Proto).n64",
+      "target": "E:\\retrou\\roms\\N64\\Mini Racers (USA) (Ja) (Proto).n64",
+      "crc": "F59F881B",
+      "catalog_title": "Mini Racers (USA) (Ja) (Proto)",
+      "size": 16777216,
+      "mtime_ns": 851495520000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Mission Impossible (USA).n64",
+      "target": "E:\\retrou\\roms\\N64\\Mission - Impossible (USA).n64",
+      "crc": "3677A8B8",
+      "catalog_title": "Mission: Impossible (USA)",
+      "size": 12582912,
+      "mtime_ns": 851495520000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\MRC - Multi Racing Championship (USA).n64",
+      "target": "E:\\retrou\\roms\\N64\\MRC - Multi-Racing Championship (USA).n64",
+      "crc": "1DC1C812",
+      "catalog_title": "MRC: Multi-Racing Championship (USA)",
+      "size": 12582912,
+      "mtime_ns": 851495520000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\NFL Quarterback Club 2001 (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\NFL QB Club 2001 (USA).v64",
+      "crc": "6D849E17",
+      "catalog_title": "NFL QB Club 2001 (USA)",
+      "size": 12582912,
+      "mtime_ns": 1327507674000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Olympic Hockey Nagano '98 (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\Olympic Hockey 98 (USA).v64",
+      "crc": "2D777652",
+      "catalog_title": "Olympic Hockey 98 (USA)",
+      "size": 8388608,
+      "mtime_ns": 1327503436000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\PGA European Tour (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\PGA European Tour (USA).z64",
+      "crc": "7CDFCDAA",
+      "catalog_title": "PGA European Tour (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327507020000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Pokemon Snap Station (USA) (Promo).n64",
+      "target": "E:\\retrou\\roms\\N64\\Pokemon Snap Station (USA) (Demo) (Kiosk).n64",
+      "crc": "E22A00D0",
+      "catalog_title": "Pokemon Snap Station (USA) (Demo) (Kiosk)",
+      "size": 16777216,
+      "mtime_ns": 851495520000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Quake 64 (USA).n64",
+      "target": "E:\\retrou\\roms\\N64\\Quake (USA).n64",
+      "crc": "761F39D1",
+      "catalog_title": "Quake (USA)",
+      "size": 12582912,
+      "mtime_ns": 851495520000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\RAINBOW SIX.n64",
+      "target": "E:\\retrou\\roms\\N64\\Tom Clancy's Rainbow Six (France).n64",
+      "crc": "BBF7B6A8",
+      "catalog_title": "Tom Clancy's Rainbow Six (France)",
+      "size": 16777216,
+      "mtime_ns": 1327509880000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Resident Evil 2 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Resident Evil 2 (USA) (Rev 1).z64",
+      "crc": "848FBC0D",
+      "catalog_title": "Resident Evil 2 (USA) (Rev 1)",
+      "size": 67108864,
+      "mtime_ns": 1327510018000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Roadsters (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Roadsters (USA) (En,Fr,Es).z64",
+      "crc": "E4337B92",
+      "catalog_title": "Roadsters (USA) (En,Fr,Es)",
+      "size": 12582912,
+      "mtime_ns": 1327502272000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\San Francisco Rush - Extreme Racing (USA) (En,Fr,De) (Rev A).n64",
+      "target": "E:\\retrou\\roms\\N64\\San Francisco Rush - Extreme Racing (USA) (En,Fr,De) (Rev 1).n64",
+      "crc": "886C5753",
+      "catalog_title": "San Francisco Rush: Extreme Racing (USA) (En,Fr,De) (Rev 1)",
+      "size": 8388608,
+      "mtime_ns": 851495520000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Scooby-Doo! - Classic Creep Capers (USA).n64",
+      "target": "E:\\retrou\\roms\\N64\\Scooby-Doo! Classic Creep Capers (USA).n64",
+      "crc": "39068228",
+      "catalog_title": "Scooby-Doo! Classic Creep Capers (USA)",
+      "size": 16777216,
+      "mtime_ns": 851495520000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\South Park (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\South Park (USA).z64",
+      "crc": "7D666B9E",
+      "catalog_title": "South Park (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327509876000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\South Park Rally (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\South Park Rally (USA).z64",
+      "crc": "CCDD322A",
+      "catalog_title": "South Park Rally (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327506512000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Space Invaders (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Space Invaders (USA).z64",
+      "crc": "60F7FF8E",
+      "catalog_title": "Space Invaders (USA)",
+      "size": 8388608,
+      "mtime_ns": 1327500144000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Spacestation Silicon Valley (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\SpaceStation Silicon Valley (USA).z64",
+      "crc": "A606E8AE",
+      "catalog_title": "SpaceStation Silicon Valley (USA)",
+      "size": 8388608,
+      "mtime_ns": 1327489282000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Spider-Man (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Spider-Man (USA).z64",
+      "crc": "696CC2A4",
+      "catalog_title": "Spider-Man (USA)",
+      "size": 33554432,
+      "mtime_ns": 1327505154000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Star Fox 64 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Star Fox 64 (USA).z64",
+      "crc": "B1FCAA9C",
+      "catalog_title": "Star Fox 64 (USA)",
+      "size": 12582912,
+      "mtime_ns": 1327505862000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Star Soldier Vanishing Earth (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Star Soldier - Vanishing Earth (USA).z64",
+      "crc": "EA650DEF",
+      "catalog_title": "Star Soldier: Vanishing Earth (USA)",
+      "size": 12582912,
+      "mtime_ns": 1327502534000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Star Wars - Episode 1 - Racer (U) (!).n64",
+      "target": "E:\\retrou\\roms\\N64\\Star Wars Episode I - Racer (USA).n64",
+      "crc": "C53C1035",
+      "catalog_title": "Star Wars Episode I: Racer (USA)",
+      "size": 33554432,
+      "mtime_ns": 1327509244000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Star Wars - Rogue Squadron (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Star Wars - Rogue Squadron (USA).z64",
+      "crc": "83C225CC",
+      "catalog_title": "Star Wars: Rogue Squadron (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327505994000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Star Wars - Shadows of the Empire (U) (V1.2) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Star Wars - Shadows of the Empire (USA) (Rev 2).z64",
+      "crc": "E8727549",
+      "catalog_title": "Star Wars: Shadows of the Empire (USA) (Rev 2)",
+      "size": 12582912,
+      "mtime_ns": 1327502274000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Star Wars Episode I - Racer (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Star Wars Episode I - Racer (USA).z64",
+      "crc": "C53C1035",
+      "catalog_title": "Star Wars Episode I: Racer (USA)",
+      "size": 33554432,
+      "mtime_ns": 1327504712000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\StarCraft 64 (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\StarCraft 64 (USA).v64",
+      "crc": "4E4C7EC9",
+      "catalog_title": "StarCraft 64 (USA)",
+      "size": 33554432,
+      "mtime_ns": 1327509244000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Starshot - Space Circus Fever (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Starshot - Space Circus Fever (USA) (En,Fr,Es).z64",
+      "crc": "7720E5F3",
+      "catalog_title": "Starshot: Space Circus Fever (USA) (En,Fr,Es)",
+      "size": 12582912,
+      "mtime_ns": 1327508122000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Stunt Racer 64 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Stunt Racer 64 (USA).z64",
+      "crc": "3438B1AF",
+      "catalog_title": "Stunt Racer 64 (USA)",
+      "size": 12582912,
+      "mtime_ns": 1327487012000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Super Bowling 64 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Super Bowling (USA).z64",
+      "crc": "F6CCD04A",
+      "catalog_title": "Super Bowling (USA)",
+      "size": 8388608,
+      "mtime_ns": 1327496714000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Super Mario 64 (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\Super Mario 64 (USA).v64",
+      "crc": "3CE60709",
+      "catalog_title": "Super Mario 64 (USA)",
+      "size": 8388608,
+      "mtime_ns": 1327508334000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Super Smash Bros. (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Super Smash Bros. (USA).z64",
+      "crc": "EB97929E",
+      "catalog_title": "Super Smash Bros. (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327509996000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Supercross 2000 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Supercross 2000 (USA).z64",
+      "crc": "094E2A48",
+      "catalog_title": "Supercross 2000 (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327496432000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Superman (U) (M3) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Superman - The New Superman Aventures (USA) (En,Fr,Es).z64",
+      "crc": "437E3677",
+      "catalog_title": "Superman: The New Superman Aventures (USA) (En,Fr,Es)",
+      "size": 8388608,
+      "mtime_ns": 1327500572000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Tetrisphere (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Tetrisphere (USA).z64",
+      "crc": "70A3A5CE",
+      "catalog_title": "Tetrisphere (USA)",
+      "size": 8388608,
+      "mtime_ns": 1327504198000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Tigger's Honey Hunt (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Tigger's Honey Hunt (USA).z64",
+      "crc": "68C2AC8F",
+      "catalog_title": "Tigger's Honey Hunt (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327509436000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Tom and Jerry in Fists of Furry (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Tom and Jerry in Fists of Furry (USA).z64",
+      "crc": "6D685B83",
+      "catalog_title": "Tom and Jerry in Fists of Furry (USA)",
+      "size": 12582912,
+      "mtime_ns": 1327501720000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Tom Clancy's Rainbow Six (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Tom Clancy's Rainbow Six (USA).z64",
+      "crc": "53B0CC13",
+      "catalog_title": "Tom Clancy's Rainbow Six (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327506156000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Tonic Trouble (U) (V1.1) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Tonic Trouble (USA) (Rev 1).z64",
+      "crc": "1C04BA12",
+      "catalog_title": "Tonic Trouble (USA) (Rev 1)",
+      "size": 16777216,
+      "mtime_ns": 1327509024000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Tony Hawk's Pro Skater (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Tony Hawk's Pro Skater (USA).z64",
+      "crc": "F5C1B64F",
+      "catalog_title": "Tony Hawk's Pro Skater (USA)",
+      "size": 12582912,
+      "mtime_ns": 1327509872000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Tony Hawk's Pro Skater 2 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Tony Hawk's Pro Skater 2 (USA).z64",
+      "crc": "80AA83F3",
+      "catalog_title": "Tony Hawk's Pro Skater 2 (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327509922000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Tony Hawk's Pro Skater 3 (U).z64",
+      "target": "E:\\retrou\\roms\\N64\\Tony Hawk's Pro Skater 3 (USA).z64",
+      "crc": "62A8CE7D",
+      "catalog_title": "Tony Hawk's Pro Skater 3 (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327503650000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Top Gear Hyper-Bike (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Top Gear Hyper-Bike (USA).z64",
+      "crc": "6EEBC26A",
+      "catalog_title": "Top Gear Hyper-Bike (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327505290000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Top Gear Overdrive (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Top Gear Overdrive (USA).z64",
+      "crc": "F3E0FF21",
+      "catalog_title": "Top Gear Overdrive (USA)",
+      "size": 12582912,
+      "mtime_ns": 1327506300000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Top Gear Rally 2 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Top Gear Rally 2 (USA).z64",
+      "crc": "914CF9C4",
+      "catalog_title": "Top Gear Rally 2 (USA)",
+      "size": 12582912,
+      "mtime_ns": 1327505190000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Toy Story 2 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Toy Story 2 - Buzz Lightyear to the Rescue! (USA).z64",
+      "crc": "B9570841",
+      "catalog_title": "Toy Story 2: Buzz Lightyear to the Rescue! (USA)",
+      "size": 12582912,
+      "mtime_ns": 1327505190000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Transformers - Beast Wars Transmetal (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\Transformers - Beast Wars Transmetals (USA).v64",
+      "crc": "85138B5A",
+      "catalog_title": "Transformers: Beast Wars Transmetals (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327505576000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Triple Play 2000 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Triple Play 2000 (USA).z64",
+      "crc": "785DD0F8",
+      "catalog_title": "Triple Play 2000 (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327507648000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Turok - Dinosaur Hunter (U) (V1.2) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\Turok - Dinosaur Hunter (USA) (Rev 2).v64",
+      "crc": "8C3BBC00",
+      "catalog_title": "Turok: Dinosaur Hunter (USA) (Rev 2)",
+      "size": 8388608,
+      "mtime_ns": 1327507096000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Turok - Rage Wars (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Turok - Rage Wars (USA).z64",
+      "crc": "422872A2",
+      "catalog_title": "Turok: Rage Wars (USA)",
+      "size": 8388608,
+      "mtime_ns": 1327500622000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Turok 2 - Seeds of Evil (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Turok 2 - Seeds of Evil (USA).z64",
+      "crc": "FF5E7636",
+      "catalog_title": "Turok 2: Seeds of Evil (USA)",
+      "size": 33554432,
+      "mtime_ns": 1327510058000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Turok 3 - Shadow of Oblivion (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Turok 3 - Shadow of Oblivion (USA).z64",
+      "crc": "CB297224",
+      "catalog_title": "Turok 3: Shadow of Oblivion (USA)",
+      "size": 33554432,
+      "mtime_ns": 1327509412000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Twisted Edge Extreme Snowboarding (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Twisted Edge - Extreme Snowboarding (USA).z64",
+      "crc": "BFBCC038",
+      "catalog_title": "Twisted Edge: Extreme Snowboarding (USA)",
+      "size": 12582912,
+      "mtime_ns": 1327506104000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Vigilante 8 - 2nd Offense (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\Vigilante 8 - 2nd Offense (USA).v64",
+      "crc": "0293203F",
+      "catalog_title": "Vigilante 8: 2nd Offense (USA)",
+      "size": 12582912,
+      "mtime_ns": 1327508088000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Vigilante 8 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Vigilante 8 (USA).z64",
+      "crc": "330B73E6",
+      "catalog_title": "Vigilante 8 (USA)",
+      "size": 8388608,
+      "mtime_ns": 1327508088000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Virtual Chess 64 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Virtual Chess 64 (USA) (En,Fr,Es).z64",
+      "crc": "620DE0B7",
+      "catalog_title": "Virtual Chess 64 (USA) (En,Fr,Es)",
+      "size": 4194304,
+      "mtime_ns": 1327507492000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\V-Rally Edition 99 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\V-Rally Edition 99 (USA).z64",
+      "crc": "4803075E",
+      "catalog_title": "V-Rally Edition 99 (USA)",
+      "size": 8388608,
+      "mtime_ns": 1327507774000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Waialae Country Club - True Golf Classics (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\Waialae Country Club - True Golf Classics (USA).v64",
+      "crc": "CCAB08D7",
+      "catalog_title": "Waialae Country Club: True Golf Classics (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327507186000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\War Gods (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\War Gods (USA).z64",
+      "crc": "FFACF993",
+      "catalog_title": "War Gods (USA)",
+      "size": 12582912,
+      "mtime_ns": 1327486688000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Wave Race 64 (U) (V1.1) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Wave Race 64 - Kawasaki Jet Ski (USA) (Rev 1).z64",
+      "crc": "394948C4",
+      "catalog_title": "Wave Race 64: Kawasaki Jet Ski (USA) (Rev 1)",
+      "size": 8388608,
+      "mtime_ns": 1327507012000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Wayne Gretzky's 3D Hockey (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Wayne Gretzky's 3D Hockey (USA).z64",
+      "crc": "9781F88D",
+      "catalog_title": "Wayne Gretzky's 3D Hockey (USA)",
+      "size": 8388608,
+      "mtime_ns": 1327479122000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Wayne Gretzky's 3D Hockey 98 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Wayne Gretzky's 3D Hockey '98 (USA).z64",
+      "crc": "355FB089",
+      "catalog_title": "Wayne Gretzky's 3D Hockey '98 (USA)",
+      "size": 8388608,
+      "mtime_ns": 1327479122000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\WCW Backstage Assault (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\WCW Backstage Assault (USA).v64",
+      "crc": "5DCC2E4E",
+      "catalog_title": "WCW Backstage Assault (USA)",
+      "size": 33554432,
+      "mtime_ns": 1327506000000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\WCW Mayhem (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\WCW Mayhem (USA).v64",
+      "crc": "F1F9B6EB",
+      "catalog_title": "WCW Mayhem (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327508528000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\WCW Nitro (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\WCW Nitro (USA).z64",
+      "crc": "455B0830",
+      "catalog_title": "WCW Nitro (USA)",
+      "size": 12582912,
+      "mtime_ns": 1327506996000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\WCW vs. nWo - World Tour (U) (V1.1) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\WCW vs. nWo - World Tour (USA) (Rev 1).z64",
+      "crc": "A74DA07A",
+      "catalog_title": "WCW vs. nWo: World Tour (USA) (Rev 1)",
+      "size": 12582912,
+      "mtime_ns": 1327503558000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\WCW-nWo Revenge (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\WCW-nWo Revenge (USA).z64",
+      "crc": "54CBAAA8",
+      "catalog_title": "WCW-nWo Revenge (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327506018000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Wetrix (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Wetrix (USA) (En,Fr,De,Es,It,Nl).z64",
+      "crc": "50CD1F71",
+      "catalog_title": "Wetrix (USA) (En,Fr,De,Es,It,Nl)",
+      "size": 8388608,
+      "mtime_ns": 1327508382000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Wheel of Fortune (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Wheel of Fortune (USA).z64",
+      "crc": "8D3EFA8D",
+      "catalog_title": "Wheel of Fortune (USA)",
+      "size": 4194304,
+      "mtime_ns": 1327481468000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\WinBack - Covert Operations (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\WinBack - Covert Operations (USA).z64",
+      "crc": "64C817C5",
+      "catalog_title": "WinBack: Covert Operations (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327509586000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Wipeout 64 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Wipeout 64 (USA).z64",
+      "crc": "4888D0FE",
+      "catalog_title": "Wipeout 64 (USA)",
+      "size": 8388608,
+      "mtime_ns": 1327491760000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\World Cup 98 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\World Cup 98 (USA) (En,Fr,De,Es,It,Nl,Sv,Da).z64",
+      "crc": "13930C26",
+      "catalog_title": "World Cup 98 (USA) (En,Fr,De,Es,It,Nl,Sv,Da)",
+      "size": 12582912,
+      "mtime_ns": 1327503374000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\World Driver Championship (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\World Driver Championship (USA).z64",
+      "crc": "5E4ACBFA",
+      "catalog_title": "World Driver Championship (USA)",
+      "size": 16777216,
+      "mtime_ns": 1327510276000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\A Bug's Life (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\Bug's Life, A (USA).v64",
+      "crc": "CF2EA0B6",
+      "catalog_title": "Bug's Life, A (USA)",
+      "size": 12582912,
+      "mtime_ns": 1327509716000000000
+    },
+    {
+      "system": "n64",
+      "source": "E:\\retrou\\roms\\N64\\Aerofighter's Assault (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\AeroFighters Assault (USA).z64",
+      "crc": "4370D7E3",
+      "catalog_title": "AeroFighters Assault (USA)",
+      "size": 8388608,
+      "mtime_ns": 1327494336000000000
+    },
+    {
+      "system": "nes",
+      "source": "E:\\retrou\\roms\\NES\\Double Dragon (Japan).nes",
+      "target": "E:\\retrou\\roms\\NES\\Double Dragon - Sou Setsu Ryuu (Japan).nes",
+      "crc": "915780A5",
+      "catalog_title": "Double Dragon: Sou Setsu Ryuu (Japan)",
+      "size": 262160,
+      "mtime_ns": 851495520000000000
+    },
+    {
+      "system": "snes",
+      "source": "E:\\retrou\\roms\\SNES\\FIFA 98 - Road to World Cup (Europe) (En,Fr,De,Es,It,Sv).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\FIFA - Road to World Cup 98 (Europe) (En,Fr,De,Es,It,Sv) (A8FE).sfc",
+      "crc": "5E4F4856",
+      "catalog_title": "FIFA: Road to World Cup 98 (Europe) (En,Fr,De,Es,It,Sv) (A8FE)",
+      "size": 2097152,
+      "mtime_ns": 1093367894000000000
+    },
+    {
+      "system": "snes",
+      "source": "E:\\retrou\\roms\\SNES\\Flashback (Europe) (En,Fr).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\Flashback (Europe) (En,Fr) (Beta).sfc",
+      "crc": "5DAFAC3E",
+      "catalog_title": "Flashback (Europe) (En,Fr) (Beta)",
+      "size": 2097152,
+      "mtime_ns": 1093367982000000000
+    },
+    {
+      "system": "snes",
+      "source": "E:\\retrou\\roms\\SNES\\GunForce - Battle Fire Engulfed Terror Island (Europe).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\GunForce - Battle Fire Engulfed Terror Island (Europe) (Proto).sfc",
+      "crc": "11AF8992",
+      "catalog_title": "GunForce: Battle Fire Engulfed Terror Island (Europe) (Proto)",
+      "size": 524288,
+      "mtime_ns": 1093368110000000000
+    },
+    {
+      "system": "snes",
+      "source": "E:\\retrou\\roms\\SNES\\International Sensible Soccer - World Champions Limited Edition (Europe) (En,Fr,De,It) (Rev 1).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\International Sensible Soccer - World Champions (Europe) (En,Fr,De,It) (Rev 1).sfc",
+      "crc": "6FF2D97E",
+      "catalog_title": "International Sensible Soccer: World Champions (Europe) (En,Fr,De,It) (Rev 1)",
+      "size": 524288,
+      "mtime_ns": 1093369178000000000
+    },
+    {
+      "system": "snes",
+      "source": "E:\\retrou\\roms\\SNES\\Irem Major Title, The (Europe).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\Major Title (Europe).sfc",
+      "crc": "3075CB04",
+      "catalog_title": "Major Title (Europe)",
+      "size": 1048576,
+      "mtime_ns": 951742288000000000
+    },
+    {
+      "system": "snes",
+      "source": "E:\\retrou\\roms\\SNES\\James Bond Jr. (Europe).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\James Bond Jr (Europe).sfc",
+      "crc": "7414A4C2",
+      "catalog_title": "James Bond Jr (Europe)",
+      "size": 524288,
+      "mtime_ns": 1093368226000000000
+    },
+    {
+      "system": "snes",
+      "source": "E:\\retrou\\roms\\SNES\\King of Dragons, The (Europe).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\King of Dragons (Europe).sfc",
+      "crc": "78F0820B",
+      "catalog_title": "King of Dragons (Europe)",
+      "size": 2097152,
+      "mtime_ns": 1140685654000000000
+    },
+    {
+      "system": "snes",
+      "source": "E:\\retrou\\roms\\SNES\\Lamborghini - American Challenge (Europe).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\Lamborghini American Challenge (Europe).sfc",
+      "crc": "263178B2",
+      "catalog_title": "Lamborghini American Challenge (Europe)",
+      "size": 524288,
+      "mtime_ns": 1093368438000000000
+    },
+    {
+      "system": "snes",
+      "source": "E:\\retrou\\roms\\SNES\\Legend of Zelda, The - A Link to the Past (Canada).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\Legend of Zelda, The - A Link to the Past (Canada) (Fr).sfc",
+      "crc": "47760381",
+      "catalog_title": "Legend of Zelda, The: A Link to the Past (Canada) (Fr)",
+      "size": 1048576,
+      "mtime_ns": 1093368458000000000
+    },
+    {
+      "system": "snes",
+      "source": "E:\\retrou\\roms\\SNES\\Lost Vikings II, The (Europe) (En,Fr,De).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\Lost Vikings II, The - Norse by Norsewest (Europe) (En,Fr,De).sfc",
+      "crc": "3C49A285",
+      "catalog_title": "Lost Vikings II, The: Norse by Norsewest (Europe) (En,Fr,De)",
+      "size": 1048576,
+      "mtime_ns": 1093368490000000000
+    }
+  ],
+  "moves": [
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Rainbow Six - Rogue Spear [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Tom Clancy's Rainbow Six - Rogue Spear (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Sonic Battle [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Sonic Battle (Europe) (En,Ja,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Sonic Battle [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Sonic Battle (Europe) (En,Ja,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Sonic Battle [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Sonic Battle (Europe) (En,Ja,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Narnia - El leon la bruja y el armario [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Chronicles of Narnia, The - The Lion, the Witch and the Wardrobe (USA, Europe) (En,Fr,De,Es,It,Nl,Sv,Da).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Harry Potter V - La Orden del Fenix [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Harry Potter and the Order of the Phoenix (USA, Europe) (En,Fr,De,Es,It,Nl,Da).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Final Fantasy VI Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Final Fantasy VI Advance (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Final Fantasy VI Advance [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Final Fantasy VI Advance (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Final Fantasy VI Advance [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Final Fantasy VI Advance (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Spiderman 3 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Spider-Man 3 (Spain).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Final Fantasy V Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Final Fantasy V Advance (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Final Fantasy V Advance [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Final Fantasy V Advance (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Final Fantasy V Advance [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Final Fantasy V Advance (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Ghost Rider [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Ghost Rider (USA, Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Ghost Rider [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Ghost Rider (USA, Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Ghost Rider [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Ghost Rider (USA, Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Shrek - Smash N' Crash Racing [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Shrek - Smash n' Crash Racing (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Shrek - Smash N' Crash Racing [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Shrek - Smash n' Crash Racing (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Shrek - Smash N' Crash Racing [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Shrek - Smash n' Crash Racing (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Shinchan contra los muñecos de Shock Gan [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Shin chan contra los Munecos de Shock Gahn (Spain).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Buscando a Nemo + Buscando a Nemo -  The Contuining Adventures [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\2 Games in 1 - Finding Nemo + Finding Nemo - The Continuing Adventures (Europe) (Es,It+En,Es,It,Sv,Da).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Rayman Raving Rabbids [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Rayman - Raving Rabbids (Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Rayman Raving Rabbids [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Rayman - Raving Rabbids (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Rayman Raving Rabbids [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Rayman - Raving Rabbids (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Spider-Man Battle for New York [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Spider-Man - Battle for New York (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Spider-Man Battle for New York [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Spider-Man - Battle for New York (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Spider-Man Battle for New York [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Spider-Man - Battle for New York (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Eragon [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Eragon (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Eragon [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Eragon (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Eragon [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Eragon (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Pokemon Mundo misterioso [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon Mystery Dungeon - Red Rescue Team (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\roms\\GBA\\Pokemon Mundo misterioso [E].sav",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon Mystery Dungeon - Red Rescue Team (Europe) (En,Fr,De,Es,It).sav"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Rebelstar Tactical Command [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Rebelstar - Tactical Command (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Rebelstar Tactical Command [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Rebelstar - Tactical Command (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Rebelstar Tactical Command [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Rebelstar - Tactical Command (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Need for Speed Carbon - Own The City [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Need for Speed - Carbon - Own the City (USA, Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Need for Speed Carbon - Own The City [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Need for Speed - Carbon - Own the City (USA, Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Need for Speed Carbon - Own The City [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Need for Speed - Carbon - Own the City (USA, Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Monster House [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Monster House (Europe) (En,Fr,De,Es).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Monster House [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Monster House (Europe) (En,Fr,De,Es).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Monster House [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Monster House (Europe) (En,Fr,De,Es).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Piratas del Caribe - El cofre del hombre muerto [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Pirates of the Caribbean - Dead Man's Chest (USA, Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\X-Men - The Official Game [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\X-Men - The Official Game (Europe) (En,Fr,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\X-Men - The Official Game [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\X-Men - The Official Game (Europe) (En,Fr,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\X-Men - The Official Game [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\X-Men - The Official Game (Europe) (En,Fr,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Fifa Word Cup Germany 2006 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\2006 FIFA World Cup - Germany 2006 (USA, Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Shinchan Aventuras en Cineland [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Shin chan - Aventuras en Cineland (Spain).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Tales of Phantasia [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Tales of Phantasia (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Tales of Phantasia [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Tales of Phantasia (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Tales of Phantasia [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Tales of Phantasia (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Yu-Gi-Oh! - Ultimate Masters Edition [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Yu-Gi-Oh! Ultimate Masters Edition - World Championship Tournament 2006 (Europe) (En,Ja,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Yu-Gi-Oh! - Ultimate Masters Edition [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Yu-Gi-Oh! Ultimate Masters Edition - World Championship Tournament 2006 (Europe) (En,Ja,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Yu-Gi-Oh! - Ultimate Masters Edition [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Yu-Gi-Oh! Ultimate Masters Edition - World Championship Tournament 2006 (Europe) (En,Ja,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Alien Hominid [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Alien Hominid (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Alien Hominid [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Alien Hominid (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Alien Hominid [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Alien Hominid (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Mario Tennis Power Tour [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Mario Tennis - Power Tour (USA, Australia) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Mario Tennis Power Tour [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Mario Tennis - Power Tour (USA, Australia) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Mario Tennis Power Tour [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Mario Tennis - Power Tour (USA, Australia) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Dynasty Warriors Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Dynasty Warriors Advance (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Dynasty Warriors Advance [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Dynasty Warriors Advance (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Dynasty Warriors Advance [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Dynasty Warriors Advance (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Need for Speed - Most Wanted [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Need for Speed - Most Wanted (USA, Europe) (En,Fr,De,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Need for Speed - Most Wanted [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Need for Speed - Most Wanted (USA, Europe) (En,Fr,De,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Need for Speed - Most Wanted [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Need for Speed - Most Wanted (USA, Europe) (En,Fr,De,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Gunstar Future Heroes [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Gunstar Future Heroes (Europe) (En,Ja,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Gunstar Future Heroes [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Gunstar Future Heroes (Europe) (En,Ja,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Gunstar Future Heroes [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Gunstar Future Heroes (Europe) (En,Ja,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Fire Emblem - The Sacred Stones [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Fire Emblem - The Sacred Stones (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Fire Emblem - The Sacred Stones [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Fire Emblem - The Sacred Stones (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Fire Emblem - The Sacred Stones [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Fire Emblem - The Sacred Stones (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Donkey Kong Country 3  [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Donkey Kong Country 3 (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Donkey Kong Country 3  [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Donkey Kong Country 3 (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Donkey Kong Country 3  [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Donkey Kong Country 3 (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Los Sims 2 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Sims 2, The (USA, Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Pokemon Esmeralda [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Esmeralda (Spain).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\FIFA 06 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\FIFA Soccer 06 (USA, Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Yu-Gi-Oh! Destiny Board Traveler [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Yu-Gi-Oh! Destiny Board Traveler (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Yu-Gi-Oh! Destiny Board Traveler [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Yu-Gi-Oh! Destiny Board Traveler (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Yu-Gi-Oh! Destiny Board Traveler [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Yu-Gi-Oh! Destiny Board Traveler (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Rayman 10th Anniversary - Rayman Advance + Rayman 3 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Rayman - 10th Anniversary (Europe) (En,Fr,De,Es,It,Nl,Sv,No,Da,Fi).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Animaniacs - Lights, Camera, Action! [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Animaniacs - Lights, Camera, Action! (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Animaniacs - Lights, Camera, Action! [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Animaniacs - Lights, Camera, Action! (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Animaniacs - Lights, Camera, Action! [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Animaniacs - Lights, Camera, Action! (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Charlie And The Chocolate Factory [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Charlie and the Chocolate Factory (Europe) (En,Fr,Es,Nl).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\roms\\GBA\\Charlie And The Chocolate Factory [E].sav",
+      "target": "E:\\retrou\\roms\\GBA\\Charlie and the Chocolate Factory (Europe) (En,Fr,Es,Nl).sav"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Charlie And The Chocolate Factory [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Charlie and the Chocolate Factory (Europe) (En,Fr,Es,Nl).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Charlie And The Chocolate Factory [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Charlie and the Chocolate Factory (Europe) (En,Fr,Es,Nl).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Dragon Ball Z - Advance adventure  [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Dragon Ball - Advanced Adventure (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Mario Party Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Mario Party Advance (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Mario Party Advance [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Mario Party Advance (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Mario Party Advance [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Mario Party Advance (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Star Wars Episode III - Revenge of the Sith [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Star Wars - Episode III - Revenge of the Sith (Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Star Wars Episode III - Revenge of the Sith [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Star Wars - Episode III - Revenge of the Sith (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Star Wars Episode III - Revenge of the Sith [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Star Wars - Episode III - Revenge of the Sith (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Kingdom Hearts - Chain of Memories [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Kingdom Hearts - Chain of Memories (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Kingdom Hearts - Chain of Memories [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Kingdom Hearts - Chain of Memories (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Kingdom Hearts - Chain of Memories [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Kingdom Hearts - Chain of Memories (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Puyo Pop Fever [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Puyo Pop Fever (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Puyo Pop Fever [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Puyo Pop Fever (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Puyo Pop Fever [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Puyo Pop Fever (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Duel Masters - Kaijudo showdown [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Duel Masters - Kaijudo Showdown (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Duel Masters - Kaijudo showdown [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Duel Masters - Kaijudo Showdown (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Duel Masters - Kaijudo showdown [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Duel Masters - Kaijudo Showdown (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Rayman - Hoodlums Revenge [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Rayman - Hoodlums' Revenge (Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Rayman - Hoodlums Revenge [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Rayman - Hoodlums' Revenge (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Rayman - Hoodlums Revenge [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Rayman - Hoodlums' Revenge (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Robots [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Robots (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Robots [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Robots (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Robots [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Robots (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Banjo Kazooie - Grunty's Revenge [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Banjo-Kazooie - La Venganza de Grunty (Spain).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\roms\\GBA\\Banjo Kazooie - Grunty's Revenge [E].sav",
+      "target": "E:\\retrou\\roms\\GBA\\Banjo-Kazooie - La Venganza de Grunty (Spain).sav"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\saves\\gba\\save\\Banjo Kazooie - Grunty's Revenge [E].srm",
+      "target": "E:\\retrou\\saves\\gba\\save\\Banjo-Kazooie - La Venganza de Grunty (Spain).srm"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Banjo Kazooie - Grunty's Revenge [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Banjo-Kazooie - La Venganza de Grunty (Spain).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Banjo Kazooie - Grunty's Revenge [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Banjo-Kazooie - La Venganza de Grunty (Spain).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Banjo Pilot [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Banjo-Pilot (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\roms\\GBA\\Banjo Pilot [E].sav",
+      "target": "E:\\retrou\\roms\\GBA\\Banjo-Pilot (Europe) (En,Fr,De,Es,It).sav"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Banjo Pilot [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Banjo-Pilot (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Banjo Pilot [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Banjo-Pilot (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Astroboy - Omega Factor [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Astro Boy - Omega Factor (Europe) (En,Ja,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Donkey Kong - King of Swing [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\DK - King of Swing (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\roms\\GBA\\Donkey Kong - King of Swing [E].sav",
+      "target": "E:\\retrou\\roms\\GBA\\DK - King of Swing (Europe) (En,Fr,De,Es,It).sav"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Racing Gears Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Racing Gears Advance (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Racing Gears Advance [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Racing Gears Advance (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Racing Gears Advance [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Racing Gears Advance (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Metal Slug Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Metal Slug Advance (Europe).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Metal Slug Advance [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Metal Slug Advance (Europe).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Metal Slug Advance [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Metal Slug Advance (Europe).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Final Fantasy I y II [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Final Fantasy I & II - Dawn of Souls (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Creatures [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Creatures (Europe) (En,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Creatures [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Creatures (Europe) (En,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Creatures [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Creatures (Europe) (En,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Need for Speed Underground 2 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Need for Speed - Underground 2 (USA, Europe) (En,Fr,De,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Need for Speed Underground 2 [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Need for Speed - Underground 2 (USA, Europe) (En,Fr,De,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Need for Speed Underground 2 [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Need for Speed - Underground 2 (USA, Europe) (En,Fr,De,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Yu Yu Hakusho - Ghostfiles - Tournament Tactics [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Yu Yu Hakusho - Ghostfiles - Tournament Tactics (USA, Europe).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Yu Yu Hakusho - Ghostfiles - Tournament Tactics [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Yu Yu Hakusho - Ghostfiles - Tournament Tactics (USA, Europe).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Yu Yu Hakusho - Ghostfiles - Tournament Tactics [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Yu Yu Hakusho - Ghostfiles - Tournament Tactics (USA, Europe).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Los Sims en la ciudad [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Urbz, The - Sims in the City (USA, Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\The Lord of the Rings - The Third Age [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Lord of the Rings, The - The Third Age (USA, Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Grand Theft Auto Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Grand Theft Auto (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Grand Theft Auto Advance [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Grand Theft Auto (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Grand Theft Auto Advance [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Grand Theft Auto (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\FIFA 2005 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\FIFA Soccer 2005 (USA, Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Mario Golf - Advance Tour [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Mario Golf - Advance Tour (Spain).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Mario Golf - Advance Tour [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Mario Golf - Advance Tour (Spain).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Mario Golf - Advance Tour [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Mario Golf - Advance Tour (Spain).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Pokémon Verde hoja [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Verde Hoja (Spain).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Pokémon Rojo fuego [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Rojo Fuego (Spain).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\roms\\GBA\\Pokémon Rojo fuego [E].sav",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Rojo Fuego (Spain).sav"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\roms\\GBA\\Pokémon Rojo fuego [E].sgm",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Rojo Fuego (Spain).sgm"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Star Wars Trilogy - Apprentice of the Force [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Star Wars Trilogy - Apprentice of the Force (Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Star Wars Trilogy - Apprentice of the Force [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Star Wars Trilogy - Apprentice of the Force (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Star Wars Trilogy - Apprentice of the Force [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Star Wars Trilogy - Apprentice of the Force (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Dragon Ball Z - Supersonic Warriors [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Dragon Ball Z - Supersonic Warriors (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Dragon Ball Z - Supersonic Warriors [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Dragon Ball Z - Supersonic Warriors (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Dragon Ball Z - Supersonic Warriors [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Dragon Ball Z - Supersonic Warriors (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Catwoman [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Catwoman (USA, Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Catwoman [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Catwoman (USA, Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Catwoman [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Catwoman (USA, Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Kirby & The Amazing Mirror [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Kirby & The Amazing Mirror (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Kirby _ The Amazing Mirror [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Kirby _ The Amazing Mirror (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Kirby _ The Amazing Mirror [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Kirby _ The Amazing Mirror (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Super Monkey Ball Jr [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Super Monkey Ball Jr. (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Super Monkey Ball Jr [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Super Monkey Ball Jr. (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Super Monkey Ball Jr [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Super Monkey Ball Jr. (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Donkey Kong Country 2  [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Donkey Kong Country 2 (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Donkey Kong Country 2  [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Donkey Kong Country 2 (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Donkey Kong Country 2  [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Donkey Kong Country 2 (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Harry Potter III - El Pricioner de Azkabam [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Harry Potter and the Prisoner of Azkaban (USA, Europe) (En,Fr,De,Es,It,Nl,Da).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\CT Special Forces 3 - Bio Terror [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\CT Special Forces 3 - Bioterror (Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Shining Force [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Shining Force - Resurrection of the Dark Dragon (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Shining Force [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Shining Force - Resurrection of the Dark Dragon (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Shining Force [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Shining Force - Resurrection of the Dark Dragon (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Digimon Racing [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Digimon Racing (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Digimon Racing [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Digimon Racing (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Digimon Racing [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Digimon Racing (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Metroid - Zero Mission [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Metroid - Zero Mission (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Metroid - Zero Mission [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Metroid - Zero Mission (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Metroid - Zero Mission [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Metroid - Zero Mission (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Sword of Mana [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Sword of Mana (Europe) (Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Sword of Mana [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Sword of Mana (Europe) (Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Sword of Mana [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Sword of Mana (Europe) (Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\CT Special Forces 2 - Back To Hell [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\CT Special Forces - Back to Hell (Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Advance Wars [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Advance Wars (Europe) (En,Fr,De,Es).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Advance Wars [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Advance Wars (Europe) (En,Fr,De,Es).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Advance Wars [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Advance Wars (Europe) (En,Fr,De,Es).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Yi-Gi-Oh! - Las cartas sagradas [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Yu-Gi-Oh! The Sacred Cards (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\The Lord of the Rings - The Return Of The King [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Lord of the Rings, The - The Return of the King (USA, Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Los Sims - Bustin' Out [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Sims, The - Bustin' Out (USA, Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Beyblade V-Force - Ultimate Blader Jam [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Beyblade V-Force - Ultimate Blader Jam (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Beyblade V-Force - Ultimate Blader Jam [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Beyblade V-Force - Ultimate Blader Jam (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Beyblade V-Force - Ultimate Blader Jam [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Beyblade V-Force - Ultimate Blader Jam (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Mario & Luigi Superstar Saga [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Mario & Luigi - Superstar Saga (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Mario _ Luigi Superstar Saga [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Mario _ Luigi - Superstar Saga (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Mario _ Luigi Superstar Saga [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Mario _ Luigi - Superstar Saga (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Pokemon Pinball RZ [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon Pinball - Ruby & Sapphire (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Top Gear Rally [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Top Gear Rally (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Top Gear Rally [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Top Gear Rally (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Top Gear Rally [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Top Gear Rally (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Final Fantasy Tactics [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Final Fantasy Tactics Advance (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Final Fantasy Tactics [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Final Fantasy Tactics Advance (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Final Fantasy Tactics [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Final Fantasy Tactics Advance (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\The Lord of the Rings - The Hobbit [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Hobbit, The - The Prelude to the Lord of the Rings (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Digimon - Battle Spirit 2 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Digimon - Battle Spirit 2 (USA) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Digimon - Battle Spirit 2 [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Digimon - Battle Spirit 2 (USA) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Digimon - Battle Spirit 2 [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Digimon - Battle Spirit 2 (USA) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Golden Sun 2 - La edad perdida [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Golden Sun - La Edad Perdida (Spain).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Worms Blast [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Worms Blast (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Worms Blast [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Worms Blast (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Worms Blast [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Worms Blast (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Digimon - Battle Spirit [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Digimon - Battle Spirit (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\roms\\GBA\\Digimon - Battle Spirit [E].sav",
+      "target": "E:\\retrou\\roms\\GBA\\Digimon - Battle Spirit (Europe) (En,Fr,De,Es,It).sav"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Digimon - Battle Spirit [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Digimon - Battle Spirit (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Digimon - Battle Spirit [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Digimon - Battle Spirit (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Justice League - Injustice For All [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Justice League - Injustice for All (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Justice League - Injustice For All [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Justice League - Injustice for All (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Justice League - Injustice For All [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Justice League - Injustice for All (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Crazy Taxi - Catch a Ride [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Crazy Taxi - Catch a Ride (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Crazy Taxi - Catch a Ride [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Crazy Taxi - Catch a Ride (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Crazy Taxi - Catch a Ride [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Crazy Taxi - Catch a Ride (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\The Incredible Hulk [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Incredible Hulk, The (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Medabots AX - Metabee Version [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Medabots AX - Metabee Ver. (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Donkey Kong Country 1  [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Donkey Kong Country (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Daredevil [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Daredevil (Europe) (En,Fr,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Daredevil [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Daredevil (Europe) (En,Fr,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Daredevil [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Daredevil (Europe) (En,Fr,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Quieres Ser Millonario [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Quiere Ser Millonario (Spain).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Bruce Lee - Return Of The Legend [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Bruce Lee - Return of the Legend (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Bruce Lee - Return Of The Legend [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Bruce Lee - Return of the Legend (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Bruce Lee - Return Of The Legend [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Bruce Lee - Return of the Legend (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Inspector Gadget Racing [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Inspector Gadget Racing (Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Inspector Gadget Racing [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Inspector Gadget Racing (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Inspector Gadget Racing [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Inspector Gadget Racing (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Sonic Advance 2 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Sonic Advance 2 (Japan) (En,Ja,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Sonic Advance 2 [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Sonic Advance 2 (Japan) (En,Ja,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Sonic Advance 2 [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Sonic Advance 2 (Japan) (En,Ja,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Star Wars - The new droid army [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Star Wars - The New Droid Army (Europe) (En,Fr,De,Es).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Star Wars - The new droid army [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Star Wars - The New Droid Army (Europe) (En,Fr,De,Es).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Star Wars - The new droid army [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Star Wars - The New Droid Army (Europe) (En,Fr,De,Es).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Metroid Fusion [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Metroid Fusion (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Metroid Fusion [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Metroid Fusion (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Metroid Fusion [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Metroid Fusion (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\The Lord Of The Rings - The Two Towers [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Lord of the Rings, The - The Two Towers (USA, Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\The Lord of the Rings - The Fellowship of the Ring [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Lord of the Rings, The - The Fellowship of the Ring (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Reign Of Fire [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Reign of Fire (USA) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Reign Of Fire [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Reign of Fire (USA) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Reign Of Fire [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Reign of Fire (USA) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Gekido [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Gekido Advance - Kintaro's Revenge (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Robotech - The Macross Saga [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Robotech - The Macross Saga (USA, Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Robotech - The Macross Saga [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Robotech - The Macross Saga (USA, Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Robotech - The Macross Saga [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Robotech - The Macross Saga (USA, Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Pinball Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Pinball Advance (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Pinball Advance [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Pinball Advance (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Pinball Advance [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Pinball Advance (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Guilty Gear X [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Guilty Gear X - Advance Edition (Europe).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Guilty Gear X [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Guilty Gear X - Advance Edition (Europe).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Guilty Gear X [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Guilty Gear X - Advance Edition (Europe).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Super Mario Advance 3 - Yoshi's Island [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Super Mario Advance 3 - Yoshi's Island (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Super Mario Advance 3 - Yoshi's Island [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Super Mario Advance 3 - Yoshi's Island (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Super Mario Advance 3 - Yoshi's Island [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Super Mario Advance 3 - Yoshi's Island (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Comix Zone [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Comix Zone (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Comix Zone [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Comix Zone (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Comix Zone [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Comix Zone (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Castlevania - Harmony Of Dissonance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Castlevania - Harmony of Dissonance (Europe).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\roms\\GBA\\Castlevania - Harmony Of Dissonance [E].sav",
+      "target": "E:\\retrou\\roms\\GBA\\Castlevania - Harmony of Dissonance (Europe).sav"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\saves\\gba\\save\\Castlevania - Harmony Of Dissonance [E].srm",
+      "target": "E:\\retrou\\saves\\gba\\save\\Castlevania - Harmony of Dissonance (Europe).srm"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Castlevania - Harmony Of Dissonance [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Castlevania - Harmony of Dissonance (Europe).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Castlevania - Harmony Of Dissonance [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Castlevania - Harmony of Dissonance (Europe).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\config\\gba\\rom-maps\\bb89a01d2045935b.conf",
+      "target": "E:\\retrou\\config\\gba\\rom-maps\\2abff70d80ead1ad.conf"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Medabots AX - Rokusho Version [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Medabots AX - Rokusho Ver. (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Konami Collector's Series - Arcade Classics [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Konami Collector's Series - Arcade Classics (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Konami Collector's Series - Arcade Classics [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Konami Collector's Series - Arcade Classics (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Konami Collector's Series - Arcade Classics [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Konami Collector's Series - Arcade Classics (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Star Wars Episode II - Attack of the Clones [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Star Wars - Episode II - Attack of the Clones (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Star Wars Episode II - Attack of the Clones [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Star Wars - Episode II - Attack of the Clones (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Star Wars Episode II - Attack of the Clones [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Star Wars - Episode II - Attack of the Clones (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Total Soccer Manager [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Total Soccer Manager (Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Total Soccer Manager [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Total Soccer Manager (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Total Soccer Manager [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Total Soccer Manager (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\V-Rally 3 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\V-Rally 3 (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\V-Rally 3 [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\V-Rally 3 (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\V-Rally 3 [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\V-Rally 3 (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Ice Age [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Ice Age (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Ice Age [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Ice Age (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Ice Age [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Ice Age (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Extreme Ghostbusters - Code Ecto-1 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Extreme Ghostbusters - Code Ecto-1 (Europe) (En,Fr,De,Es,It,Pt).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Extreme Ghostbusters - Code Ecto-1 [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Extreme Ghostbusters - Code Ecto-1 (Europe) (En,Fr,De,Es,It,Pt).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Extreme Ghostbusters - Code Ecto-1 [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Extreme Ghostbusters - Code Ecto-1 (Europe) (En,Fr,De,Es,It,Pt).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Golden Sun 1 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Golden Sun (Spain).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Broken Sword [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Broken Sword - The Shadow of the Templars (USA) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Broken Sword [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Broken Sword - The Shadow of the Templars (USA) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Broken Sword [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Broken Sword - The Shadow of the Templars (USA) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Shrek - Swamp Kart [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Shrek - Swamp Kart Speedway (USA, Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Shrek - Swamp Kart [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Shrek - Swamp Kart Speedway (USA, Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Shrek - Swamp Kart [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Shrek - Swamp Kart Speedway (USA, Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Chessmaster [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Chessmaster (Europe).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Chessmaster [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Chessmaster (Europe).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Chessmaster [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Chessmaster (Europe).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Crash Bandicoot XS [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Crash Bandicoot XS (Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Crash Bandicoot XS [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Crash Bandicoot XS (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Crash Bandicoot XS [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Crash Bandicoot XS (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Army Men - Operation Green [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Army Men - Operation Green (USA) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Army Men - Operation Green [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Army Men - Operation Green (USA) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Army Men - Operation Green [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Army Men - Operation Green (USA) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Planet of the Apes [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Planet of the Apes (Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Planet of the Apes [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Planet of the Apes (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Planet of the Apes [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Planet of the Apes (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Robot Wars - Advanced Destruction [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Robot Wars - Advanced Destruction (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Robot Wars - Advanced Destruction [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Robot Wars - Advanced Destruction (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Robot Wars - Advanced Destruction [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Robot Wars - Advanced Destruction (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Phalanx - The Enforce Fighter A-144 [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Phalanx (Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\David Beckham Soccer [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\David Beckham Soccer (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\David Beckham Soccer [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\David Beckham Soccer (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\David Beckham Soccer [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\David Beckham Soccer (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Froggers Adventures - Temple of the Frog [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Frogger's Adventures - Temple of the Frog (USA) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Harry Potter I - Piedra Filosofal [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Harry Potter and the Sorcerer's Stone (USA, Europe) (En,Fr,De,Es,It,Nl,Pt,Sv,No,Da).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Donald Duck Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Donald Duck Advance (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Donald Duck Advance [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Donald Duck Advance (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Donald Duck Advance [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Donald Duck Advance (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Mario Kart - Super Circuit [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Mario Kart - Super Circuit (Europe).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Mario Kart - Super Circuit [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Mario Kart - Super Circuit (Europe).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Mario Kart - Super Circuit [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Mario Kart - Super Circuit (Europe).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Kao The Kangaroo [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Kao the Kangaroo (USA) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Kao The Kangaroo [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Kao the Kangaroo (USA) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Kao The Kangaroo [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Kao the Kangaroo (USA) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Super Bust-A-Move [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Super Bust-A-Move (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Super Bust-A-Move [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Super Bust-A-Move (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Super Bust-A-Move [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Super Bust-A-Move (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Spyro - Season of Ice [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Spyro - Season of Ice (USA).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Spyro - Season of Ice [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Spyro - Season of Ice (USA).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Spyro - Season of Ice [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Spyro - Season of Ice (USA).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Lucky Luke - Wanted! [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Lucky Luke - Wanted! (Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Lucky Luke - Wanted! [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Lucky Luke - Wanted! (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Lucky Luke - Wanted! [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Lucky Luke - Wanted! (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Dexter's Lab - Deesaster Strikes [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Dexter's Laboratory - Deesaster Strikes! (USA) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\European Super League [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\European Super League (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\European Super League [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\European Super League (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\European Super League [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\European Super League (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Jurassic Park 3 - Park Builder [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Jurassic Park III - Park Builder (USA).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Jurassic Park 3 - DNA Factor [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Jurassic Park III - The DNA Factor (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Army Men Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Army Men Advance (USA, Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Army Men Advance [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Army Men Advance (USA, Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Army Men Advance [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Army Men Advance (USA, Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Chu Chu Rocket [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\ChuChu Rocket! (USA) (En,Ja,Fr,De,Es).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\RayMan Advance [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Rayman Advance (Europe) (En,Fr,De,Es,It) (Beta).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\RayMan Advance [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Rayman Advance (Europe) (En,Fr,De,Es,It) (Beta).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\RayMan Advance [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Rayman Advance (Europe) (En,Fr,De,Es,It) (Beta).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\2 Game Pack! - Uno & Skip-Bo (Europe) (En,Fr,De,Es,It).gba",
+      "target": "E:\\retrou\\roms\\GBA\\2 Game Pack! Uno & Skip-Bo (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Batman Begins [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Batman Begins (USA, Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Batman Begins [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Batman Begins (USA, Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Batman Begins [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Batman Begins (USA, Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Crash Bandicoot 2 N-Tranced [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Crash Bandicoot 2 - N-Tranced (Europe) (En,Fr,De,Es,It,Nl).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Crash Bandicoot 2 N-Tranced [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Crash Bandicoot 2 - N-Tranced (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Crash Bandicoot 2 N-Tranced [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Crash Bandicoot 2 - N-Tranced (Europe) (En,Fr,De,Es,It,Nl).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Justice League Heroes - The Flash [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Justice League Heroes - The Flash (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Justice League Heroes - The Flash [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Justice League Heroes - The Flash (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Justice League Heroes - The Flash [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Justice League Heroes - The Flash (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\King Kong - The 8th Wonder Of The World [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Kong - The 8th Wonder of the World (USA) (En,Fr,Es).gba"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Shining Soul [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Shining Soul (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Shining Soul [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Shining Soul (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Shining Soul [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Shining Soul (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Shining Soul II [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Shining Soul II (Europe) (En,Fr,De,Es,It).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Shining Soul II [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Shining Soul II (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Shining Soul II [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Shining Soul II (Europe) (En,Fr,De,Es,It).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Shrek - Super Slam [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Shrek - Super Slam (USA).gba"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\gba\\Shrek - Super Slam [E].png",
+      "target": "E:\\retrou\\thumbnails\\gba\\Shrek - Super Slam (USA).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\gba\\Shrek - Super Slam [E].png",
+      "target": "E:\\retrou\\backdrops\\gba\\Shrek - Super Slam (USA).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Pokemon Azul [E][GB].gb",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Azul (Spain) (SGB Enhanced).gb"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Pokemon Rojo [E][GB].gb",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Roja (Spain) (SGB Enhanced).gb"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Pokemon Cristal [E][GBC].gbc",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Cristal (Spain).gbc"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Zelda - Oracle of ages [E][GBC].gbc",
+      "target": "E:\\retrou\\roms\\GBA\\Legend of Zelda, The - Oracle of Ages (Europe) (En,Fr,De,Es,It).gbc"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Pokemon Plata [E][GBC].gbc",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Plata (Spain) (SGB Enhanced) (GB Compatible).gbc"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Pokemon Oro [E][GBC].gbc",
+      "target": "E:\\retrou\\roms\\GBA\\Pokemon - Edicion Oro (Spain) (SGB Enhanced) (GB Compatible).gbc"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\GBA\\Worms Armageddon [E][GBC].gbc",
+      "target": "E:\\retrou\\roms\\GBA\\Worms Armageddon (Europe) (En,Fr,De,Es,It,Nl).gbc"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Beast Wars Transmetal (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Transformers - Beast Wars Transmetals (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Disney's Tarzan (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Tarzan (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Elmo's Letter Adventure (USA).n64",
+      "target": "E:\\retrou\\roms\\N64\\Sesame Street - Elmo's Letter Adventure (USA).n64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Excitebike 64 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Excitebike 64 (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Fighter's Destiny 2 (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\Fighter Destiny 2 (USA).v64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Frogger 2 (USA) (Rev A) (Proto).n64",
+      "target": "E:\\retrou\\roms\\N64\\Frogger 2 (USA) (Proto 2).n64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\GT64 - Championship Edition (USA).n64",
+      "target": "E:\\retrou\\roms\\N64\\GT 64 - Championship Edition (USA).n64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Hot Wheels Turbo Racing (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Hot Wheels - Turbo Racing (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\International Track and Field 2000 (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\International Track & Field 2000 (USA).v64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Kobe Bryant's NBA Courtside (USA).n64",
+      "target": "E:\\retrou\\roms\\N64\\Kobe Bryant in NBA Courtside (USA).n64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Legend of Zelda, The - Majora's Mask (Europe) (En,Fr,De,Es) (Rev A).n64",
+      "target": "E:\\retrou\\roms\\N64\\Legend of Zelda, The - Majora's Mask (Europe) (En,Fr,De,Es) (Rev 1).n64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Mega Man 64 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Mega Man 64 (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Midway's Greatest Arcade Hits Volume 1 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Midway's Greatest Arcade Hits - Volume 1 (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Mike Piazza's StrikeZone (USA).n64",
+      "target": "E:\\retrou\\roms\\N64\\Mike Piazza's Strike Zone (USA).n64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Mini Racers (USA) (Proto).n64",
+      "target": "E:\\retrou\\roms\\N64\\Mini Racers (USA) (Ja) (Proto).n64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Mission Impossible (USA).n64",
+      "target": "E:\\retrou\\roms\\N64\\Mission - Impossible (USA).n64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\MRC - Multi Racing Championship (USA).n64",
+      "target": "E:\\retrou\\roms\\N64\\MRC - Multi-Racing Championship (USA).n64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\NFL Quarterback Club 2001 (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\NFL QB Club 2001 (USA).v64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Olympic Hockey Nagano '98 (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\Olympic Hockey 98 (USA).v64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\PGA European Tour (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\PGA European Tour (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Pokemon Snap Station (USA) (Promo).n64",
+      "target": "E:\\retrou\\roms\\N64\\Pokemon Snap Station (USA) (Demo) (Kiosk).n64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Quake 64 (USA).n64",
+      "target": "E:\\retrou\\roms\\N64\\Quake (USA).n64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\RAINBOW SIX.n64",
+      "target": "E:\\retrou\\roms\\N64\\Tom Clancy's Rainbow Six (France).n64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Resident Evil 2 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Resident Evil 2 (USA) (Rev 1).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Roadsters (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Roadsters (USA) (En,Fr,Es).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\San Francisco Rush - Extreme Racing (USA) (En,Fr,De) (Rev A).n64",
+      "target": "E:\\retrou\\roms\\N64\\San Francisco Rush - Extreme Racing (USA) (En,Fr,De) (Rev 1).n64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Scooby-Doo! - Classic Creep Capers (USA).n64",
+      "target": "E:\\retrou\\roms\\N64\\Scooby-Doo! Classic Creep Capers (USA).n64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\South Park (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\South Park (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\South Park Rally (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\South Park Rally (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Space Invaders (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Space Invaders (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Spacestation Silicon Valley (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\SpaceStation Silicon Valley (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Spider-Man (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Spider-Man (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Star Fox 64 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Star Fox 64 (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Star Soldier Vanishing Earth (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Star Soldier - Vanishing Earth (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Star Wars - Episode 1 - Racer (U) (!).n64",
+      "target": "E:\\retrou\\roms\\N64\\Star Wars Episode I - Racer (USA).n64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Star Wars - Rogue Squadron (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Star Wars - Rogue Squadron (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Star Wars - Shadows of the Empire (U) (V1.2) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Star Wars - Shadows of the Empire (USA) (Rev 2).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Star Wars Episode I - Racer (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Star Wars Episode I - Racer (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\StarCraft 64 (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\StarCraft 64 (USA).v64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Starshot - Space Circus Fever (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Starshot - Space Circus Fever (USA) (En,Fr,Es).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Stunt Racer 64 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Stunt Racer 64 (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Super Bowling 64 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Super Bowling (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Super Mario 64 (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\Super Mario 64 (USA).v64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Super Smash Bros. (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Super Smash Bros. (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Supercross 2000 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Supercross 2000 (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Superman (U) (M3) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Superman - The New Superman Aventures (USA) (En,Fr,Es).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Tetrisphere (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Tetrisphere (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Tigger's Honey Hunt (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Tigger's Honey Hunt (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Tom and Jerry in Fists of Furry (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Tom and Jerry in Fists of Furry (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Tom Clancy's Rainbow Six (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Tom Clancy's Rainbow Six (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Tonic Trouble (U) (V1.1) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Tonic Trouble (USA) (Rev 1).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Tony Hawk's Pro Skater (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Tony Hawk's Pro Skater (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Tony Hawk's Pro Skater 2 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Tony Hawk's Pro Skater 2 (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Tony Hawk's Pro Skater 3 (U).z64",
+      "target": "E:\\retrou\\roms\\N64\\Tony Hawk's Pro Skater 3 (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Top Gear Hyper-Bike (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Top Gear Hyper-Bike (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Top Gear Overdrive (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Top Gear Overdrive (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Top Gear Rally 2 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Top Gear Rally 2 (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Toy Story 2 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Toy Story 2 - Buzz Lightyear to the Rescue! (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Transformers - Beast Wars Transmetal (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\Transformers - Beast Wars Transmetals (USA).v64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Triple Play 2000 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Triple Play 2000 (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Turok - Dinosaur Hunter (U) (V1.2) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\Turok - Dinosaur Hunter (USA) (Rev 2).v64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Turok - Rage Wars (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Turok - Rage Wars (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Turok 2 - Seeds of Evil (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Turok 2 - Seeds of Evil (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Turok 3 - Shadow of Oblivion (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Turok 3 - Shadow of Oblivion (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Twisted Edge Extreme Snowboarding (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Twisted Edge - Extreme Snowboarding (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Vigilante 8 - 2nd Offense (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\Vigilante 8 - 2nd Offense (USA).v64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Vigilante 8 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Vigilante 8 (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Virtual Chess 64 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Virtual Chess 64 (USA) (En,Fr,Es).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\V-Rally Edition 99 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\V-Rally Edition 99 (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Waialae Country Club - True Golf Classics (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\Waialae Country Club - True Golf Classics (USA).v64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\War Gods (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\War Gods (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Wave Race 64 (U) (V1.1) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Wave Race 64 - Kawasaki Jet Ski (USA) (Rev 1).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Wayne Gretzky's 3D Hockey (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Wayne Gretzky's 3D Hockey (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Wayne Gretzky's 3D Hockey 98 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Wayne Gretzky's 3D Hockey '98 (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\WCW Backstage Assault (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\WCW Backstage Assault (USA).v64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\WCW Mayhem (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\WCW Mayhem (USA).v64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\WCW Nitro (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\WCW Nitro (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\WCW vs. nWo - World Tour (U) (V1.1) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\WCW vs. nWo - World Tour (USA) (Rev 1).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\WCW-nWo Revenge (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\WCW-nWo Revenge (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Wetrix (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Wetrix (USA) (En,Fr,De,Es,It,Nl).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Wheel of Fortune (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Wheel of Fortune (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\WinBack - Covert Operations (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\WinBack - Covert Operations (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Wipeout 64 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Wipeout 64 (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\World Cup 98 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\World Cup 98 (USA) (En,Fr,De,Es,It,Nl,Sv,Da).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\World Driver Championship (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\World Driver Championship (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\A Bug's Life (U) [!].v64",
+      "target": "E:\\retrou\\roms\\N64\\Bug's Life, A (USA).v64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\N64\\Aerofighter's Assault (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\AeroFighters Assault (USA).z64"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\NES\\Double Dragon (Japan).nes",
+      "target": "E:\\retrou\\roms\\NES\\Double Dragon - Sou Setsu Ryuu (Japan).nes"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\nes\\Double Dragon (Japan).png",
+      "target": "E:\\retrou\\thumbnails\\nes\\Double Dragon - Sou Setsu Ryuu (Japan).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\nes\\Double Dragon (Japan).png",
+      "target": "E:\\retrou\\backdrops\\nes\\Double Dragon - Sou Setsu Ryuu (Japan).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\SNES\\FIFA 98 - Road to World Cup (Europe) (En,Fr,De,Es,It,Sv).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\FIFA - Road to World Cup 98 (Europe) (En,Fr,De,Es,It,Sv) (A8FE).sfc"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\SNES\\Flashback (Europe) (En,Fr).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\Flashback (Europe) (En,Fr) (Beta).sfc"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\SNES\\GunForce - Battle Fire Engulfed Terror Island (Europe).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\GunForce - Battle Fire Engulfed Terror Island (Europe) (Proto).sfc"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\SNES\\International Sensible Soccer - World Champions Limited Edition (Europe) (En,Fr,De,It) (Rev 1).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\International Sensible Soccer - World Champions (Europe) (En,Fr,De,It) (Rev 1).sfc"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\SNES\\Irem Major Title, The (Europe).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\Major Title (Europe).sfc"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\SNES\\James Bond Jr. (Europe).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\James Bond Jr (Europe).sfc"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\SNES\\King of Dragons, The (Europe).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\King of Dragons (Europe).sfc"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\SNES\\Lamborghini - American Challenge (Europe).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\Lamborghini American Challenge (Europe).sfc"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\snes\\Lamborghini - American Challenge (Europe).png",
+      "target": "E:\\retrou\\thumbnails\\snes\\Lamborghini American Challenge (Europe).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\snes\\Lamborghini - American Challenge (Europe).png",
+      "target": "E:\\retrou\\backdrops\\snes\\Lamborghini American Challenge (Europe).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\SNES\\Legend of Zelda, The - A Link to the Past (Canada).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\Legend of Zelda, The - A Link to the Past (Canada) (Fr).sfc"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\thumbnails\\snes\\Legend of Zelda, The - A Link to the Past (Canada).png",
+      "target": "E:\\retrou\\thumbnails\\snes\\Legend of Zelda, The - A Link to the Past (Canada) (Fr).png"
+    },
+    {
+      "kind": "associated",
+      "source": "E:\\retrou\\backdrops\\snes\\Legend of Zelda, The - A Link to the Past (Canada).png",
+      "target": "E:\\retrou\\backdrops\\snes\\Legend of Zelda, The - A Link to the Past (Canada) (Fr).png"
+    },
+    {
+      "kind": "rom",
+      "source": "E:\\retrou\\roms\\SNES\\Lost Vikings II, The (Europe) (En,Fr,De).sfc",
+      "target": "E:\\retrou\\roms\\SNES\\Lost Vikings II, The - Norse by Norsewest (Europe) (En,Fr,De).sfc"
+    }
+  ],
+  "favorites": [
+    {
+      "path": "E:\\retrou\\config\\gba\\favorites.conf",
+      "before_base64": "L3ZvbC9leHRlcm5hbDAxL3JldHJvdS9yb21zL2diYS9DYXN0bGV2YW5pYSAtIEhhcm1vbnkgT2YgRGlzc29uYW5jZSBbRV0uZ2JhCg==",
+      "after_base64": "L3ZvbC9leHRlcm5hbDAxL3JldHJvdS9yb21zL2diYS9DYXN0bGV2YW5pYSAtIEhhcm1vbnkgb2YgRGlzc29uYW5jZSAoRXVyb3BlKS5nYmEK"
+    }
+  ],
+  "skipped": [
+    {
+      "source": "E:\\retrou\\roms\\GBA\\Zelda - The Minish Cap [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Legend of Zelda, The - The Minish Cap (Europe) (En,Fr,De,Es,It).gba",
+      "reason": "destino existente"
+    },
+    {
+      "source": "E:\\retrou\\roms\\GBA\\Crash Bandicoot Fusion [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Crash Bandicoot Fusion (Europe) (En,Fr,De,Es,It).gba",
+      "reason": "varias ROMs para el mismo destino"
+    },
+    {
+      "source": "E:\\retrou\\roms\\GBA\\Crash Bandicoot - Fusion [E].gba",
+      "target": "E:\\retrou\\roms\\GBA\\Crash Bandicoot Fusion (Europe) (En,Fr,De,Es,It).gba",
+      "reason": "varias ROMs para el mismo destino"
+    },
+    {
+      "source": "E:\\retrou\\roms\\N64\\Command and Conquer 3D (U) (!).n64",
+      "target": "E:\\retrou\\roms\\N64\\Command & Conquer (USA).n64",
+      "reason": "destino existente"
+    },
+    {
+      "source": "E:\\retrou\\roms\\N64\\Jeopardy! (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Jeopardy! (USA).z64",
+      "reason": "destino existente"
+    },
+    {
+      "source": "E:\\retrou\\roms\\N64\\Mario Tennis (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Mario Tennis (USA).z64",
+      "reason": "destino existente"
+    },
+    {
+      "source": "E:\\retrou\\roms\\N64\\Nagano Olympic Hockey '98 (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\Olympic Hockey 98 (USA).z64",
+      "reason": "destino existente"
+    },
+    {
+      "source": "E:\\retrou\\roms\\N64\\RALLY CHALLENGE.n64",
+      "target": "E:\\retrou\\roms\\N64\\Rally Challenge 2000 (USA).n64",
+      "reason": "destino existente"
+    },
+    {
+      "source": "E:\\retrou\\roms\\N64\\The New Tetris (U) (!).n64",
+      "target": "E:\\retrou\\roms\\N64\\New Tetris, The (USA).n64",
+      "reason": "destino existente"
+    },
+    {
+      "source": "E:\\retrou\\roms\\N64\\World is Not Enough, The (U) [!].z64",
+      "target": "E:\\retrou\\roms\\N64\\007 - The World Is Not Enough (USA).z64",
+      "reason": "destino existente"
+    }
+  ],
+  "status": "planned"
+}

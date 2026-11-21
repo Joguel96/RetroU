@@ -366,6 +366,11 @@ solo mantiene el estado general.
   AS-1..5). El atajo `Y Vista` (UI-10) está confirmado en Wii U.
   GBA ya recorre más allá del juego 144. Salir al menú de Wii U
   durante descargas activas funciona (AS-6, confirmado en Wii U).
+- En la SD `E:/retrou/roms` se renombraron 262 ROMs por CRC Libretro el
+  2026-11-20, con migración de guardados, portadas, favoritos y mapas
+  asociados. Los manifiestos y el log de reversión están descritos en
+  `docs/rom-renaming.md`. Falta verificar esos nombres y guardados en Wii U
+  (ROM-1); las ROMs sin CRC conocido y los destinos duplicados no se tocaron.
 - Ajustes en dos paneles: nueva distribución según
   `ejemplos/Disposicion de menu.png`, confirmada en Wii U (UI-2).
 - Audio GBA: mGBA informa 65 536 Hz. AUD-1 (lineal hacia 32 000 Hz) falló en

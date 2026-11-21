@@ -325,9 +325,7 @@ solo mantiene el estado general.
   funcionó en hardware el 2026-11-12. TASK-001–020 del port están
   implementadas o documentadas; la nueva WUHB arrancó en Cemu y escribió
   `sd:/retrou/n64/retrou_n64.log`. TASK-021 y N64-2 permanecen abiertos
-  hasta completar la matriz en Wii U. El usuario señaló que la pantalla de
-  configuración N64 aún difiere de NES/SNES/GBA; N64-3 y N64-7 registran la
-  paridad visual y funcional pendiente. La WUHB diagnóstica de `d3c56db`
+  hasta completar la matriz en Wii U. La WUHB diagnóstica de `d3c56db`
   incorpora trazas persistentes `ASSETS:` y la corrección del buscador.
 - El port definitivo tiene un target de desarrollo `retrou_n64_gx2` que
   enlaza el motor extraído dentro del frontend RetroU. El build separado
@@ -337,7 +335,12 @@ solo mantiene el estado general.
   cuatro tarjetas y el mapeo, pero el menú durante el juego no aparece y HOME
   sigue congelando la app. El usuario confirmó en Wii U la corrección de
   «Cambiar orden», incluidas las pulsaciones repetidas y el cierre al terminar
-  los mandos conectados (CTRL-10 y N64-9).
+  los mandos conectados (CTRL-10 y N64-9). También confirmó la configuración
+  y el buscador (N64-3/4). La descarga de carátulas sigue pendiente (N64-5):
+  los índices llegaron a la SD, pero los títulos con región no coincidían;
+  el build de desarrollo del 2026-11-20 corrige esa comparación y requiere
+  prueba en Wii U. El carrusel N64 parece correcto, pero N64-8 espera ver
+  carátulas reales.
 - **Probado en hardware por el usuario**: HOME durante partida, audio del
   core y NES/SNES/GBA con ROMs reales. El 2026-11-12 confirmó además las
   pruebas restantes de navegación, controles, guardados y Assets. El

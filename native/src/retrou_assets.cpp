@@ -200,10 +200,14 @@ std::vector<CatalogEntry> loadCatalog(const std::string &sdRoot,
 const CatalogEntry *findCatalogMatch(const std::vector<CatalogEntry> &entries,
                                      const std::string &title)
 {
-    const std::string key = matchKey(stripLegacyTags(title), false);
+    const std::string key = matchKey(stripLegacyTags(title), true);
     if (key.size() < 4) return nullptr;
-    const bool europe = title.find("[E]") != std::string::npos;
-    const bool usa = title.find("[U]") != std::string::npos;
+    const bool europe = title.find("[E]") != std::string::npos ||
+                        title.find("(E)") != std::string::npos ||
+                        title.find("(Europe)") != std::string::npos;
+    const bool usa = title.find("[U]") != std::string::npos ||
+                     title.find("(U)") != std::string::npos ||
+                     title.find("(USA)") != std::string::npos;
     const CatalogEntry *best = nullptr;
     int bestScore = 0;
     for (const CatalogEntry &entry : entries) {

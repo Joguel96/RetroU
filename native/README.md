@@ -283,6 +283,8 @@ sd:/retrou/snap/<consola>/
   predeterminados y el log registra `control_map_parse_failed`.
 - Las descargas consultan los índices de nombres de Libretro y escriben líneas
   `GX2 asset` de inicio, coincidencia, errores HTTP/red y fin en el mismo log.
+  La comparación omite las etiquetas de región del título y prefiere la
+  edición regional correspondiente cuando existe.
   Usan el método directo si no hay índice y conservan el archivo anterior
   cuando falla un reemplazo forzado.
 - `main_exit_clean` distingue el cierre normal de una interrupción; en GBA,

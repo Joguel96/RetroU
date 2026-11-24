@@ -2,6 +2,8 @@
 
 NES/SNES/GBA usan **WUT + SDL2 + SDL2_ttf** y un core Libretro estático por
 WUHB. N64 es otra WUHB independiente: Not64 + GLideN64 + audio AX.
+La interfaz del proyecto es nativa; su navegación se describe en
+[Interfaz RetroU](../docs/ui.md).
 
 ## Apps generadas
 

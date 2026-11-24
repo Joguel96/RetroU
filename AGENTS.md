@@ -243,6 +243,8 @@ No extender el RPL sin petición explícita. Si se retoma, hacerlo en su rama.
   «Cambiar orden de mandos» asigna los puertos al pulsar A en cada dispositivo.
 - El menú de juego pausa el core.
 - La UI se dibuja en el bucle principal cuando la app está en primer plano.
+- La interfaz del proyecto es la nativa de `native/`; el prototipo web y sus
+  dependencias se retiraron por petición del usuario el 2026-11-23.
 - Las fuentes Lato van embebidas en los WUHB con `objcopy`.
 
 ## 8. Logs
@@ -483,6 +485,7 @@ inventario de grupos principales antes de fijar el número final de apps.
 Release v0.1.0 publicado el 2026-11-23 en Joguel96/RetroU: cuatro WUHB,
 cuatro RPX, fuentes correspondientes y SHA256SUMS, con hashes remotos
 verificados. La solicitud a xolodev fue un error y el usuario la canceló.
-Se reenvió por API a la cuenta correcta `xoloDev-games` (nombre visible xoloDev);
-falta que esa cuenta la acepte. No afirmar ownership transferido hasta verlo
-en GitHub. Los RPX en Tiramisu siguen sin prueba física (REL-2).
+La transferencia a la cuenta correcta `xoloDev-games` (nombre visible xoloDev)
+fue aceptada por el usuario y verificada en GitHub el 2026-11-23. Repositorio
+oficial: `https://github.com/xoloDev-games/RetroU`.
+Los RPX en Tiramisu siguen sin prueba física (REL-2).

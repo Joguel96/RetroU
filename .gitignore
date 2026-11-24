@@ -1,7 +1,4 @@
 # Dependencies and build output
-web/node_modules/
-web/dist/
-web/.vite/
 native/build/
 native/cores/build/
 native/cores/fceumm_rpl/build/

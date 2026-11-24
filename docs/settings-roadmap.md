@@ -44,8 +44,9 @@ resolver imports) o empaquetar el core como módulo Aroma `.wms`.
 
 ## Ajustes previstos
 
-La UI React (`web/`) ya define la estética. La app nativa tendrá una sección
-`Ajustes` con estas familias:
+La interfaz nativa define la estética de RetroU. Las siguientes familias de
+`Ajustes` forman parte de esta propuesta; el estado implementado está en
+`native/README.md` y `PENDIENTES.md`:
 
 ### Vídeo
 

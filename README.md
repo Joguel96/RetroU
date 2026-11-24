@@ -39,9 +39,6 @@ RetroArch más un core y no se utilizan como bibliotecas de RetroU.
 
 - **Apps nativas Wii U**: `native/` — NES (fceumm), SNES (snes9x) y GBA
   (mgba), compiladas como WUHB independientes con WUT/GX2.
-- **Interfaz React**: `web/` (Vite + React + Tailwind), extraída de
-  `Joguel96/retroui`, sin backend ni Gemini, navegable solo con mando. Es la
-  especificación visual y el banco de pruebas de la UI.
 - **Referencia RetroArch**: `docs/retroarch-reference.md` (historia técnica,
   sin usar RetroArch como base del frontend).
 - **Branding**: `assets/icon.png`, `assets/tv-splash.png`, `assets/drc-splash.png`.
@@ -105,7 +102,6 @@ RetroU/
 ├── native/                  apps Wii U: WUT + GX2 + cores estáticos
 │   ├── content/             Lato OFL (ui.ttf, ui-bold.ttf, OFL.txt)
 │   └── src/
-├── web/                     interfaz React navegable con mando
 └── README.md
 ```
 
@@ -125,17 +121,6 @@ dist/wiiu/apps/RetroSNESU/RetroSNESU.wuhb
 dist/wiiu/apps/RetroGBAU/RetroGBAU.wuhb
 dist/wiiu/apps/RetroN64U/RetroN64U.wuhb
 ```
-
-## Ejecutar la interfaz React
-
-```sh
-cd web
-npm install
-npm run dev
-```
-
-- Gamepad por defecto.
-- Teclado/ratón solo para desarrollo: `http://localhost:3000/?keyboard=1`.
 
 ## Layout de SD previsto
 

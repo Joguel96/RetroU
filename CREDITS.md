@@ -5,7 +5,7 @@
 Proyecto dirigido y publicado por **xoloDev**. RetroU aporta el frontend Wii U,
 la biblioteca, navegación, configuración de mandos, integración de motores,
 guardados, descargas y herramientas de empaquetado. El historial conserva las
-aportaciones anteriores bajo Joguel96; el prototipo visual procede de
+aportaciones anteriores bajo Joguel96; el diseño visual inicial tomó como referencia
 [Joguel96/retroui](https://github.com/Joguel96/retroui).
 
 **Hecho con asistencia de inteligencia artificial:** se utilizó OpenAI Codex
@@ -59,8 +59,6 @@ realmente incorporadas conservan sus avisos MIT.
   originales de los juegos pertenecen a sus respectivos titulares.
 - Equipos de [Aroma](https://aroma.foryour.cafe/),
   [Tiramisu](https://tiramisu.foryour.cafe/) y Homebrew Launcher: entornos y carga.
-- Autores de React, Vite, Tailwind CSS y Lucide: prototipo web; sus licencias
-  se conservan en sus paquetes. No se enlazan en los ejecutables Wii U.
 
 Los autores adicionales y las dependencias vendorizadas se detallan en sus
 fuentes y en `licenses/`. Esta lista no reemplaza ni borra esos avisos.

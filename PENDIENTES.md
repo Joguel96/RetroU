@@ -133,7 +133,7 @@ Guía de la ronda en Wii U: `docs/hardware-validation.md`.
 |---|---|---|
 | DOC-1 | Actualizar `README.md` y `native/README.md` con la arquitectura WUHB actual, controles `v2`, guardados, Assets y logs; funciones documentadas confirmadas en hardware, nuevas correcciones identificadas como pendientes | ✅ 2026-11-12 |
 | DOC-2 | Validación final en hardware de todo el conjunto (ronda de pruebas completa con los 4 WUHB) | ⬜ |
-| REL-1 | Publicación bajo xoloDev, declaración de uso de IA, créditos/licencias y release con WUHB, RPX y fuentes correspondientes. | 🔧 2026-11-23 |
+| REL-1 | Release v0.1.0 publicado en `https://github.com/Joguel96/RetroU/releases/tag/v0.1.0`, con IA, créditos/licencias, cuatro WUHB, cuatro RPX y fuentes. Transferencia a xolodev solicitada; falta aceptación de la cuenta destinataria en GitHub. | 🔧 2026-11-23 |
 | REL-2 | Probar los cuatro RPX mediante Homebrew Launcher en Tiramisu: arranque, ROM, controles, audio, HOME, guardados y cierre. | ⬜ |
 | CORE-1 | Futura ampliación a todos los cores Libretro para Wii U; inventario en `docs/libretro-wiiu-roadmap.md`. Revisar licencias, compilar desde fuente e integrar y probar cada motor. | ⬜ |
 | CORE-2 | Empaquetar los motores alternativos de cada sistema en su RetroU, con selector de core y un solo motor activo; aislar símbolos Libretro y separar savestates por motor. Incluye alternativas para NES/SNES/GBA. | ⬜ |

@@ -379,8 +379,8 @@ solo mantiene el estado general.
   cabecera PNG antes de saltar archivos existentes (AS-7), confirmado en Wii U.
   Una nueva incidencia de N64 requiere preferir el archivo real de Libretro
   sobre variantes `.png` que contienen texto (AS-8; pendiente de probar).
-- Ajustes en dos paneles: nueva distribución según
-  `ejemplos/Disposicion de menu.png`, confirmada en Wii U (UI-2).
+- Ajustes en dos paneles: secciones a la izquierda y opciones a la derecha,
+  confirmados en Wii U (UI-2).
 - Audio GBA: mGBA informa 65 536 Hz. AUD-1 (lineal hacia 32 000 Hz) falló en
   Wii U. AUD-2 solicita 48 000 Hz y filtra con sinc antes de la salida SDL;
   el usuario confirmó que el audio funciona en Wii U el 2026-11-20.
@@ -389,7 +389,6 @@ solo mantiene el estado general.
   audio AX en Our64 y no lee este archivo.
 - Los nombres visibles de las WUHB de NES, SNES y GBA ya son `RetroU NES`,
   `RetroU SNES` y `RetroU GBA` (APP-1, confirmado en Wii U).
-- Referencias visuales de UI en `ejemplos/` (raíz del proyecto).
 - No afirmar que algo está probado en hardware si no lo está.
 
 ## 12. Convenciones

@@ -20,8 +20,8 @@ está**. Un cambio compilado pero sin verificar sigue siendo ⬜/🔧.
 Ronda en Wii U del 2026-11-12: el usuario confirmó las demás pruebas de
 navegación, controles, guardados y Assets de NES/SNES/GBA. Detectó dos fallos
 nuevos: bloqueo al salir con descargas activas y pérdida de asignación al
-reconectar un mando externo. La referencia de Ajustes ya está en
-`ejemplos/Disposicion de menu.png`. N64 se confirmó después por separado.
+reconectar un mando externo. La distribución de Ajustes se definió con la
+referencia visual aportada por el usuario. N64 se confirmó después por separado.
 
 Ronda del 2026-11-13: UI-2, CTRL-8 y AS-6 quedaron confirmados en Wii U.
 CTRL-9 también quedó confirmado tras probar la WUHB corregida. El usuario
@@ -56,14 +56,14 @@ se probó y el ruido persistió; AUD-2 reemplaza ese intento.
 |---|---|---|
 | CTRL-1 | Remapeo desde «Controles» en el menú de partida (Minus+Plus), con configuración propia por ROM en `rom-maps/<hash>.conf` y restauración del mapa global al salir | ✅ 2026-11-12 |
 | CTRL-2 | Tres perfiles guardables/cargables para GamePad y Pro/Classic por consola en `profiles/`; `Plus` desde el editor abre la lista, `A` carga y `Y` guarda | ✅ 2026-11-12 |
-| CTRL-3 | Visual de asignación y mapeo estilo Our64 con UI RetroU, imágenes aportadas, formato `v2`, acciones `none`, un puerto en GBA y fuentes `Stick L`/`Stick R`. «Cambiar orden de mandos» asigna al pulsar A en cada dispositivo. Una máscara inválida usa el mapa predeterminado y se registra en el log. Referencias en `ejemplos/Our64/` | ✅ 2026-11-12 |
+| CTRL-3 | Visual de asignación y mapeo estilo Our64 con UI RetroU, imágenes aportadas, formato `v2`, acciones `none`, un puerto en GBA y fuentes `Stick L`/`Stick R`. «Cambiar orden de mandos» asigna al pulsar A en cada dispositivo. Una máscara inválida usa el mapa predeterminado y se registra en el log. Basado en referencias de Our64. | ✅ 2026-11-12 |
 | CTRL-4 | Que los mandos externos (Pro, Classic, Wii Remote...) también naveguen la UI (biblioteca/ajustes/menú del core), no solo el GamePad. Implementación: `wpadNavBits()` traduce sus botones a las constantes VPAD (Pro/Classic: A,B,X,Y,L,R,ZL→L,ZR→R,+,-,D-pad; Wii Remote: A,B,+,-,D-pad) y el stick se comporta como D-Pad edge-triggered | ✅ 2026-11-11 |
 | CTRL-5 | Diagnóstico temporal de input reducido a un resumen compacto por ROM tras confirmar VER-1..5; se conservan logs de carga y guardado de mapas/perfiles | ✅ 2026-11-12 |
 | CTRL-6 | GamePad asignable a **cualquier mando del core** (Mando 1 y Mando 2). `setVpadPort()` + opciones de Mando 2 con GamePad. Extendido: se listan **todos** los mandos conectados (4 canales KPAD + GamePad, sin límite de 2) y se nombran por tipo (Wii U Pro Controller, Classic Controller, Wii Remote, Wii Remote + Nunchuk) con sufijo numérico solo si hay varios del mismo tipo | ✅ 2026-11-11 |
 | CTRL-7 | Configurar por tipo de mando la combinación global que abre el menú durante el core; función histórica retirada por NAV-8 a petición del usuario | ✅ 2026-11-12; sustituida 2026-11-21 |
 | CTRL-8 | Al desconectar y reconectar Wii U Pro Controller o Classic Controller durante la app, conservar o restaurar su asignación a Mando 1/Mando 2 y su mapeo; comprobar también la navegación de UI tras reconectar | ✅ 2026-11-13 |
 | CTRL-9 | GBA: al elegir Wii U Pro Controller como Mando 1, una ROM con mapa propio debe conservar ese mando durante el juego; el archivo por ROM solo modifica botones, no el orden global | ✅ 2026-11-13 |
-| CTRL-10 | Presentar la asignación de mandos como tarjetas por puerto con «Pulsa A para conectar», selección visible y acciones de mapeo y orden, según `ejemplos/organizacion de controles para retrou.png`. El usuario confirmó en Wii U que la asignación y el orden de mandos ya funcionan correctamente. | ✅ 2026-11-20 |
+| CTRL-10 | Presentar la asignación de mandos como tarjetas por puerto con «Pulsa A para conectar», selección visible y acciones de mapeo y orden, según el diseño aportado por el usuario. El usuario confirmó en Wii U que la asignación y el orden de mandos ya funcionan correctamente. | ✅ 2026-11-20 |
 | CTRL-12 | Navegación y orden como N64, con dos puertos NES/SNES y uno GBA. Confirmado por el usuario en Wii U. | ✅ 2026-11-23 |
 | CTRL-13 | Direcciones de sticks y etiquetas corregidas. Confirmado por el usuario en Wii U. | ✅ 2026-11-23 |
 | CTRL-11 | N64: mapa del mando seleccionado visible en Controles del menú rápido. Confirmado por el usuario en Wii U. | ✅ 2026-11-23 |
@@ -72,9 +72,9 @@ se probó y el ruido persistió; AUD-2 reemplaza ese intento.
 
 | ID | Pendiente | Estado |
 |---|---|---|
-| UI-1 | Redondeo de cards: **bordes superiores rectos, base redondeada** (primera versión estaba invertida; corregida según `ejemplos/Retrou_resultados/error_cards.png`) | ✅ 2026-11-11 |
-| UI-2 | Ajustes en dos paneles: secciones a la izquierda y opciones a la derecha según `ejemplos/Disposicion de menu.png`; conservar navegación con mando y touch | ✅ 2026-11-13 |
-| UI-3 | Tres vistas de juegos: cards, lista y carrusel, elegibles en Personalizar; lista/carrusel con filtro alfabético y navegación propia. Referencias: `ejemplos/Our64/carrousel.png` y `list.png` | ✅ 2026-11-12 |
+| UI-1 | Redondeo de cards: **bordes superiores rectos, base redondeada** (primera versión estaba invertida; corregida según la referencia visual aportada) | ✅ 2026-11-11 |
+| UI-2 | Ajustes en dos paneles: secciones a la izquierda y opciones a la derecha según el diseño aportado; conservar navegación con mando y touch | ✅ 2026-11-13 |
+| UI-3 | Tres vistas de juegos: cards, lista y carrusel, elegibles en Personalizar; lista/carrusel con filtro alfabético y navegación propia, basadas en referencias de Our64. | ✅ 2026-11-12 |
 | UI-4 | Casilla de «Fondo dinámico» en Ajustes → Personalizar; valor guardado por consola en `view.conf` | ✅ 2026-11-12 |
 | UI-5 | Carrusel y lista usan el backdrop de la ROM enfocada cuando el fondo dinámico está activo | ✅ 2026-11-12 |
 | UI-6 | Tiempo de aparición del backdrop configurable en Personalizar: 0, 1, 3, 5 o 10 segundos sin cambio de selección; 3 s por defecto y lectura compatible con `view.conf` anterior | ✅ 2026-11-12 |
@@ -134,6 +134,7 @@ Guía de la ronda en Wii U: `docs/hardware-validation.md`.
 | DOC-1 | Actualizar `README.md` y `native/README.md` con la arquitectura WUHB actual, controles `v2`, guardados, Assets y logs; funciones documentadas confirmadas en hardware, nuevas correcciones identificadas como pendientes | ✅ 2026-11-12 |
 | DOC-2 | Validación final en hardware de todo el conjunto: el usuario confirmó la ronda completa de las cuatro WUHB. | ✅ 2026-11-23 |
 | DOC-3 | Retirados el prototipo web, dependencias/build y referencias de uso. Guía actualizada para la UI nativa, crédito visual conservado y cuatro targets compilados. Sin cambios ejecutables ni prueba adicional de hardware aplicable. | Hecho 2026-11-23 (verificación local) |
+| DOC-4 | Retirada la carpeta de referencias visuales y sus enlaces. Se conserva este archivo porque CORE-1 y CORE-2 siguen pendientes. Sin cambios ejecutables ni pruebas adicionales de hardware. | Hecho 2026-11-24 (verificación local) |
 | REL-1 | Release v0.1.0 publicado en `https://github.com/xoloDev-games/RetroU/releases/tag/v0.1.0`, con IA, créditos/licencias, cuatro WUHB, cuatro RPX y fuentes. Transferencia aceptada por el usuario y propiedad de `xoloDev-games` verificada en GitHub. | ✅ 2026-11-23 (publicación y propiedad verificadas) |
 | REL-2 | Los cuatro RPX mediante Homebrew Launcher en Tiramisu: arranque, ROM, controles, audio, HOME, guardados y cierre confirmados por el usuario en Wii U. | ✅ 2026-11-23 |
 | REL-3 | Botón Sponsor publicado mediante `.github/FUNDING.yml`, enlazado al perfil GitHub Sponsors de Joguel96 y verificado con `fundingLinks` en GitHub. | Hecho 2026-11-23 (verificación en GitHub) |
@@ -175,12 +176,6 @@ Guía de la ronda en Wii U: `docs/hardware-validation.md`.
 | ID | Pendiente | Estado |
 |---|---|---|
 | APP-1 | Mostrar `RetroU NES`, `RetroU SNES` y `RetroU GBA` como nombre de las WUHB, sin `GX2`; verificar en el menú de Wii U | ✅ 2026-11-13 |
-
-## 12. Ejemplos gráficos (referencias Our64)
-
-Carpeta del proyecto raíz: **`ejemplos/`** — ahí se adjuntan capturas/mocks
-de referencia (p. ej. el apartado de controles de Our64 para CTRL-3). Ver
-`ejemplos/README.md` para el índice esperado.
 
 ---
 

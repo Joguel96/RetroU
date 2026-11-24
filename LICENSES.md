@@ -46,7 +46,6 @@ Véase [publicación y compilación](docs/release.md).
 Los juegos, BIOS, portadas descargadas, marcas y material de referencia tienen
 sus propios titulares. No se incluyen ROMs comerciales ni BIOS. Las portadas
 se consultan en los servicios de Libretro y no se relicencian como RetroU.
-Las capturas de terceros en `ejemplos/` son referencias, no material MIT.
 
 La aplicación completa no debe describirse como íntegramente MIT ni como
 libre de restricciones comerciales: en particular, el motor Snes9x conserva

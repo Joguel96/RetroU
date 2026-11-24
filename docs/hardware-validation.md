@@ -25,8 +25,7 @@ pendiente; los resultados N64 de esta ronda proceden de Cemu.
 ## Navegación y biblioteca
 
 1. En cada app, abre Ajustes con Plus. Comprueba que las secciones ocupan
-   la columna izquierda y las opciones la derecha, según
-   `ejemplos/Disposicion de menu.png`. Entra en Personalizar, prueba touch en
+   la columna izquierda y las opciones la derecha. Entra en Personalizar, prueba touch en
    ambos paneles y vuelve con B paso a paso.
 2. Cambia entre Cards, Lista y Carrusel. En Lista y Carrusel, mueve el filtro
    alfabético con L/R y abre el buscador con Minus. En Cards, Minus debe abrir

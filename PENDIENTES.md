@@ -136,7 +136,7 @@ Guía de la ronda en Wii U: `docs/hardware-validation.md`.
 | DOC-3 | Retirados el prototipo web, dependencias/build y referencias de uso. Guía actualizada para la UI nativa, crédito visual conservado y cuatro targets compilados. Sin cambios ejecutables ni prueba adicional de hardware aplicable. | Hecho 2026-11-23 (verificación local) |
 | REL-1 | Release v0.1.0 publicado en `https://github.com/xoloDev-games/RetroU/releases/tag/v0.1.0`, con IA, créditos/licencias, cuatro WUHB, cuatro RPX y fuentes. Transferencia aceptada por el usuario y propiedad de `xoloDev-games` verificada en GitHub. | ✅ 2026-11-23 (publicación y propiedad verificadas) |
 | REL-2 | Los cuatro RPX mediante Homebrew Launcher en Tiramisu: arranque, ROM, controles, audio, HOME, guardados y cierre confirmados por el usuario en Wii U. | ✅ 2026-11-23 |
-| REL-3 | Añadir el botón Sponsor de RetroU con el perfil GitHub Sponsors existente de Joguel96. | 🔧 2026-11-23 |
+| REL-3 | Botón Sponsor publicado mediante `.github/FUNDING.yml`, enlazado al perfil GitHub Sponsors de Joguel96 y verificado con `fundingLinks` en GitHub. | Hecho 2026-11-23 (verificación en GitHub) |
 | CORE-1 | Futura ampliación a todos los cores Libretro para Wii U; inventario en `docs/libretro-wiiu-roadmap.md`. Revisar licencias, compilar desde fuente e integrar y probar cada motor. | ⬜ |
 | CORE-2 | Empaquetar los motores alternativos de cada sistema en su RetroU, con selector de core y un solo motor activo; aislar símbolos Libretro y separar savestates por motor. Incluye alternativas para NES/SNES/GBA. | ⬜ |
 

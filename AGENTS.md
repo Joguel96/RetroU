@@ -482,6 +482,7 @@ inventario de grupos principales antes de fijar el número final de apps.
 
 Release v0.1.0 publicado el 2026-11-23 en Joguel96/RetroU: cuatro WUHB,
 cuatro RPX, fuentes correspondientes y SHA256SUMS, con hashes remotos
-verificados. La transferencia a xolodev fue solicitada por API; falta que la
-cuenta destinataria la acepte. No afirmar ownership transferido hasta verlo
+verificados. La solicitud a xolodev fue un error y el usuario la canceló.
+Se reenvió por API a la cuenta correcta `xoloDev-games` (nombre visible xoloDev);
+falta que esa cuenta la acepte. No afirmar ownership transferido hasta verlo
 en GitHub. Los RPX en Tiramisu siguen sin prueba física (REL-2).

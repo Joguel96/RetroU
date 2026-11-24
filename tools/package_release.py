@@ -60,7 +60,8 @@ def main() -> None:
             raise SystemExit(f"Dependency checksum mismatch: {dependency['file']}")
     revision = git("rev-parse", "HEAD").decode().strip()
     manifest = {"version": args.version, "project_revision": revision, "publisher": "xoloDev",
-                "tested_environment": "Aroma (Wii U hardware)", "tiramisu": "hardware validation pending (REL-2)",
+                "tested_environment": "Aroma and Tiramisu (Wii U hardware, user confirmed 2026-11-23)",
+                "tiramisu": "four RPX hardware validated by user (REL-2, 2026-11-23)",
                 "cores": {}, "artifacts": {}, "source_dependencies": dependency_manifest, "packages": {}}
     cafeglsl = ROOT / ".cores/our64/third_party/cafeglsl"
     manifest["cafeglsl_sdk"] = {"upstream": "https://github.com/Exzap/CafeGLSL",
@@ -115,7 +116,7 @@ def main() -> None:
                     f'<short_description>RetroU {system.upper()}</short_description>'
                     '<long_description>Frontend RetroU con motor integrado. Hecho con asistencia de IA. '
                     'ROMs: sd:/retrou/roms/' + system + '/. Consulte CREDITOS y LICENCIAS. '
-                    'Tiramisu pendiente de validacion fisica.</long_description></app>\n')
+                    'Validado en Wii U con Aroma y Tiramisu.</long_description></app>\n')
             put(package, f"Tiramisu/wiiu/apps/{app}/meta.xml", meta.encode())
         for name in ("LICENSE", "LICENSES.md", "CREDITS.md"):
             put(package, name, (ROOT / name).read_bytes())

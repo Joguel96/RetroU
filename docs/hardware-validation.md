@@ -249,10 +249,10 @@ no atribuirlo al motor sin nueva evidencia de ejecución de la aplicación.
 
 El usuario confirmó NAV-9, UI-13, NAV-10 y NAV-11 el 2026-11-23.
 
-Pruebas pendientes:
+Ronda de cierre confirmada por el usuario el 2026-11-23:
 
-- REL-2: en Tiramisu/Homebrew Launcher, probar los cuatro RPX: arranque,
-  ROM, controles, audio, guardados con miniatura, HOME durante el juego,
-  salir a biblioteca, reabrir ROM y cerrar la aplicación. No considerar
-  esta validación cubierta por las pruebas previas en Aroma.
-- DOC-2: validación final del conjunto de las cuatro WUHB.
+- REL-2: los cuatro RPX en Tiramisu/Homebrew Launcher, incluyendo arranque,
+  ROM, controles, audio, guardados, HOME y cierre, correctos en Wii U.
+- DOC-2: validación final del conjunto de las cuatro WUHB, correcta en Wii U.
+
+No quedan pruebas pendientes para esta versión.

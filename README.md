@@ -18,7 +18,7 @@ condiciones; **Snes9x restringe el uso comercial**. No se incluyen juegos ni BIO
 Descarga el ZIP de [Releases](../../releases/latest). Incluye cuatro WUHB
 para Aroma y cuatro RPX para Homebrew Launcher/Tiramisu, con créditos y
 licencias. Copia la carpeta `wiiu` del entorno elegido a la raíz de la SD.
-**Aroma está probado en Wii U; Tiramisu está pendiente de validación física.**
+**Aroma y Tiramisu están probados por el mantenedor en Wii U física.**
 Guía detallada y fuentes: [publicación y reconstrucción](docs/release.md).
 
 Copia tus ROMs a estas rutas (los datos se conservan bajo `retrou`):
@@ -165,6 +165,12 @@ prueba en hardware.
 - [App nativa](native/README.md)
 - [Validación en Wii U](docs/hardware-validation.md)
 
+## Patrocinio
+
+Puedes apoyar el desarrollo de RetroU mediante
+[GitHub Sponsors de Joguel96](https://github.com/sponsors/Joguel96), el perfil
+de patrocinio utilizado por xoloDev.
+
 ## Guías externas
 
 - [devkitPro Wii U examples](https://github.com/devkitPro/wiiu-examples)
@@ -175,5 +181,5 @@ prueba en hardware.
 
 El mantenedor confirmó las funciones de las cuatro apps en Wii U con Aroma,
 incluidos HOME, reapertura N64, audio GBA y navegación por páginas (NAV-11).
-La ronda final conjunta (DOC-2) y la ejecución de RPX en Tiramisu (REL-2)
-siguen pendientes; véase [PENDIENTES.md](PENDIENTES.md).
+El usuario confirmó la ronda final de las cuatro WUHB (DOC-2) y los cuatro
+RPX en Tiramisu (REL-2) el 2026-11-23; véase [PENDIENTES.md](PENDIENTES.md).

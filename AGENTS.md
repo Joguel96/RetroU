@@ -93,7 +93,8 @@ La salida anterior con UI de Our64 ya no se compila ni se distribuye.
 
 Desde la publicación inicial se incluyen también RPX por consola para
 Homebrew Launcher/Tiramisu dentro del ZIP del release. No son cores para
-otro frontend; Tiramisu queda pendiente de validación física (REL-2).
+otro frontend; Tiramisu fue confirmado por el usuario en Wii U (REL-2,
+2026-11-23).
 No se distribuye `RetroU.wuhb` launcher.
 
 ## 4. Datos y configuración
@@ -467,7 +468,8 @@ la ejecuta. Deslizar verticalmente navega Cards/Lista y horizontalmente el
 carrusel, sin ejecutar ROMs; los huecos entre tarjetas/filas no se activan
 (NAV-10). El usuario confirmó NAV-9, UI-13 y NAV-10 el 2026-11-23.
 NAV-11 añade avance por páginas de cinco juegos en Lista en las cuatro apps;
-el usuario lo confirmó el 2026-11-23. Sigue la ronda final DOC-2.
+el usuario lo confirmó el 2026-11-23. La ronda final DOC-2 también quedó
+confirmada por el usuario en Wii U en esa fecha.
 
 Publicación autorizada el 2026-11-23 bajo xoloDev: declarar asistencia de IA,
 licenciar las aportaciones propias como MIT y conservar licencias ajenas,
@@ -488,4 +490,8 @@ verificados. La solicitud a xolodev fue un error y el usuario la canceló.
 La transferencia a la cuenta correcta `xoloDev-games` (nombre visible xoloDev)
 fue aceptada por el usuario y verificada en GitHub el 2026-11-23. Repositorio
 oficial: `https://github.com/xoloDev-games/RetroU`.
-Los RPX en Tiramisu siguen sin prueba física (REL-2).
+El usuario confirmó los cuatro RPX en Tiramisu (REL-2) y la ronda final de las
+cuatro WUHB (DOC-2) en Wii U el 2026-11-23. No quedan pruebas pendientes de
+v0.1.0; CORE-1 y CORE-2 son ampliaciones futuras.
+El patrocinio del repositorio se configura en `.github/FUNDING.yml` y apunta
+al perfil GitHub Sponsors existente de `Joguel96`, por petición del usuario.

@@ -21,8 +21,8 @@ parches para que el release sea reconstruible. La UI antigua no se compila.
 
 Los nombres visibles de las WUHB son `RetroU NES`, `RetroU SNES`,
 `RetroU GBA` y `RetroU N64`, con autor xoloDev. El release incluye además los
-RPX de esos mismos targets para Tiramisu/Homebrew Launcher, pendientes de
-prueba en ese entorno. Véanse [instalación y fuentes](../docs/release.md),
+RPX de esos mismos targets para Tiramisu/Homebrew Launcher, confirmados por
+el usuario en Wii U el 2026-11-23 (REL-2). Véanse [instalación y fuentes](../docs/release.md),
 [créditos](../CREDITS.md) y [licencias](../LICENSES.md).
 
 Distribución:
@@ -313,5 +313,5 @@ seleccionar elementos visibles. Ver `PENDIENTES.md` para lo que falta validar.
 
 El mantenedor confirmó las funciones de las cuatro apps en Wii U con Aroma,
 incluidos HOME, reapertura N64, audio GBA y navegación por páginas (NAV-11).
-La ronda final conjunta (DOC-2) y la ejecución de RPX en Tiramisu (REL-2)
-siguen pendientes; véase [PENDIENTES.md](../PENDIENTES.md).
+El usuario confirmó la ronda final de las cuatro WUHB (DOC-2) y los cuatro
+RPX en Tiramisu (REL-2) el 2026-11-23; véase [PENDIENTES.md](../PENDIENTES.md).

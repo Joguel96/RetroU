@@ -19,9 +19,10 @@ a la raíz de una SD FAT32. No copiar `Aroma` o `Tiramisu` literalmente a la SD.
 
 Los RPX se generan de los mismos targets que las WUHB y contienen sus motores
 enlazados; no son cores para cargar desde otra app. Aroma ha sido probado por
-el mantenedor. **Tiramisu queda pendiente de validación física (REL-2)**,
-especialmente la gestión de HOME y el recompilador N64. Incluir el formato RPX
-no constituye una garantía de compatibilidad probada.
+el mantenedor. **Los cuatro RPX en Tiramisu también fueron confirmados por
+el usuario en Wii U el 2026-11-23 (REL-2)**: arranque, ROM, controles, audio,
+HOME, guardados y cierre. La ronda final de las cuatro WUHB está confirmada
+en la misma fecha (DOC-2).
 
 Crear estas rutas y copiar allí los juegos propios:
 

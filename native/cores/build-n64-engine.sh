@@ -6,22 +6,38 @@ here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 root=$(CDPATH= cd -- "$here/../.." && pwd)
 source_dir=${OUR64_SOURCE:-"$root/.cores/our64"}
 seed=${OUR64_SEED:-https://github.com/Ch0nbo/Our64.git}
-revision=d3c56db253cd1b20987eb33ecd5797c60e527b64
+revision=2670a4cd4258e5dc848aa01322441c5c46a67061
+adapted_revision=d3c56db253cd1b20987eb33ecd5797c60e527b64
+source_patch="$here/our64-retrou.patch"
 archive="$root/.cores/n64/not64_gliden64_wiiu.a"
 mkdir -p "$root/native/build/logs" "$root/.cores/n64"
 logfile="$root/native/build/logs/n64-engine-$(date +%Y%m%d-%H%M%S).log"
 exec > >(tee "$logfile") 2>&1
 echo "N64 engine build log: $logfile"
 
-if [ ! -d "$source_dir/.git" ]; then
-    git clone "$seed" "$source_dir"
+if [ -f "$source_dir/.retrou-source-revision" ] && [ ! -d "$source_dir/.git" ]; then
+    test "$(cat "$source_dir/.retrou-source-revision")" = "$adapted_revision"
+    echo "Our64 engine source: packaged adapted snapshot $adapted_revision"
+else
+    if [ ! -d "$source_dir/.git" ]; then
+        git clone "$seed" "$source_dir"
+    fi
+    current_revision=$(git -C "$source_dir" rev-parse HEAD)
+    if [ "$current_revision" = "$adapted_revision" ]; then
+        test -z "$(git -C "$source_dir" status --porcelain)"
+    elif [ "$current_revision" = "$revision" ] &&
+         git -C "$source_dir" apply --reverse --check "$source_patch" 2>/dev/null; then
+        test -z "$(git -C "$source_dir" ls-files --others --exclude-standard)"
+        git -C "$source_dir" diff --binary --full-index HEAD > "$root/.cores/n64/source-check.patch"
+        cmp "$source_patch" "$root/.cores/n64/source-check.patch"
+    else
+        test -z "$(git -C "$source_dir" status --porcelain)"
+        git -C "$source_dir" checkout --detach "$revision"
+        git -C "$source_dir" apply --check "$source_patch"
+        git -C "$source_dir" apply "$source_patch"
+    fi
+    echo "Our64 engine source: $revision + RetroU adaptation ($adapted_revision)"
 fi
-git -C "$source_dir" checkout --detach "$revision"
-if [ -n "$(git -C "$source_dir" status --porcelain)" ]; then
-    echo "Our64 source has local changes; use a clean checkout for a reproducible build" >&2
-    exit 1
-fi
-echo "Our64 engine source: $(git -C "$source_dir" rev-parse HEAD)"
 echo "Excluded: main.c, library*, setup*, covers*, ui*, theme, pause*, input_wiiu.c, report.c, states_wiiu.c, tpak_wiiu.c"
 if [ ! -f "$source_dir/third_party/cafeglsl/include/cafeglsl/CafeGLSLCompiler.h" ]; then
     if [ -n "${CAFEGLSL_SOURCE:-}" ]; then
@@ -33,6 +49,14 @@ if [ ! -f "$source_dir/third_party/cafeglsl/include/cafeglsl/CafeGLSLCompiler.h"
 fi
 echo "CafeGLSL archive SHA-256: $(sha256sum "$source_dir/third_party/cafeglsl/lib/libcafeglsl.a")"
 
+patched_audio="$root/.cores/n64/audio-retrou.c"
+if command -v python3 >/dev/null 2>&1; then
+    python3 "$here/patch-n64-audio.py" "$source_dir/player/source/audio.c" "$patched_audio"
+elif command -v python >/dev/null 2>&1; then
+    python "$here/patch-n64-audio.py" "$source_dir/player/source/audio.c" "$patched_audio"
+else
+    py -3 "$here/patch-n64-audio.py" "$source_dir/player/source/audio.c" "$patched_audio"
+fi
 patched_video="$root/.cores/n64/video-retrou.cpp"
 if command -v python3 >/dev/null 2>&1; then
     python3 "$here/patch-n64-video.py" "$source_dir/player/source/video.cpp" "$patched_video"
@@ -58,7 +82,7 @@ echo "RetroU GLideN64 diagnostics SHA-256: $(sha256sum "$patched_common" "$patch
 export DEVKITPRO
 rm -f "$archive"
 make -C "$source_dir/player" -f Makefile -f "$here/n64-engine.mk" \
-    RELEASE=1 N64_ENGINE_OUT="$archive" N64_ENGINE_PATCHED_VIDEO="$patched_video" \
+    RELEASE=1 N64_ENGINE_OUT="$archive" N64_ENGINE_PATCHED_AUDIO="$patched_audio" N64_ENGINE_PATCHED_VIDEO="$patched_video" \
     N64_ENGINE_PATCHED_GLIDEN64_COMMON="$patched_common" N64_ENGINE_PATCHED_GLIDEN64_WINDOW="$patched_window" \
     n64_engine -j"${JOBS:-4}"
 ar_bin="$DEVKITPRO/devkitPPC/bin/powerpc-eabi-ar"

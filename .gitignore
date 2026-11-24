@@ -16,6 +16,8 @@ dist/
 *.log
 .DS_Store
 Thumbs.db
+__pycache__/
+*.pyc
 
 # CafeGLSL toolchain (downloaded binaries + compiled shaders)
 tools/cafeglsl/win/

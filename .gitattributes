@@ -1,0 +1,2 @@
+*.sh text eol=lf
+native/cores/our64-retrou.patch text eol=lf

@@ -11,6 +11,8 @@ typedef struct {
     int (*on_vi)(void *user, unsigned vi, uint32_t ports[4]);
     /* Rumble changes can arrive on the CPU thread. */
     void (*on_rumble)(void *user, int port, int enabled);
+    /* Startup progress is published without filesystem access. */
+    void (*on_stage)(void *user, unsigned stage);
     void *user;
 } N64EngineHost;
 

@@ -27,7 +27,7 @@ def main() -> None:
         '\t// graphics thread needs an empty command ring and a fresh handshake.\n'
         '\tg_quit = g_ready = g_gfx_ok = false;\n'
         '\tg_posted = g_done = 0;\n'
-        '\tg_tasks_posted = g_tasks_done = 0;\n'
+        '\t// Task IDs are shared with plugins.c and remain monotonic across ROMs.\n'
         '\tg_screens_posted = g_screens_run = 0;\n'
         '\tplayer_get_memory(&g_mem);',
     )
@@ -85,6 +85,17 @@ def main() -> None:
         '\tViStatusChanged();\n\tViWidthChanged();\n\tg_started = true;',
         '\treport_line("N64 video: RomOpen done");\n'
         '\tViStatusChanged();\n\tViWidthChanged();\n\tg_started = true;',
+    )
+    source = replace_once(
+        source,
+        '\tWHBGfxShutdown();\n\treturn 0;',
+        '\t// RetroU destroys GX2 between ROMs, unlike the original player.\n'
+        '\tif (g_plugin_up) {\n'
+        '\t\tPluginShutdown();\n'
+        '\t\tg_plugin_up = false;\n'
+        '\t}\n'
+        '\tg_hold = false;\n'
+        '\tWHBGfxShutdown();\n\treturn 0;',
     )
     target = Path(sys.argv[2])
     target.parent.mkdir(parents=True, exist_ok=True)

@@ -166,7 +166,15 @@ void RplCore::queueAudio(const int16_t *data, size_t frames)
         return;
     }
 
-    /* Keep latency bounded if the frontend falls behind. */
+    // GBA runs at 59.7275 Hz while the UI clock is near 60 Hz. Pace the
+    // producer to the audio device instead of accumulating half a second
+    // and periodically cutting the stream during long sessions.
+    const uint32_t target_bytes = static_cast<uint32_t>(audio_device_rate_) * 4u / 10u;
+    const uint32_t wait_start = SDL_GetTicks();
+    while (SDL_GetQueuedAudioSize(audio_device_) > target_bytes &&
+           SDL_GetAudioDeviceStatus(audio_device_) == SDL_AUDIO_PLAYING &&
+           SDL_GetTicks() - wait_start < 100u) SDL_Delay(1);
+    /* Recover if the output device stalled rather than growing without bound. */
     const uint32_t max_bytes = static_cast<uint32_t>(audio_device_rate_) * 4u / 2u;
     if (SDL_GetQueuedAudioSize(audio_device_) > max_bytes) {
         log("Audio queue exceeded 500 ms; dropping stale samples");
@@ -263,7 +271,7 @@ void RplCore::prepareAudioResampler()
 
 void RplCore::startAudio()
 {
-    if (audio_device_ || !get_av_info_) {
+    if (!get_av_info_) {
         return;
     }
 
@@ -272,6 +280,12 @@ void RplCore::startAudio()
     sample_rate_ = av.timing.sample_rate > 0
                        ? static_cast<int>(av.timing.sample_rate + 0.5)
                        : 44100;
+
+    if (audio_device_) {
+        SDL_ClearQueuedAudio(audio_device_);
+        prepareAudioResampler();
+        return;
+    }
 
     if (external_audio_) {
         audio_device_ = external_audio_;
@@ -401,7 +415,7 @@ void RplCore::pollInput()
                 ? wpad_samples_[wpad_ports_[port]]
                 : wpad_input_state(wpad_ports_[port]);
             if (pad.connected) {
-                const uint32_t hold = pad.buttons |
+                const uint32_t hold = (pad.buttons & (pad.type == WPAD_TYPE_PRO ? 0x0003ffffu : 0x0000ffffu)) |
                     stickSourceBits(pad.left_x / 32767.0f, pad.left_y / 32767.0f,
                                     pad.right_x / 32767.0f, pad.right_y / 32767.0f);
                 applyActionMap(wpad_map_, hold, state);
@@ -421,7 +435,7 @@ void RplCore::pollInput()
             }
             last_vpad_error_ = vpadError;
             if (vpadError == VPAD_READ_SUCCESS) {
-                const uint32_t hold = sample.hold |
+                const uint32_t hold = (sample.hold & 0x000fffffu) |
                     stickSourceBits(sample.leftStick.x, sample.leftStick.y,
                                     sample.rightStick.x, sample.rightStick.y);
                 applyActionMap(vpad_map_, hold, state);

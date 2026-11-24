@@ -41,18 +41,24 @@ public:
         session_->setMap(INPUT_GAMEPAD, translatedMap(vpadActionMap_, false, INPUT_GAMEPAD));
         session_->setMap(INPUT_PRO, translatedMap(proActionMap_, true, INPUT_PRO));
         session_->setMap(INPUT_CLASSIC, translatedMap(proActionMap_, true, INPUT_CLASSIC));
-        session_->setMenuShortcuts(menuShortcuts_);
         running_ = session_->start(romPath_, root);
         return running_;
     }
     void requestStop() { if (running_) session_->requestStop(); }
-    void setMenuShortcuts(const std::array<int, 3> &choices) { menuShortcuts_ = choices; }
     int takeMenuRequest() { return session_->takeMenuRequest(); }
     uint32_t takeMenuButtons() { return session_->takeMenuButtons(); }
     bool menuPaused() const { return session_->menuPaused(); }
     void resumeMenu() { session_->resumeMenu(); }
-    bool requestSave(int slot) { return session_->requestSave(slot); }
+    bool requestSave(int slot, const uint16_t *thumbnail) {
+        return session_->requestSave(slot, thumbnail);
+    }
+    int stateResult() const { return session_->stateResult(); }
+    bool readStateThumbnail(int slot, uint16_t *pixels) const {
+        return session_->readStateThumbnail(slot, pixels);
+    }
     bool requestLoad(int slot) { return session_->requestLoad(slot); }
+    unsigned startupStage() const { return session_->startupStage(); }
+    int resumeCount() const { return session_->resumeCount(); }
     bool finished() const { return running_ && session_->finished(); }
     int join()
     {
@@ -156,5 +162,4 @@ private:
     retrou::CoreActionMap vpadActionMap_{};
     retrou::CoreActionMap proActionMap_{};
     bool running_ = false;
-    std::array<int, 3> menuShortcuts_{{0, 0, 0}};
 };

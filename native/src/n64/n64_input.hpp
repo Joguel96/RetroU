@@ -14,9 +14,11 @@ public:
     void assign(int port, int device);
     void setChannel(int slot, int channel); // canal físico KPAD o -1
     void setMap(int type, const input_map &map);
-    void poll(uint32_t ports[4]); // una vez por VI, en el hilo del motor
-    int menuShortcutPressed(const std::array<int, 3> &choices);
-    uint32_t menuPressed(); // bits: A=1, B=2, arriba=4, abajo=8
+    void poll(uint32_t ports[4], bool suppressConfirm = false); // una vez por VI
+    uint32_t menuPressed(); // A=1, B=2, arriba=4, abajo=8, izq=16, der=32
+    bool menuConfirmHeld() const;
+    bool homePressed();
+    uint32_t gamepadButtons() const { return gamepad_present_ ? last_pad_.hold : 0; }
     void rumble(int port, bool enabled);
     void stopRumble();
 
@@ -30,6 +32,6 @@ private:
     std::array<input_map, INPUT_TYPES> maps_{};
     VPADStatus last_pad_{};
     bool gamepad_present_ = false;
-    std::array<bool, 5> last_shortcut_{};
     std::array<uint32_t, 5> last_menu_bits_{};
+    std::array<bool, 5> last_home_{};
 };

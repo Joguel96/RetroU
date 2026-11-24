@@ -142,7 +142,7 @@ function(add_static_retrou target system label app_name core)
         CONTENT    "${CMAKE_CURRENT_SOURCE_DIR}/content"
         NAME       "${app_name}"
         SHORTNAME  "${app_name}"
-        AUTHOR     "joguel96"
+        AUTHOR     "xoloDev"
         ICON       "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/${system}/icon.png"
         TVSPLASH   "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/${system}/tv-splash.png"
         DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/${system}/drc-splash.png"
@@ -186,7 +186,7 @@ wut_create_wuhb(retrou_gx2_test
     CONTENT    "${CMAKE_CURRENT_SOURCE_DIR}/content"
     NAME       "RetroU GX2 Test"
     SHORTNAME  "RetroU GX2 Test"
-    AUTHOR     "joguel96"
+    AUTHOR     "xoloDev"
     ICON       "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/nes/icon.png"
     TVSPLASH   "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/nes/tv-splash.png"
     DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/nes/drc-splash.png"
@@ -223,7 +223,7 @@ wut_create_wuhb(retrou_gx2_diag
     CONTENT    "${CMAKE_CURRENT_SOURCE_DIR}/content"
     NAME       "RetroU GX2 Diag"
     SHORTNAME  "RetroU GX2 Diag"
-    AUTHOR     "joguel96"
+    AUTHOR     "xoloDev"
     ICON       "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/nes/icon.png"
     TVSPLASH   "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/nes/tv-splash.png"
     DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/nes/drc-splash.png"
@@ -288,7 +288,7 @@ function(add_gx2_retrou target system label app_name core)
         CONTENT    "${CMAKE_CURRENT_SOURCE_DIR}/content"
         NAME       "${app_name}"
         SHORTNAME  "${app_name}"
-        AUTHOR     "joguel96"
+        AUTHOR     "xoloDev"
         ICON       "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/${system}/icon.png"
         TVSPLASH   "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/${system}/tv-splash.png"
         DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/${system}/drc-splash.png"
@@ -349,7 +349,8 @@ target_include_directories(retrou_n64_gx2 PRIVATE
     /opt/devkitpro/portlibs/ppc/include/freetype2
 )
 target_compile_options(retrou_n64_gx2 PRIVATE -Wall -Wextra)
-target_link_options(retrou_n64_gx2 PRIVATE -Wl,--wrap=doRspCycles)
+target_link_options(retrou_n64_gx2 PRIVATE -Wl,--wrap=doRspCycles -Wl,--wrap=ProcUIRegisterCallback
+    -Wl,--wrap=GX2SetTVEnable -Wl,--wrap=GX2SetDRCEnable)
 target_link_libraries(retrou_n64_gx2 PRIVATE
     "${N64_ENGINE_CORE}"
     "${N64_SOURCE}/third_party/cafeglsl/lib/libcafeglsl.a"
@@ -362,7 +363,7 @@ wut_create_wuhb(retrou_n64_gx2
     CONTENT    "${CMAKE_CURRENT_SOURCE_DIR}/content"
     NAME       "RetroU N64"
     SHORTNAME  "RetroU N64"
-    AUTHOR     "joguel96"
+    AUTHOR     "xoloDev"
     ICON       "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/n64/icon.png"
     TVSPLASH   "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/n64/tv-splash.png"
     DRCSPLASH  "${CMAKE_CURRENT_SOURCE_DIR}/../assets/console/n64/drc-splash.png"

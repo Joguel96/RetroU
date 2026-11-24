@@ -33,6 +33,11 @@ CONSOLES = {
         "app": "RGBAU",
         "controller": "gba",
     },
+    "n64": {
+        "name": "N64",
+        "app": "RN64U",
+        "controller": "n64",
+    },
 }
 
 
@@ -184,6 +189,36 @@ def draw_controller(draw: ImageDraw.ImageDraw, kind: str, box: tuple[int, int, i
                                radius=h * 0.05, fill=white)
         draw.rounded_rectangle((x1 - w * 0.36, y0 + h * 0.02, x1 - w * 0.12, y0 + h * 0.13),
                                radius=h * 0.05, fill=white)
+    elif kind == "n64":
+        # Three-pronged controller, seen straight on: central body with
+        # D-pad, analog stick and the two face buttons (A, B).
+        body = (x0 + w * 0.18, y0 + h * 0.14, x1 - w * 0.18, y1 - h * 0.14)
+        draw.rounded_rectangle(body, radius=h * 0.22, fill=white)
+        # D-pad (left).
+        pad = h * 0.16
+        px, py = x0 + w * 0.32, cy
+        draw.rounded_rectangle((px - pad, py - pad * 0.34, px + pad, py + pad * 0.34),
+                               radius=h * 0.03, fill=dark)
+        draw.rounded_rectangle((px - pad * 0.34, py - pad, px + pad * 0.34, py + pad),
+                               radius=h * 0.03, fill=dark)
+        # Analog stick (right).
+        sr = h * 0.17
+        sx, sy = x0 + w * 0.68, cy - h * 0.12
+        draw.ellipse((sx - sr, sy - sr, sx + sr, sy + sr), fill=dark)
+        sr2 = h * 0.10
+        draw.ellipse((sx - sr2, sy - sr2, sx + sr2, sy + sr2), fill=mid)
+        # A (big, lower right) and B (small, upper right).
+        a = h * 0.14
+        draw.ellipse((x0 + w * 0.86 - a, cy + h * 0.16 - a,
+                      x0 + w * 0.86 + a, cy + h * 0.16 + a), fill=dark)
+        b = h * 0.10
+        draw.ellipse((x0 + w * 0.78 - b, cy - h * 0.10 - b,
+                      x0 + w * 0.78 + b, cy - h * 0.10 + b), fill=mid)
+        # Start (small, center bottom).
+        sw, sh = w * 0.07, h * 0.05
+        draw.rounded_rectangle((cx - sw / 2, y1 - h * 0.32,
+                                cx + sw / 2, y1 - h * 0.32 + sh),
+                               radius=sh / 2, fill=mid)
 
 
 def make_icon(kind: str, out: Path):

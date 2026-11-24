@@ -44,6 +44,9 @@ void our64_dynarec_unlink(void);
 
 static N64EngineHost s_host;
 static uint32_t s_ports[4];
+static uint32_t s_last_plugin_port0;
+static unsigned s_plugin_input_changes;
+static int s_plugin_input_seen;
 static volatile int s_running;
 static volatile int s_stop_requested;
 static OSTime s_next_vi;
@@ -89,6 +92,13 @@ void n64_engine_request_stop(void)
 
 uint32_t input_keys(int port)
 {
+    if (port == 0 && (!s_plugin_input_seen ||
+        (s_ports[0] != s_last_plugin_port0 && s_plugin_input_changes < 32))) {
+        report_line("N64 plugin input: port1=%08X vi=%u", s_ports[0], g_bench.vis);
+        s_plugin_input_seen = 1;
+        if (s_ports[0] != s_last_plugin_port0) ++s_plugin_input_changes;
+        s_last_plugin_port0 = s_ports[0];
+    }
     return port >= 0 && port < 4 ? s_ports[port] : 0;
 }
 
@@ -157,15 +167,26 @@ void refresh_stat(void) {}
 
 int n64_engine_play(const char *rom_path, const char *root, const N64EngineHost *host)
 {
+    uintptr_t caller_sda;
+    __asm__ volatile("mr %0,13" : "=r"(caller_sda));
+    if (host && host->on_stage) host->on_stage(host->user, 2);
     struct stat st;
     if (!rom_path || !root || !host || !host->on_vi ||
-        stat(rom_path, &st) || st.st_size <= 0x1000 || st.st_size > UINT32_MAX)
+        !rom_path[0])
         return -1;
+    if (host->on_stage) host->on_stage(host->user, 3);
+    if (stat(rom_path, &st) || st.st_size <= 0x1000 || st.st_size > UINT32_MAX) return -1;
+    if (host->on_stage) host->on_stage(host->user, 4);
     if (OSGetCoreId() != OSGetCodegenCore()) return -2;
+    if (host->on_stage) host->on_stage(host->user, 5);
     if (n64_report_open(root)) return -3;
+    if (host->on_stage) host->on_stage(host->user, 6);
     report_line("N64: inicio ROM=%s bytes=%lu", rom_path, (unsigned long)st.st_size);
     s_host = *host;
     memset(s_ports, 0, sizeof(s_ports));
+    s_last_plugin_port0 = 0;
+    s_plugin_input_changes = 0;
+    s_plugin_input_seen = 0;
     memset(&g_bench, 0, sizeof(g_bench));
     s_running = s_stop_requested = 0;
     int result = -4, graphics_up = 0, audio_up = 0;
@@ -175,8 +196,10 @@ int n64_engine_play(const char *rom_path, const char *root, const N64EngineHost 
     report_line("N64: iniciando hilo grafico core=%u", gfx_core);
     if (video_thread_start(gfx_core)) goto done;
     graphics_up = 1;
+    if (host->on_stage) host->on_stage(host->user, 7);
     report_line("N64: hilo grafico listo");
     if (our64_jit_init() || setup_sda()) goto done;
+    if (host->on_stage) host->on_stage(host->user, 8);
     report_line("N64: JIT y SDA listos");
     __asm__ volatile("mr 13,%0" : : "r"(our64_sda_base));
     if (audio_start()) report_line("N64: audio no disponible");
@@ -190,6 +213,7 @@ int n64_engine_play(const char *rom_path, const char *root, const N64EngineHost 
     report_line("N64: memoria de cartucho lista");
     rom_opened = 1;
     if (rom_read(&file)) { result = -5; goto done; }
+    if (host->on_stage) host->on_stage(host->user, 9);
     report_line("N64: ROM leida");
     if (init_memory()) { result = -6; goto done; }
     memory_up = 1;
@@ -206,11 +230,18 @@ int n64_engine_play(const char *rom_path, const char *root, const N64EngineHost 
     if (video_start()) { result = -7; goto done; }
     video_up = 1;
     report_line("N64: video listo");
+    report_line("N64: tareas graficas puente=%u video=%u", gfx_tasks_posted(), video_tasks_done());
+    if (gfx_tasks_posted() != video_tasks_done()) {
+        report_line("N64: inicio cancelado por contadores graficos desincronizados");
+        result = -8;
+        goto done;
+    }
     s_vi_period = OSSecondsToTicks(1) / (is_pal() ? 50 : 60);
     s_next_vi = OSGetSystemTime();
     dynacore = 1;
     stop = 0;
     s_running = 1;
+    if (host->on_stage) host->on_stage(host->user, 10);
     report_line("N64: ejecutando region=%c", ROM_HEADER.Country_code);
     for (;;) {
         go();
@@ -225,8 +256,16 @@ int n64_engine_play(const char *rom_path, const char *root, const N64EngineHost 
     report_line("N64: detenido tras %u VI", g_bench.vis);
 done:
     s_running = 0;
-    if (graphics_up) n64_video_menu_hide();
-    if (video_up) video_stop();
+    if (graphics_up) {
+        n64_video_begin_loading();
+        n64_video_menu_hide();
+    }
+    if (video_up) {
+        // Match Our64 teardown: no RSP, audio task or DMA survives the ROM.
+        gfx_reset();
+        report_line("N64: tareas drenadas puente=%u video=%u", gfx_tasks_posted(), video_tasks_done());
+        video_stop();
+    }
     if (states_up) n64_states_finish();
     if (saves_up) saves_stop();
     if (writer_up) writer_stop();
@@ -242,5 +281,7 @@ done:
     report_save();
     n64_report_close();
     memset(&s_host, 0, sizeof(s_host));
+    // r13 is callee-saved. The generated-code SDA must not escape this thread entry.
+    __asm__ volatile("mr 13,%0" : : "r"(caller_sda));
     return result;
 }

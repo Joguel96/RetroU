@@ -281,19 +281,21 @@ std::vector<CatalogEntry> loadCatalog(const std::string &sdRoot,
     return entries;
 }
 
-const CatalogEntry *findCatalogMatch(const std::vector<CatalogEntry> &entries,
-                                     const std::string &title)
+std::vector<const CatalogEntry *> findCatalogMatches(const std::vector<CatalogEntry> &entries,
+                                                      const std::string &title)
 {
-    const std::string key = matchKey(stripLegacyTags(title), true);
-    if (key.size() < 4) return nullptr;
+    std::string clean = stripLegacyTags(title);
+    // The user's GoldenEye dump uses the cartridge's alternate title order.
+    if (clean == "007 - GoldenEye") clean = "GoldenEye 007";
+    const std::string key = matchKey(clean, true);
+    if (key.size() < 4) return {};
     const bool europe = title.find("[E]") != std::string::npos ||
                         title.find("(E)") != std::string::npos ||
                         title.find("(Europe)") != std::string::npos;
     const bool usa = title.find("[U]") != std::string::npos ||
                      title.find("(U)") != std::string::npos ||
                      title.find("(USA)") != std::string::npos;
-    const CatalogEntry *best = nullptr;
-    int bestScore = 0;
+    std::vector<std::pair<int, const CatalogEntry *>> scored;
     for (const CatalogEntry &entry : entries) {
         int score = 0;
         if (entry.key == key) score = 1000;
@@ -303,10 +305,18 @@ const CatalogEntry *findCatalogMatch(const std::vector<CatalogEntry> &entries,
         if (!score) continue;
         if (europe && entry.name.find("(Europe)") != std::string::npos) score += 100;
         if (usa && entry.name.find("(USA)") != std::string::npos) score += 100;
-        if (entry.name.find("Virtual Console") != std::string::npos) score -= 10;
-        if (score > bestScore) { best = &entry; bestScore = score; }
+        if (entry.name == clean) score += 500;
+        if (entry.name.find("Virtual Console") != std::string::npos) score -= 100;
+        for (const char *variant : {"(Beta", "(Proto", "(Demo", "(Rev", "(Sample"})
+            if (entry.name.find(variant) != std::string::npos &&
+                clean.find(variant) == std::string::npos) score -= 150;
+        scored.push_back({score, &entry});
     }
-    return best;
+    std::stable_sort(scored.begin(), scored.end(),
+                     [](const auto &a, const auto &b) { return a.first > b.first; });
+    std::vector<const CatalogEntry *> matches;
+    for (const auto &candidate : scored) matches.push_back(candidate.second);
+    return matches;
 }
 
 size_t curlWriteFile(void *ptr, size_t size, size_t nmemb, void *userdata)
@@ -407,25 +417,32 @@ static bool downloadWithCatalog(const std::string &sdRoot, const std::string &sy
         "https://thumbnails.libretro.com/" + urlEncode(folder) + "/" + type + "/";
     std::string error;
     if (catalog && !catalog->empty()) {
-        const CatalogEntry *match = findCatalogMatch(*catalog, title);
-        if (!match) {
+        const auto matches = findCatalogMatches(*catalog, title);
+        if (matches.empty()) {
             assetLog(sdRoot, "sin coincidencia " + std::string(kind) + " " + system +
                              " / " + title);
             return false;
         }
-        const bool fetched = downloadToFile(base + match->href, temporary, &error, cancel);
-        const bool valid = fetched && validPngFile(temporary);
-        if (fetched && !valid) {
-            std::remove(temporary.c_str());
-            error = "PNG invalido";
+        // GitHub's tree also lists text placeholders with .png names. Try the
+        // plain release first, then a small number of matching variants.
+        const size_t attempts = std::min(matches.size(), size_t(6));
+        for (size_t i = 0; i < attempts; ++i) {
+            if (cancel && cancel->load()) return false;
+            const CatalogEntry *match = matches[i];
+            const bool fetched = downloadToFile(base + match->href, temporary, &error, cancel);
+            const bool valid = fetched && validPngFile(temporary);
+            if (fetched && !valid) {
+                std::remove(temporary.c_str());
+                error = "PNG invalido";
+            }
+            if (valid && replaceDownloadedFile(temporary, dst)) {
+                assetLog(sdRoot, "descargado " + std::string(kind) + " " + system +
+                                 " / " + title + " => " + match->name);
+                return true;
+            }
+            assetLog(sdRoot, "fallo " + std::string(kind) + " " + system + " / " +
+                             title + " => " + match->name + " " + error);
         }
-        if (valid && replaceDownloadedFile(temporary, dst)) {
-            assetLog(sdRoot, "descargado " + std::string(kind) + " " + system +
-                             " / " + title + " => " + match->name);
-            return true;
-        }
-        assetLog(sdRoot, "fallo " + std::string(kind) + " " + system + " / " +
-                         title + " => " + match->name + " " + error);
         return false;
     }
     const char *suffixes[] = {"", " (USA)", " (Europe)", " (Japan)", " (World)"};

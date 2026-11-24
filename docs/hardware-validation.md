@@ -153,7 +153,7 @@ log en cada fallo. Estas casillas siguen abiertas hasta probarse en Wii U:
 
 | Prueba en Wii U | Resultado esperado | Estado |
 |---|---|---|
-| Arranque desde el menú, salida a biblioteca y cierre con HOME | Nombre RetroU N64, biblioteca visible; HOME devuelve el control al sistema | ⬜ |
+| HOME durante ROM y desde biblioteca/Ajustes | Durante ROM abre menú RetroU; fuera de ROM abre HOME de Wii U sin bloqueo | ⬜ NAV-8/N64-11 |
 | Cargar una ROM `.z64`, otra `.n64` y otra `.v64` | Las tres arrancan; anotar título y rendimiento por separado | ⬜ |
 | Recorrer Cards, Lista y Carrusel, incluidos los extremos del catálogo | Selección, desplazamiento, filtro A–Z y proporciones de portadas correctos | Cemu: «ok»; falta Wii U |
 | Buscar, marcar favorito, filtrar por estrella y volver a All | El filtro y las estrellas reflejan el cambio sin reiniciar | Cemu: filtrado/favoritos «ok»; B/X del buscador fallan (N64-4); falta Wii U |
@@ -161,11 +161,14 @@ log en cada fallo. Estas casillas siguen abiertas hasta probarse en Wii U:
 | Navegar y jugar con GamePad, Wii U Pro, Classic, Wii Remote y Nunchuk | Cada mando disponible responde según su perfil y asignación; anotar los no disponibles | ⬜ |
 | Asignar y jugar con 1, 2, 3 y 4 jugadores | Cada puerto recibe solo su mando y conserva su orden | ⬜ |
 | Desconectar y reconectar Pro/Classic durante biblioteca y partida | El mando recupera su puerto y el juego responde; revisar `INPUT:` | ⬜ |
-| Configurar y usar el atajo de menú por familia de mando | Abre y cierra la pausa con el mando asignado; el juego se detiene | ⬜ No ejecutada; el usuario la dejó para hardware |
+| Menú rápido con HOME en NES/SNES/GBA/N64 | Pausa el juego; «Salir del juego» vuelve a biblioteca y «Cerrar aplicación» vuelve al menú de Wii U | ⬜ NAV-8 |
 | Crear y reabrir guardado SRAM del juego | Persiste tras salir y volver a entrar; queda bajo `sd:/retrou/n64/saves/` | ⬜ |
 | Guardar/cargar tres slots manuales y probar la cuarta tarjeta Undo | Los tres slots y la reversión de carga, sobrescritura o reset funcionan | ⬜ |
 | Escuchar música y efectos mediante AX, pausar y reanudar | Audio estable, sin ruido ni pérdida tras la pausa | ⬜ |
-| Volver del juego a la biblioteca, cerrar al menú y usar HOME | No se bloquea ni pierde guardados; revisar `PAUSE:` y `GAME:` | ⬜ |
+| Volver del juego a la biblioteca, cerrar al menú y usar HOME | No se bloquea ni pierde guardados; revisar `retrou_rpx.log` y `retrou_n64.log` | ⬜ N64-11 |
+| N64: controles desde el arranque de la ROM | El juego recibe GamePad y mando externo antes y después del menú rápido; el log `N64 input` muestra raw y puerto no nulos al pulsar | ⬜ N64-13 |
+| N64: Controles del menú rápido | Ver las 18 acciones y alternar entre cuatro mandos sin cerrar la ROM | ⬜ CTRL-11 |
+| Entrar y salir de ROM en las cuatro apps | «Cargando juego» y «Volviendo a la biblioteca» cubren la transición, sin píxeles corruptos | ⬜ UI-12 |
 | Salir mientras se descargan Assets | Termina o cancela el trabajador sin congelar la Wii U; revisar `ASSETS:` | ⬜ |
 | Usar datos anteriores de Our64 sin moverlos | Si `sd:/retrou/roms/n64` está vacía, detecta las ROMs antiguas de solo lectura; lee controles/guardados previos cuando faltan los nuevos | ⬜ |
 | Revisar Ajustes frente a NES/SNES/GBA | Igualar secciones, contenido y flujo con RetroU, manteniendo la ejecución N64 de Our64 | Cemu: discrepancias visuales y funcionales confirmadas (N64-3/N64-7) |
@@ -203,3 +206,53 @@ La reversión del código no borra configuraciones ni guardados de la SD.
 
 Marca cada ID en `PENDIENTES.md` con ✅ y fecha solo después de confirmar su
 resultado en una Wii U. Si falla, conserva el log y deja el ID en 🔧.
+
+Ronda del 2026-11-22 (después de instalar las cuatro WUHB nuevas):
+
+- N64-11/NAV-8: iniciar ROM, HOME, continuar, salir del juego; HOME en biblioteca
+  y ajustes debe abrir el menú Wii U y permitir regresar. Repetir con una segunda
+  ROM y probar Cerrar aplicación desde el menú rápido.
+- UI-12: arranque N64 sin basura visual en TV/GamePad, también en la segunda ROM.
+- CTRL-11: mapa N64 en Controles del menú rápido (aún sin probar).
+- CTRL-12: orden y navegación NES/SNES (dos puertos), GBA (uno). Un mando unido
+  no debe reasignarse durante el orden. Terminar al asignar todos los conectados,
+  limitado a los puertos del core; confirmar después de reiniciar.
+- CTRL-13: recapturar las ocho direcciones L/R en GamePad y Pro/Classic; comprobar
+  la etiqueta y la respuesta dentro de una ROM. Los mapas anteriores se conservan.
+- AUD-4: partida GBA prolongada, abrir/cerrar menú y cambiar de ROM; sin ruido.
+- DOC-2/N64-2/7: validación final cuando las anteriores estén confirmadas.
+
+Pendientes tras la ronda del 2026-11-23:
+
+- N64-14: abrir/cerrar la misma ROM tres veces y después otra distinta, con audio
+  e input; comprobar que HOME sigue funcionando al terminar.
+- UI-12: comprobar la salida de N64 hacia biblioteca en TV y GamePad, sin basura.
+- AUD-4: permanecer en biblioteca/editor GBA sin abrir ROM y después jugar durante
+  el tiempo en que antes aparecía el ruido. Revisar también los efectos de navegación.
+- APP-2: repetir cierre de GBA al menú Wii U desde biblioteca y desde partida;
+  registrar si vuelve a ocurrir el bloqueo aislado.
+- DOC-2: ronda final del conjunto cuando lo anterior quede confirmado.
+
+Siguiente prueba: solo N64-14 con la WUHB diagnóstica actual. Abrir una ROM,
+salir del juego y volver a abrirla; conservar `retrou_rpx.log` inmediatamente
+tras el fallo. El último `n64_startup stage=...` indica si se alcanzó el hilo,
+la validación del archivo o la apertura de `retrou_n64.log`. UI-12, AUD-4 y
+APP-2 ya están confirmados y no requieren repetir esta ronda.
+
+Nueva ronda N64-14: la compilación corrige los IDs de tareas compartidos entre
+RSP y vídeo, con drenaje al cerrar. Abrir una ROM, salir y abrirla de nuevo;
+repetir con otra ROM. Comprobar imagen, audio, controles y HOME. El log N64
+incluye `tareas graficas puente=... video=...` al arrancar y `tareas drenadas`
+al cerrar. Los valores de ambos lados deben coincidir, incluso al reabrir.
+APP-3: comprobar también si el arranque anterior al splash vuelve a fallar;
+no atribuirlo al motor sin nueva evidencia de ejecución de la aplicación.
+
+El usuario confirmó NAV-9, UI-13, NAV-10 y NAV-11 el 2026-11-23.
+
+Pruebas pendientes:
+
+- REL-2: en Tiramisu/Homebrew Launcher, probar los cuatro RPX: arranque,
+  ROM, controles, audio, guardados con miniatura, HOME durante el juego,
+  salir a biblioteca, reabrir ROM y cerrar la aplicación. No considerar
+  esta validación cubierta por las pruebas previas en Aroma.
+- DOC-2: validación final del conjunto de las cuatro WUHB.

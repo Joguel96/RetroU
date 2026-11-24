@@ -12,14 +12,16 @@ WUHB. N64 es otra WUHB independiente: Not64 + GLideN64 + audio AX.
 | `RetroGBAU.wuhb` | mgba | GBA |
 | `RetroN64U.wuhb` | Not64 + GLideN64 + AX | N64 |
 
-N64 se compila en el clon externo `C:/proyectos/Our64`, fuera de CMake y
-`native/`. Los cambios del port están en el commit `869861d` y los ajustes
-WUT 1.9.2 en `29de243`. La nueva WUHB arrancó en Cemu; falta la ronda N64
-en Wii U y afinar la apariencia de Ajustes.
+N64 se compila en este proyecto: el motor extraído de Our64 se enlaza al
+frontend compartido mediante `native/cores/build-n64-engine.sh` y CMake.
+La revisión pública de Our64 y las adaptaciones se incluyen como fuentes y
+parches para que el release sea reconstruible. La UI antigua no se compila.
 
 Los nombres visibles de las WUHB son `RetroU NES`, `RetroU SNES`,
-`RetroU GBA` y `RetroU N64`. El nombre N64 se verificó en Cemu; falta
-verificarlo en el menú de Wii U.
+`RetroU GBA` y `RetroU N64`, con autor xoloDev. El release incluye además los
+RPX de esos mismos targets para Tiramisu/Homebrew Launcher, pendientes de
+prueba en ese entorno. Véanse [instalación y fuentes](../docs/release.md),
+[créditos](../CREDITS.md) y [licencias](../LICENSES.md).
 
 Distribución:
 
@@ -47,7 +49,6 @@ sd:/retrou/n64/states/
 sd:/retrou/n64/retrou_n64.log
 
 sd:/retrou/config/theme.conf
-sd:/retrou/config/menu-shortcut.conf
 sd:/retrou/config/nes/nes.conf
 sd:/retrou/config/nes/control-map.conf
 sd:/retrou/config/nes/video.conf
@@ -95,10 +96,12 @@ con ambas pantallas; la selección de salida aún requiere prueba en Wii U.
   completas en el centro y en los laterales, sin recortarlas. N64 requiere
   comprobar el cambio visual en la WUHB de desarrollo.
 - El touch del GamePad selecciona juegos y opciones en la UI.
-- En Ajustes → Controles se elige la combinación de apertura del menú por
-  GamePad, Pro/Classic y Wii Remote/Nunchuk. Es global para NES, SNES y GBA;
-  se guarda en `sd:/retrou/config/menu-shortcut.conf` (`v1`). **Minus + Plus**
-  siempre abre el menú como acceso de emergencia desde el mismo mando.
+- En Lista, izquierda/derecha del D-pad o stick L desplaza cinco juegos y
+  conserva la fila seleccionada, con límites al inicio/final del catálogo.
+  Arriba/abajo mueve un juego (NAV-11, pendiente de verificar en Wii U).
+- HOME abre el menú RetroU mientras se ejecuta una ROM y el menú HOME de Wii U
+  desde la biblioteca o Ajustes. El menú RetroU permite «Salir del juego» o
+  «Cerrar aplicación». Ya no se configura una combinación de apertura.
 - Las portadas de la biblioteca se recargan al completar una descarga, sin
   reiniciar la app.
 - En «Solo faltantes», la barra cuenta solo imágenes aún ausentes en la SD;
@@ -147,7 +150,7 @@ cuatro estados de RetroU, sin ejecutar una ROM. Véase
 - En Controles, los puertos aparecen como tarjetas: uno en GBA y dos en
   NES/SNES. Cada tarjeta muestra el dispositivo conectado o «Pulsa A para
   conectar». A sobre una tarjeta abre la captura de ese puerto; debajo están
-  «Mapear botones», «Cambiar orden» y los atajos del menú por familia de mando.
+  «Mapear botones» y «Cambiar orden».
   El touch del GamePad también permite seleccionar estas opciones.
   «Cambiar orden» recorre todos los puertos.
   La asignación se registra como `controller_connect_prompt` y
@@ -218,8 +221,9 @@ El script reconstruye el motor fijado, compila el frontend RetroU y copia
 `native/build/retrou_n64_gx2.wuhb` a
 `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb`. Guarda logs en
 `native/build/logs/` y registra el SHA-256 del binario copiado. La app lleva
-el nombre `RetroU N64`. La pausa y el menú durante la ROM requieren prueba
-en Wii U, igual que HOME y los guardados. Al probarla, conservar
+el nombre `RetroU N64`. Los estados y su miniatura se probaron en Wii U;
+faltan corregir el input del juego desde el arranque y verificar el nuevo flujo de HOME.
+Al probarla, conservar
 `sd:/retrou/retrou_rpx.log` y `sd:/retrou/n64/retrou_n64.log`.
 
 ### WUHB provisional de N64 (registro histórico)
@@ -275,7 +279,9 @@ sd:/retrou/snap/<consola>/
   edición regional correspondiente cuando existe.
   N64 obtiene el índice de la API del repositorio oficial
   `libretro-thumbnails/Nintendo_-_Nintendo_64` y las imágenes de GitHub raw;
-  conserva el índice en `sd:/retrou/metadata/n64-libretro-tree.json`.
+  conserva el índice en `sd:/retrou/metadata/n64-libretro-tree.json`. Algunas
+  variantes `.png` del repositorio contienen texto; se prioriza el título
+  canónico y se prueban alternativas hasta hallar un PNG válido (AS-8).
   Usan el método directo si no hay índice y conservan el archivo anterior
   cuando falla un reemplazo forzado.
 - `main_exit_clean` distingue el cierre normal de una interrupción; en GBA,
@@ -300,3 +306,10 @@ sd:/retrou/snap/<consola>/
 El menú durante el juego se abre con la combinación elegida para ese tipo de
 mando o con Minus+Plus en el mismo mando. El touch del GamePad permite
 seleccionar elementos visibles. Ver `PENDIENTES.md` para lo que falta validar.
+
+## Verificación
+
+El mantenedor confirmó las funciones de las cuatro apps en Wii U con Aroma,
+incluidos HOME, reapertura N64, audio GBA y navegación por páginas (NAV-11).
+La ronda final conjunta (DOC-2) y la ejecución de RPX en Tiramisu (REL-2)
+siguen pendientes; véase [PENDIENTES.md](../PENDIENTES.md).

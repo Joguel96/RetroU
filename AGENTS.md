@@ -91,7 +91,10 @@ dist/wiiu/apps/RetroN64U/RetroN64U.wuhb
 
 La salida anterior con UI de Our64 ya no se compila ni se distribuye.
 
-No se distribuyen RPX sueltos ni `RetroU.wuhb` launcher.
+Desde la publicación inicial se incluyen también RPX por consola para
+Homebrew Launcher/Tiramisu dentro del ZIP del release. No son cores para
+otro frontend; Tiramisu queda pendiente de validación física (REL-2).
+No se distribuye `RetroU.wuhb` launcher.
 
 ## 4. Datos y configuración
 
@@ -101,7 +104,6 @@ sd:/retrou/roms/snes/
 sd:/retrou/roms/gba/
 
 sd:/retrou/config/theme.conf              tema compartido
-sd:/retrou/config/menu-shortcut.conf      apertura del menú compartida
 
 sd:/retrou/config/nes/
   nes.conf
@@ -135,7 +137,7 @@ sd:/retrou/snap/<consola>/                slots de guardado de la app
 Las carpetas de ROMs se aceptan en minúscula (`nes`, `snes`, `gba`) y también
 en mayúscula por compatibilidad. La ruta canónica es minúscula.
 
-`theme.conf` y `menu-shortcut.conf` son comunes. `<consola>.conf`,
+`theme.conf` es común. `<consola>.conf`,
 `control-map.conf`, `video.conf`, `audio.conf` y `view.conf` son independientes por app.
 
 `audio.conf` usa `v1 <frecuencia> <búfer>`: frecuencia 0 = automática
@@ -228,13 +230,15 @@ No extender el RPL sin petición explícita. Si se retoma, hacerlo en su rama.
   alfabético con L/R, Favoritos junto a «All» y estrellas en sus ROMs. NES usa
   portadas verticales en carrusel y SNES presenta la imagen completa.
   `Y` cambia entre las tres vistas desde la biblioteca.
+  En Lista, izquierda/derecha del D-pad o stick L desplaza cinco juegos
+  conservando la fila seleccionada, con límites al inicio y final; arriba/abajo
+  mueve un juego (NAV-11, confirmado por el usuario el 2026-11-23).
   La vista, el fondo dinámico y su espera configurable
   (0/1/3/5/10 s; 3 s por defecto) se guardan en `view.conf`.
 - `Minus` abre el sidebar de filtros solo en cards; en lista/carrusel abre
   el buscador. Las cards permiten entre 3 y 6 columnas.
-- Ajustes → Controles configura la combinación de apertura del menú para
-  GamePad, Pro/Classic y Wii Remote/Nunchuk. `Minus + Plus` sigue disponible
-  en cada mando como acceso de emergencia.
+- HOME abre el menú RetroU durante una ROM y el menú HOME de Wii U en biblioteca
+  o Ajustes. «Cerrar aplicación» desde el menú rápido sale al sistema.
 - «Controles» en ese menú abre el editor de la ROM. En Ajustes → Controles,
   «Cambiar orden de mandos» asigna los puertos al pulsar A en cada dispositivo.
 - El menú de juego pausa el core.
@@ -329,9 +333,11 @@ solo mantiene el estado general.
   `dist/wiiu/apps/RetroN64U/RetroN64U.wuhb`; la versión anterior con UI de
   Our64 queda solo como referencia. El usuario confirmó en Wii U una ROM
   jugable, cuatro tarjetas de mando, configuración, buscador, descarga de
-  assets y carrusel con portadas. El 2026-11-21 se agregó la pausa y el menú
-  durante el juego; solo se verificó compilación. HOME y los guardados siguen
-  pendientes de prueba y corrección en Wii U (N64-2/7/10/11).
+  assets y carrusel con portadas. El 2026-11-21 confirmó que el menú rápido
+  abre durante una ROM y guarda/carga estados con miniatura (N64-12). El usuario
+  confirmó el input y HOME durante partida el 2026-11-22. HOME después de
+  cerrar N64 y Cerrar aplicación siguen pendientes de verificar con la
+  corrección del registro repetido de callbacks WHB (N64-2/7/11, NAV-8).
 - **Probado en hardware por el usuario**: HOME durante partida, audio del
   core y NES/SNES/GBA con ROMs reales. El 2026-11-12 confirmó además las
   pruebas restantes de navegación, controles, guardados y Assets. El
@@ -341,12 +347,13 @@ solo mantiene el estado general.
   2026-11-20.
 - **Input del core implementado**: A/B/X/Y/L/R, Start/Select y D-pad/stick.
 - **Input UI**: GamePad (VPAD) + Pro Controller (WPAD) con detección en
-  caliente; menú HOME del sistema vía ProcUI.
+  caliente. HOME durante una ROM abre el menú rápido de RetroU (pendiente de
+  verificar en las cuatro apps tras el cambio de 2026-11-21).
 - **Controles implementados y probados**: asignación de mandos a dos puertos
   del core en NES/SNES y uno en GBA, y remapeo estilo Our64 con múltiples
   botones por acción, `Y Add`, `X Unmap`, `- Reset`, captura con cuenta atrás y
   migración de `v1`/conf viejo; también orden de mandos, perfiles, mapas por ROM
-  y atajos configurables del menú. La reconexión de Pro/Classic funciona
+  y apertura del menú rápido con HOME. La reconexión de Pro/Classic funciona
   (CTRL-8, confirmado en Wii U). GBA aplica al core el Pro elegido como Mando 1
   aunque la ROM tenga un mapa propio (CTRL-9, confirmado en Wii U).
 - SRAM automática y cuatro slots con miniatura: probados en hardware
@@ -359,14 +366,16 @@ solo mantiene el estado general.
 - En la SD `E:/retrou/roms` se renombraron 262 ROMs por CRC Libretro el
   2026-11-20, con migración de guardados, portadas, favoritos y mapas
   asociados. Los manifiestos y el log de reversión están descritos en
-  `docs/rom-renaming.md`. Falta verificar esos nombres y guardados en Wii U
-  (ROM-1); las ROMs sin CRC conocido y los destinos duplicados no se tocaron.
+  `docs/rom-renaming.md`. El usuario verificó ROM-1 en Wii U; las ROMs sin
+  CRC conocido y los destinos duplicados no se tocaron.
 - El 2026-11-21 se retiraron 29 ROMs duplicadas (13 Europa con alternativa
   USA y 16 copias de contenido idéntico). El respaldo verificable está en
   `native/build/rom-dedupe-20261121/`; ver `docs/rom-deduplication.md` (ROM-2).
   Donkey Kong 64 ya tenía nombre canónico, pero su portada era texto con
   extensión PNG; se reemplazó en la SD. `retrou_assets` ahora valida la
-  cabecera PNG antes de saltar archivos existentes (AS-7). Falta prueba en Wii U.
+  cabecera PNG antes de saltar archivos existentes (AS-7), confirmado en Wii U.
+  Una nueva incidencia de N64 requiere preferir el archivo real de Libretro
+  sobre variantes `.png` que contienen texto (AS-8; pendiente de probar).
 - Ajustes en dos paneles: nueva distribución según
   `ejemplos/Disposicion de menu.png`, confirmada en Wii U (UI-2).
 - Audio GBA: mGBA informa 65 536 Hz. AUD-1 (lineal hacia 32 000 Hz) falló en
@@ -409,3 +418,64 @@ Al terminar una actividad: si quedó probada en hardware, marcar su ID como
 ✅ en `PENDIENTES.md` (con fecha) y ajustar el resumen de la sección 11 si
 cambia el estado general. Si no, dejarla 🔧/⬜ y documentar qué falta
 verificar.
+
+Validación del 2026-11-22: N64-13 confirmado en Wii U; HOME durante ROM
+funciona. Siguen pendientes HOME/cierre de aplicación después de N64 y la
+transición de arranque. Se evita duplicar callbacks WHB tras reiniciar GX2
+y se mantiene el scanout apagado hasta el primer frame del motor.
+Controles usa la misma navegación y orden en las cuatro apps, con cuatro
+puertos N64, dos NES/SNES y uno GBA. La captura y lectura GamePad excluyen
+los bits de emulación VPAD antes de añadir las direcciones de los sticks.
+La cola de audio regula el ritmo del core para evitar acumular y descartar
+muestras en partidas largas; su estabilidad sostenida queda pendiente (AUD-4).
+
+Ronda del 2026-11-23: HOME (N64-11/NAV-8), controles (CTRL-11/12/13) e
+integración N64 (N64-2/7) confirmados por el usuario en Wii U. Nuevos fallos:
+segunda ROM N64 (N64-14), corrupción al salir de N64 (UI-12), ruido de GBA
+incluso sin ROM (AUD-4) y un bloqueo aislado al volver de GBA al sistema (APP-2).
+El adaptador AX del motor conserva la instancia que SDL ya tiene abierta y
+reinicia el ring por ROM; el plugin gráfico se cierra antes de destruir GX2.
+La transición mantiene las pantallas ocultas hasta tener el frame de biblioteca.
+Los búferes SDL se redondean a ciclos AX de 3 ms (p. ej. 512 → 576 muestras);
+UI y juego alimentan el audio por separado y el dispositivo se pausa al ceder
+primer plano. Estas correcciones quedan pendientes de validar en hardware.
+
+Actualización posterior del 2026-11-23: UI-12, AUD-4 (unos 30 minutos de
+juego GBA) y APP-2 confirmados en Wii U. N64-14 sigue fallando antes de una
+segunda entrada en el log del motor. La WUHB diagnóstica registra `n64_startup`
+en `retrou_rpx.log`: entrada del hilo, validación del archivo/core y apertura
+del log, publicados mediante atómicos y sin I/O en el hilo de arranque.
+Estos hitos localizan el bloqueo; todavía no constituyen una corrección.
+
+N64-14, diagnóstico del 2026-11-23: la segunda ROM alcanza la ejecución, pero
+queda negra unos dos minutos según el usuario. Se detectó que el adaptador
+reiniciaba los IDs de tareas de vídeo sin reiniciar los del puente RSP.
+Se conservan ambos contadores monotónicos y se drenan las tareas con
+`gfx_reset()` antes de cerrar el vídeo, siguiendo el teardown de Our64.
+El arranque comprueba y registra la igualdad de contadores antes de ejecutar.
+Pendiente validar en Wii U. APP-3 registra un fallo aislado anterior al splash:
+la copia SD coincide por SHA-256 y ese intento no dejó un nuevo `main_enter`.
+
+Ronda final N64 del 2026-11-23: el usuario confirmó N64-14 y APP-3 en Wii U.
+La reapertura de ROM y el arranque funcionan. Ajustes de biblioteca confirmados:
+cambiar de letra reinicia la selección al primer juego (NAV-9); N64 Lista
+muestra la portada horizontal completa (UI-13). En las cuatro apps, touch
+actúa al soltar: un tap selecciona otra ROM y un tap sobre la seleccionada
+la ejecuta. Deslizar verticalmente navega Cards/Lista y horizontalmente el
+carrusel, sin ejecutar ROMs; los huecos entre tarjetas/filas no se activan
+(NAV-10). El usuario confirmó NAV-9, UI-13 y NAV-10 el 2026-11-23.
+NAV-11 añade avance por páginas de cinco juegos en Lista en las cuatro apps;
+el usuario lo confirmó el 2026-11-23. Sigue la ronda final DOC-2.
+
+Publicación autorizada el 2026-11-23 bajo xoloDev: declarar asistencia de IA,
+licenciar las aportaciones propias como MIT y conservar licencias ajenas,
+incluida la condición no comercial de Snes9x. Incluir WUHB, RPX, licencias y
+fuentes correspondientes en el release (REL-1); validar Tiramisu en hardware
+(REL-2). La hoja de ruta CORE-1 abarca todos los cores Libretro para Wii U,
+inventariados en `docs/libretro-wiiu-roadmap.md`, no solo MSX/PS1/Neo Geo.
+El usuario pidió agrupar motores alternativos dentro del RetroU correspondiente,
+con selector de core, símbolos aislados y un motor activo; los estados deben
+separarse por motor (CORE-2). Es alcance futuro, no funcionalidad de v0.1.0.
+Los cores multisistema se conservarán agrupados por familias coherentes,
+por ejemplo RetroU SEGA, según lo autorizado por el usuario. Consolidar el
+inventario de grupos principales antes de fijar el número final de apps.

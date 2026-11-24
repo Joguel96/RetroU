@@ -43,6 +43,7 @@ static unsigned char *s_raw, *s_work;
 static unsigned s_work_size;
 static char s_dir[384];
 static int s_ready, s_slot, s_result, s_load_pending;
+static uint16_t s_thumbnail[THUMB_W * THUMB_H];
 
 #define N64_STATE_MAX_PARTS 32
 #define N64_V3_SAVE_MEMORY (0x800 + FLASHRAM_SIZE + SRAM_SIZE + MEMPACK_SIZE)
@@ -209,9 +210,11 @@ void n64_states_finish(void)
     free(s_work); s_work = NULL;
 }
 
-int n64_states_request_save(int slot)
+int n64_states_request_save(int slot, const uint16_t *thumbnail)
 {
     if (!s_ready || slot < 0 || slot >= 4 || savestates_job || s_load_pending) return -1;
+    if (thumbnail) memcpy(s_thumbnail, thumbnail, THUMB_BYTES);
+    else memset(s_thumbnail, 0, THUMB_BYTES);
     s_slot = slot;
     s_result = 0;
     savestates_job = SAVESTATE;
@@ -229,18 +232,29 @@ int n64_states_request_load(int slot)
 }
 
 int n64_states_result(void) { return s_result; }
+int n64_states_save_pending(void) { return (savestates_job & SAVESTATE) != 0; }
+int n64_states_read_thumb(int slot, uint16_t *thumbnail)
+{
+    char path[400];
+    state_info info = {0};
+    if (!s_ready || !thumbnail || slot < 0 || slot >= 4 ||
+        slot_path(path, sizeof(path), slot)) return 0;
+    memset(thumbnail, 0, THUMB_BYTES);
+    return statefile_peek(path, ROM_HEADER.CRC1, ROM_HEADER.CRC2,
+                          &info, thumbnail) == STATEFILE_OK && info.has_thumb;
+}
 int n64_states_load_pending(void) { return s_load_pending; }
 
 void savestates_save(void)
 {
-    if (!s_ready || skip_jump || delay_slot || !gfx_idle()) return;
+    if (!s_ready || !(savestates_job & SAVESTATE) || skip_jump || delay_slot || !gfx_idle()) return;
     char path[400];
     int result = STATEFILE_WRITE_FAILED;
     if (!slot_path(path, sizeof(path), s_slot)) {
         state_info info = {.crc1 = ROM_HEADER.CRC1, .crc2 = ROM_HEADER.CRC2,
                            .slot = (uint8_t)(s_slot + 1)};
         unsigned size = capture();
-        result = statefile_write(path, &info, s_raw, size, NULL, s_work, s_work_size);
+        result = statefile_write(path, &info, s_raw, size, s_thumbnail, s_work, s_work_size);
     }
     s_result = result == STATEFILE_OK ? 1 : -result - 1;
     report_line("N64: guardar estado slot=%d resultado=%d", s_slot + 1, result);

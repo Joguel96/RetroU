@@ -1,0 +1,9 @@
+RetroU's N64 integration adapts the interfaces and state layout of Our64,
+Not64 and GLideN64. Copyright 2026 xoloDev and RetroU contributors, together
+with the respective upstream authors credited in CREDITS.md and their sources.
+
+The integration in this directory is distributed under GNU GPL version 2
+or, at your option, any later version. See ../../../licenses/GPL-2.0.txt.
+Upstream files keep their own notices and version choices; GLideN64's original
+license is preserved. No permission to relicense third-party code as MIT
+is granted by the MIT license at the root of the RetroU repository.

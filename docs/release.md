@@ -70,3 +70,5 @@ Las fuentes auxiliares de Mbed TLS y FreeType se guardan en
 `native/build/release-dependencies/` antes de empaquetar. El manifiesto registra
 su procedencia y hash. Las licencias completas acompañan ambos formatos.
 Para reutilizar código o redistribuir binarios consultar [LICENSES.md](../LICENSES.md).
+El paquete de fuentes conserva también libmocha `50fefdf` por el prototipo
+histórico, aunque no se enlace en ninguna de las apps del release.

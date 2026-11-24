@@ -29,4 +29,3 @@ source = replace_once(source, '\tAXQuit();',
     '\tif (g_owns_ax) AXQuit();\n'
     '\tg_owns_ax = 0;')
 Path(sys.argv[2]).write_text(source, encoding="utf-8")
-

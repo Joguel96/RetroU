@@ -6,8 +6,10 @@
 - Uso: lanzar el RPX de `RetroU` desde el launcher mediante
   `Mocha_PrepareRPXLaunch` + `Mocha_LaunchHomebrewWrapperEx`.
 
-`include/` y `lib/libmocha.a` se copiaron del build de ese commit con el
-toolchain de devkitPro. Si se actualiza libmocha, recompilar y reemplazar
-ambos.
+`include/` procede de ese commit. El archivo `lib/libmocha.a` usado por el
+prototipo no se publica en el árbol actual y está ignorado por git.
+Esta biblioteca no se enlaza en las cuatro apps actuales. Para retomar el
+prototipo se debe compilar desde su fuente; el ZIP de fuentes del release
+incluye la revisión `50fefdf` y se conserva LGPL v3.
 
 Requiere `MochaPayload`/EnvironmentLoader activo en Aroma o Tiramisu.

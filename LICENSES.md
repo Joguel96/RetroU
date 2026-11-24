@@ -27,6 +27,9 @@ Este producto utiliza FreeType, desarrollado por el FreeType Project
 (https://freetype.org/). Para Mbed TLS 2.28.8 se elige GPL-2.0-or-later en
 NES/N64 y Apache-2.0 en SNES/GBA, según su licencia dual original.
 Las fuentes Lato conservan SIL Open Font License 1.1.
+La libmocha histórica del prototipo experimental conserva LGPL v3; no se
+enlaza en las cuatro apps actuales. Sus fuentes se incluyen en el paquete
+correspondiente y su archivo compilado no forma parte del árbol actual.
 
 `licenses/` contiene copias de los avisos y textos obtenidos de las versiones
 utilizadas. El ZIP del release los acompaña; el ZIP de fuentes contiene el

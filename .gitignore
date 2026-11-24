@@ -18,6 +18,7 @@ dist/
 Thumbs.db
 __pycache__/
 *.pyc
+native/third_party/libmocha/lib/*.a
 
 # CafeGLSL toolchain (downloaded binaries + compiled shaders)
 tools/cafeglsl/win/
